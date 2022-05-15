@@ -11,7 +11,7 @@
 *.sln.docstates
 
 # Depedencies
-[Dd]epedencies/
+dependencies/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
