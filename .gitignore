@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# Depedencies
+[Dd]epedencies/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
