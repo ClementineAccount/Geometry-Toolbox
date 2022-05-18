@@ -129,12 +129,47 @@ int SimpleScene_Quad::Render()
     // T * R * S * Vertex
     glm::mat4 modelMat = glm::mat4(1.0f);
     glm::vec3 scaleVector = glm::vec3(1.0f);
-    glm::vec3 centroid = glm::vec3( -0.5f, -0.5f, 0.0f );
-    modelMat = glm::rotate(angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f)) *
-            glm::scale( scaleVector ) *
-            glm::translate( centroid );
+    glm::vec3 centroid = glm::vec3( 0.0f, -0.0f, 0.0f );
+    glm::vec3 triPos = glm::vec3(0.0f, -0.5f, -1.0f);
 
-    glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &modelMat[0][0]);
+    modelMat = glm::translate(modelMat, triPos);
+    modelMat = glm::rotate(modelMat, angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    modelMat = glm::scale(modelMat, scaleVector);
+
+
+    // Prototype perspective projection (to do: refactor this out later)
+    glm::mat4 perspectiveMat = glm::mat4(1.0f);
+    GLfloat fov = 45.0f;
+    GLfloat aspectRatio = static_cast<GLfloat>(GLApplication::getAspectRatio());
+    GLfloat nearPlanePoint = 0.1f;
+    GLfloat farPlanePoint = 100.0f;
+
+    perspectiveMat = glm::perspective(glm::radians(fov), aspectRatio, nearPlanePoint, farPlanePoint);
+ 
+
+    //perspectiveMat = glm::ortho(0.0f, 800.0f,
+    //    0.0f, 600.0f, 0.1f, 100.0f);
+
+
+
+    //perspectiveMat = glm::mat4(1.0f);
+    glm::mat4 viewMat = glm::mat4(1.0f);
+
+    static float cameraY = 0.0f;
+    cameraY += 1.0f * GLApplication::getDeltaTime();
+    glm::vec3 cameraPos = glm::vec3(0.0f, cameraY, 3.0f);
+    glm::vec3 cameraTargetPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+    viewMat = glm::lookAt(cameraPos, cameraTargetPos, upVector);
+
+
+    glm::mat4 mvpMat = glm::mat4(1.0f);
+    mvpMat = perspectiveMat * viewMat * modelMat;
+    
+    // To Do: Calculate and inject the view matrix into here before we pass it to the shader
+
+
+    glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 

@@ -37,14 +37,37 @@ Scene  *currScene;
 double gDeltaTime;
 double gLastFrameTime;
 
-int gWindowWidth = 1024;
-int gWindowHeight = 768;
+//16:9 aspect ratio for testing (To Do: encapsulate this to ensure resizing is working properly
+int gWindowWidth = 800;
+int gWindowHeight = 600;
+
+//Calculate and cache this if window size change
+GLfloat gAspectRatio = 0.0f;
 
 
-double& GLApplication::getDeltaTime()
+double GLApplication::getDeltaTime()
 {
     return gDeltaTime;
 }
+
+int GLApplication::getWindowHeight()
+{
+    return gWindowHeight;
+}
+
+int GLApplication::getWindowWidth()
+{
+    return gWindowWidth;
+}
+
+float GLApplication::getAspectRatio()
+{
+    if (gAspectRatio == 0)
+        gAspectRatio = static_cast<float>(gWindowWidth) / static_cast<float>(gWindowHeight);
+    
+    return gAspectRatio;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////

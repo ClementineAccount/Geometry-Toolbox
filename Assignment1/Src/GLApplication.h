@@ -13,11 +13,24 @@ namespace GLApplication
 {
 	
 	/**
-	 * Returns a reference to the current deltaTime, which is calculated after every frame
+	 * Returns a value copy of current deltaTime, which is calculated after every frame
 	 * and defined as the time between frames.
 	 * 
+	 * 
 	 * \return 
-	 * reference to gDeltaTime
+	 * a value copy of gDeltaTime
 	 */
-	double& getDeltaTime();
+	double getDeltaTime();
+
+	/**
+	 * Returns a value of current window height.
+	 */
+	int getWindowHeight();
+
+	/**
+	 * Returns value of current window width.
+	 */
+	int getWindowWidth();
+
+	float getAspectRatio();
 }
