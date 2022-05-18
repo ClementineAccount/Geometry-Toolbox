@@ -28,6 +28,8 @@ public:
     int Init() override;
     void CleanUp() override;
 
+    int preRender() override;
+
     int Render() override;
     int postRender() override;
 
@@ -51,6 +53,8 @@ private:
 
     std::vector<GLfloat>    geometryBuffer;
     GLfloat   angleOfRotation;
+
+    float cameraY;
 
 };
 

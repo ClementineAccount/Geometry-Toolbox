@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssignmentOne", "Assignment1\Assignment1.vcxproj", "{D917BDD9-5962-4003-A6F6-3D075873B21C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{18C1B774-97E2-44B7-B5AC-FE56BEF22D55} = {18C1B774-97E2-44B7-B5AC-FE56BEF22D55}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonTests", "CommonTests\CommonTests.vcxproj", "{2B315948-D983-4FA7-B4E4-ED413401C8EF}"
 EndProject

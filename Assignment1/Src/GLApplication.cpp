@@ -20,12 +20,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+// Include Dear Imgui
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+
 // Local / project headers
 //#include "../Common/Scene.h"
 #include "GLApplication.h"
 #include "Scene.h"
 #include "shader.hpp"
 #include "SimpleScene_Quad.h"
+
 
 // Function declarations
 bool savePPMImageFile(std::string &filepath, std::vector<GLfloat> &pixels, int width, int height);
@@ -122,6 +128,18 @@ int main()
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
+    // See https://github.com/ocornut/imgui/blob/master/examples/example_glfw_opengl3/main.cpp as reference
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    std::string glslVersion = "#version 410";
+    ImGui_ImplOpenGL3_Init(glslVersion.c_str());
+
+
     // Initialize the currScene
     currScene = new SimpleScene_Quad( gWindowWidth, gWindowHeight );
 
@@ -137,6 +155,11 @@ int main()
     //To Do possibly: refactor this into proper classes for use in all assignments here soon
     do
     {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         //Update the universal deltaTime between frames
         double currFrameTime = glfwGetTime();
         gDeltaTime = currFrameTime - gLastFrameTime;
@@ -146,6 +169,9 @@ int main()
         // Scene::Display method encapsulates pre-, render, and post- rendering operations
         currScene->Display();
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -154,8 +180,15 @@ int main()
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
 
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
+
 
     return 0;
 }

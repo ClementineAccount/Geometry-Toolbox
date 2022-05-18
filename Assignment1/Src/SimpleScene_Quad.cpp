@@ -10,6 +10,13 @@
 //#include <shader.hpp>
 #include <glm/vec3.hpp>
 
+
+// Include Dear Imgui
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+
+
 //https://stackoverflow.com/questions/61316071/no-file-type-mat-hpp-in-glm-detail
 //#include <glm/detail/type_mat.hpp>
 
@@ -101,11 +108,26 @@ int SimpleScene_Quad::Init()
 
 
 
-
+    cameraY = 0.0f;
 
     SetupBuffers();
 
     return Scene::Init();
+}
+
+
+int SimpleScene_Quad::preRender()
+{
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::DragFloat("Camera pos y", &cameraY, 0.01f, -10.0f, 10.0f);
+        ImGui::End();
+    }
+    return 0;
 }
 
 //////////////////////////////////////////////////////
@@ -159,8 +181,6 @@ int SimpleScene_Quad::Render()
     //perspectiveMat = glm::mat4(1.0f);
     glm::mat4 viewMat = glm::mat4(1.0f);
 
-    static float cameraY = 0.0f;
-    cameraY += 1.0f * GLApplication::getDeltaTime();
     glm::vec3 cameraPos = glm::vec3(0.0f, cameraY, 3.0f);
     glm::vec3 cameraTargetPos = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);

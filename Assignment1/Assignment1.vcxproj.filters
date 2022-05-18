@@ -22,6 +22,9 @@
     <Filter Include="Source Files\Main">
       <UniqueIdentifier>{c38235ac-597d-4f91-b19e-661107ab3839}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Misc\DearImgui">
+      <UniqueIdentifier>{3dff571c-b02e-4582-8be6-ff79768c06d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\shader.cpp">
@@ -35,6 +38,27 @@
     </ClCompile>
     <ClCompile Include="Src\GLApplication.cpp">
       <Filter>Source Files\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_demo.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_draw.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_impl_glfw.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\Misc\DearImgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,5 +74,37 @@
     <ClInclude Include="Src\GLApplication.h">
       <Filter>Source Files\Main</Filter>
     </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imconfig.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_glfw.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_opengl3.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_internal.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_textedit.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_truetype.h">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\dependencies\imgui\Readme.md">
+      <Filter>Source Files\Misc\DearImgui</Filter>
+    </None>
   </ItemGroup>
 </Project>
