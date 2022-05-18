@@ -1,0 +1,1 @@
+This dependency is the [Dear Imgui](https://github.com/ocornut/imgui) library.
