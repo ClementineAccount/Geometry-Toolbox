@@ -3,6 +3,8 @@
 //
 
 
+
+#include "GLApplication.h"
 #include "SimpleScene_Quad.h"
 #include "shader.hpp"
 //#include <shader.hpp>
@@ -145,6 +147,6 @@ int SimpleScene_Quad::Render()
 //////////////////////////////////////////////////////
 int SimpleScene_Quad::postRender()
 {
-    angleOfRotation += 0.01f;
+    angleOfRotation += 0.01f * GLApplication::getDeltaTime();
     return 0;
 }

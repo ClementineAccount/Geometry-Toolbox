@@ -22,7 +22,7 @@ Scene::~Scene()
 
 // Public methods
 
-// Init: called once when the scene is initialized
+// Init: called once when the currScene is initialized
 int Scene::Init()
 {
     return -1;
@@ -41,7 +41,7 @@ int Scene::preRender()
     return -1;
 }
 
-// Render : per frame rendering of the scene
+// Render : per frame rendering of the currScene
 int Scene::Render()
 {
     return -1;
@@ -59,7 +59,7 @@ void Scene::CleanUp()
     return;
 }
 
-// Display : Per-frame execution of the scene
+// Display : Per-frame execution of the currScene
 int Scene::Display()
 {
     preRender();

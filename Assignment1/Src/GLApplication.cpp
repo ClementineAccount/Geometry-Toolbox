@@ -1,3 +1,5 @@
+#pragma once
+
 // Include standard headers
 #include <cstdio>
 #include <cstdlib>
@@ -20,6 +22,7 @@
 
 // Local / project headers
 //#include "../Common/Scene.h"
+#include "GLApplication.h"
 #include "Scene.h"
 #include "shader.hpp"
 #include "SimpleScene_Quad.h"
@@ -28,12 +31,21 @@
 bool savePPMImageFile(std::string &filepath, std::vector<GLfloat> &pixels, int width, int height);
 
 //////////////////////////////////////////////////////////////////////
-
 GLFWwindow *window;
-Scene  *scene;
+Scene  *currScene;
 
-int windowWidth = 1024;
-int windowHeight = 768;
+double gDeltaTime;
+double gLastFrameTime;
+
+int gWindowWidth = 1024;
+int gWindowHeight = 768;
+
+
+double& GLApplication::getDeltaTime()
+{
+    return gDeltaTime;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +68,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(windowWidth, windowHeight, // window dimensions
+    window = glfwCreateWindow(gWindowWidth, gWindowHeight, // window dimensions
                               "Sample 1 - Simple scene (Quad) with Scene Class", // window title
                               nullptr, // which monitor (if full-screen mode)
                               nullptr); // if sharing context with another window
@@ -87,18 +99,29 @@ int main()
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-    // Initialize the scene
-    scene = new SimpleScene_Quad( windowWidth, windowHeight );
+    // Initialize the currScene
+    currScene = new SimpleScene_Quad( gWindowWidth, gWindowHeight );
 
     // Scene::Init encapsulates setting up the geometry and the texture
-    // information for the scene
-    scene->Init();
+    // information for the currScene
+    currScene->Init();
 
+
+    //Set initial values for the time calculations
+    gDeltaTime = 0.0;
+    gLastFrameTime = 0.0;
+
+    //To Do possibly: refactor this into proper classes for use in all assignments here soon
     do
     {
-        // Now render the scene
+        //Update the universal deltaTime between frames
+        double currFrameTime = glfwGetTime();
+        gDeltaTime = currFrameTime - gLastFrameTime;
+        gLastFrameTime = currFrameTime;
+        
+        // Now render the currScene
         // Scene::Display method encapsulates pre-, render, and post- rendering operations
-        scene->Display();
+        currScene->Display();
 
         // Swap buffers
         glfwSwapBuffers(window);

@@ -26,19 +26,19 @@ public:
 
     // Public methods
 
-    // Init: called once when the scene is initialized
+    // Init: called once when the currScene is initialized
     virtual int Init();
 
     // LoadAllShaders: This is the placeholder for loading the shader files
     virtual void LoadAllShaders();
 
-    // Display : encapsulates per-frame behavior of the scene
+    // Display : encapsulates per-frame behavior of the currScene
     virtual int Display();
 
     // preRender : called to setup stuff prior to rendering the frame
     virtual int preRender();
 
-    // Render : per frame rendering of the scene
+    // Render : per frame rendering of the currScene
     virtual int Render();
 
     // postRender : Any updates to calculate after current frame
