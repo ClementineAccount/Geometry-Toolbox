@@ -60,6 +60,8 @@ private:
     glm::vec3 quadPos;
     glm::vec3 quadScale;
     glm::vec3 quadAngles;
+
+    glm::vec3 backgroundColor;
     
 
 

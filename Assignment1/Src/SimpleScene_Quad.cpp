@@ -115,6 +115,8 @@ int SimpleScene_Quad::Init()
     quadAngles = glm::vec3(0.0f, 0.0f, 0.0f);
     quadPos = glm::vec3(0.0f, 0.0f, -3.0f);
 
+    backgroundColor = glm::vec3(0.0f, 0.0f, 0.7f);
+
     SetupBuffers();
 
     return Scene::Init();
@@ -135,6 +137,7 @@ int SimpleScene_Quad::preRender()
         ImGui::DragFloat3("Quad-Plane Position", (float*)&quadPos, 0.01f, -20.0f, 20.0f);
         ImGui::DragFloat3("Quad-Plane Scale", (float*)&quadScale, 0.01f, -20.0f, 20.0f);
         ImGui::DragFloat3("Quad-Plane Rotation (Degrees)", (float*)&quadAngles, 0.01f, -360.0f, 360.0f);
+        ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
         ImGui::End();
     }
@@ -145,7 +148,7 @@ int SimpleScene_Quad::preRender()
 //////////////////////////////////////////////////////
 int SimpleScene_Quad::Render()
 {
-    glClearColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f );
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glEnable(GL_CULL_FACE);
