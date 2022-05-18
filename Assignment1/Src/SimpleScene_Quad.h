@@ -54,7 +54,14 @@ private:
     std::vector<GLfloat>    geometryBuffer;
     GLfloat   angleOfRotation;
 
-    float cameraY;
+    float fieldOfView;
+    glm::vec3 cameraPos;
+    glm::vec3 cameraTargetPos;
+    glm::vec3 quadPos;
+    glm::vec3 quadScale;
+    glm::vec3 quadAngles;
+    
+
 
 };
 
