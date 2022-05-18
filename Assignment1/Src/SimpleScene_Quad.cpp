@@ -91,13 +91,17 @@ int SimpleScene_Quad::Init()
                             "../Common/Shaders/QuadFragmentShader.frag");
 
     // Just two triangles making up a quad
-    geometryBuffer = { 0.0f, 0.0f, 0.0f,
+    geometryBuffer = {  0.0f, 0.0f, 0.0f,
                         1.0f, 0.0f, 0.0f,
                         0.0f, 1.0f, 0.0f,
                         1.0f, 0.0f, 0.0f,
                         1.0f, 1.0f, 0.0f,
                         0.0f, 1.0f, 0.0f
     };
+
+
+
+
 
     SetupBuffers();
 
