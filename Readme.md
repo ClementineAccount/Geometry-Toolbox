@@ -33,3 +33,7 @@ OpenGL Mathematics      | [glm](https://github.com/g-truc/glm)
 # Assignments
 
 1. [Readme for Assignment 1](\Assignment1\Readme.md)
+
+# Other References
+1. CSD2100 - Prasanna Ghali
+1. [LearnOpenGL - Camera](https://learnopengl.com/Getting-started/Camera)*

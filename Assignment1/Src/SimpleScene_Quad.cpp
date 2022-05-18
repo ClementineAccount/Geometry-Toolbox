@@ -83,8 +83,10 @@ void SimpleScene_Quad::SetupBuffers()
 int SimpleScene_Quad::Init()
 {
     // Create and compile our GLSL program from the shaders
-    programID = LoadShaders("../../Common/shaders/QuadVertexShader.vert",
-                            "../../Common/shaders/QuadFragmentShader.frag");
+
+    //To Do: Read from filepath from another config file
+    programID = LoadShaders("../Common/Shaders/QuadVertexShader.vert",
+                            "../Common/Shaders/QuadFragmentShader.frag");
 
     // Just two triangles making up a quad
     geometryBuffer = { 0.0f, 0.0f, 0.0f,
@@ -110,18 +112,12 @@ int SimpleScene_Quad::Render()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-
     glUseProgram(programID);
 
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer( 0,
-                            3,
-                            GL_FLOAT,
-                            GL_FALSE,
-                            0,
-                           (void *) 0 );
+    glVertexAttribPointer( 0, 3,GL_FLOAT, GL_FALSE, 0,(void *) 0 );
 
     // Uniform matrix
     // Uniform transformation (vertex shader)
