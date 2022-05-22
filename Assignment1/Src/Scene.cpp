@@ -3,16 +3,19 @@
 //
 
 #include "Scene.h"
+#include <assert.h>
 
 Scene::Scene() : _windowWidth(100), _windowHeight(100)
 {
 
 }
 
-Scene::Scene(int windowWidth, int windowHeight)
+Scene::Scene(int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr)
 {
     _windowHeight = windowHeight;
     _windowWidth = windowWidth;
+    parentApplicationPtr = parentApplicationPtr;
+    assert(parentApplicationPtr != nullptr && "Scenes must belong to an application");
 }
 
 Scene::~Scene()

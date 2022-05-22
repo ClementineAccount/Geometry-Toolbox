@@ -1,4 +1,5 @@
-#pragma once
+
+
 
 // Include standard headers
 #include <cstdio>
@@ -25,62 +26,46 @@
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
 
-// Local / project headers
-//#include "../Common/Scene.h"
 #include "GLApplication.h"
 #include "Scene.h"
 #include "shader.hpp"
 #include "SimpleScene_Quad.h"
 
 
-// Function declarations
-bool savePPMImageFile(std::string &filepath, std::vector<GLfloat> &pixels, int width, int height);
 
-//////////////////////////////////////////////////////////////////////
-GLFWwindow *window;
-Scene  *currScene;
-
-double gDeltaTime;
-double gLastFrameTime;
-
-//16:9 aspect ratio for testing (To Do: encapsulate this to ensure resizing is working properly
-int gWindowWidth = 800;
-int gWindowHeight = 600;
-
-//Calculate and cache this if window size change
-GLfloat gAspectRatio = 0.0f;
-
-
-double GLApplication::getDeltaTime()
+double GeometryToolbox::GLApplication::getDeltaTime()
 {
     return gDeltaTime;
 }
 
-int GLApplication::getWindowHeight()
+int GeometryToolbox::GLApplication::getWindowHeight()
 {
     return gWindowHeight;
 }
 
-int GLApplication::getWindowWidth()
+int GeometryToolbox::GLApplication::getWindowWidth()
 {
     return gWindowWidth;
 }
 
-float GLApplication::getAspectRatio()
+float GeometryToolbox::GLApplication::getAspectRatio()
 {
     if (gAspectRatio == 0)
         gAspectRatio = static_cast<float>(gWindowWidth) / static_cast<float>(gWindowHeight);
-    
+
     return gAspectRatio;
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-int main()
+int GeometryToolbox::GLApplication::initApplication()
 {
+    //16:9 aspect ratio for testing (To Do: encapsulate this to ensure resizing is working properly
+    gWindowWidth = 800;
+    gWindowHeight = 600;
+
+    //Calculate and cache this if window size change
+    GLfloat gAspectRatio = 0.0f;
+
     // Initialise GLFW
     if (!glfwInit())
     {
@@ -98,13 +83,13 @@ int main()
 
     // Open a window and create its OpenGL context
     window = glfwCreateWindow(gWindowWidth, gWindowHeight, // window dimensions
-                              "Sample 1 - Simple scene (Quad) with Scene Class", // window title
-                              nullptr, // which monitor (if full-screen mode)
-                              nullptr); // if sharing context with another window
+        "Sample 1 - Simple scene (Quad) with Scene Class", // window title
+        nullptr, // which monitor (if full-screen mode)
+        nullptr); // if sharing context with another window
     if (window == nullptr)
     {
         fprintf(stderr,
-                "Failed to open GLFW window. If you have an Intel GPU, they are not 4.0 compatible.\n");
+            "Failed to open GLFW window. If you have an Intel GPU, they are not 4.0 compatible.\n");
         getchar();
         glfwTerminate();
         return -1;
@@ -140,8 +125,10 @@ int main()
     ImGui_ImplOpenGL3_Init(glslVersion.c_str());
 
 
+
+    GLApplication* ptr = this;
     // Initialize the currScene
-    currScene = new SimpleScene_Quad( gWindowWidth, gWindowHeight );
+    currScene = new SimpleScene_Quad(gWindowWidth, gWindowHeight, ptr);
 
     // Scene::Init encapsulates setting up the geometry and the texture
     // information for the currScene
@@ -164,7 +151,7 @@ int main()
         double currFrameTime = glfwGetTime();
         gDeltaTime = currFrameTime - gLastFrameTime;
         gLastFrameTime = currFrameTime;
-        
+
         // Now render the currScene
         // Scene::Display method encapsulates pre-, render, and post- rendering operations
         currScene->Display();
@@ -178,7 +165,7 @@ int main()
 
     } // Check if the ESC key was pressed or the window was closed
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0);
+        glfwWindowShouldClose(window) == 0);
 
 
     // Cleanup
@@ -189,37 +176,11 @@ int main()
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
 
-
     return 0;
 }
 
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-//////////////////////////////////////////////////////
-
-bool savePPMImageFile(std::string &filepath, std::vector<GLfloat> &pixels, int width, int height)
+int main()
 {
-    std::ofstream  texFile(filepath);
-
-    texFile << "P3" << std::endl;
-    texFile << width << "  " << height << std::endl;
-    texFile << "255" << std::endl;
-
-    auto it = pixels.begin();
-
-    for( int row = 0; row < height; ++row )
-    {
-        for (int col = 0; col < width; ++col)
-        {
-            texFile << *it++ << " ";
-            texFile << *it++ << " ";
-            texFile << *it++ << " ";
-        }
-
-        texFile << std::endl;
-    }
-
-    texFile.close();
-
-    return true;
+    GeometryToolbox::GLApplication app;
+    app.initApplication();
 }

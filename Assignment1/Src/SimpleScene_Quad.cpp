@@ -22,6 +22,9 @@
 
 #include <glm/glm.hpp>
 
+//For GLApplication
+using namespace GeometryToolbox;
+
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 void SimpleScene_Quad::SetupNanoGUI(GLFWwindow *pWindow)
@@ -39,10 +42,11 @@ SimpleScene_Quad::~SimpleScene_Quad()
 
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
-SimpleScene_Quad::SimpleScene_Quad(int windowWidth, int windowHeight) : Scene(windowWidth, windowHeight),
+SimpleScene_Quad::SimpleScene_Quad(int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr) : Scene(windowWidth, windowHeight, parentApplicationPtr),
                                                                         programID(0), vertexbuffer(0), VertexArrayID(0),
                                                                         angleOfRotation(0.0f)
 {
+    this->parentApplicationPtr = parentApplicationPtr;
     initMembers();
 }
 
@@ -189,7 +193,7 @@ int SimpleScene_Quad::Render()
     // Prototype perspective projection (to do: refactor this out later)
     glm::mat4 perspectiveMat = glm::mat4(1.0f);
     GLfloat fov = 45.0f;
-    GLfloat aspectRatio = static_cast<GLfloat>(GLApplication::getAspectRatio());
+    GLfloat aspectRatio = static_cast<GLfloat>(parentApplicationPtr->getAspectRatio());
     GLfloat nearPlanePoint = 0.1f;
     GLfloat farPlanePoint = 100.0f;
 
@@ -227,6 +231,6 @@ int SimpleScene_Quad::Render()
 //////////////////////////////////////////////////////
 int SimpleScene_Quad::postRender()
 {
-    angleOfRotation += 0.01f * GLApplication::getDeltaTime();
+    angleOfRotation += 0.01f * parentApplicationPtr->getDeltaTime();
     return 0;
 }

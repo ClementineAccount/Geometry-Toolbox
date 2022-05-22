@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
+//#include "../Assignment1/Src/GLApplication.h"
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace AssignmentOneTests
@@ -11,6 +13,13 @@ namespace AssignmentOneTests
 		
 		TEST_METHOD(TestMethod1)
 		{
+
+		}
+
+		TEST_METHOD(TestSceneManager)
+		{
+			//Must initialize GLFW before testing
+			
 		}
 	};
 }

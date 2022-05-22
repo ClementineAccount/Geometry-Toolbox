@@ -25,13 +25,16 @@
     <Filter Include="Source Files\Misc\DearImgui">
       <UniqueIdentifier>{3dff571c-b02e-4582-8be6-ff79768c06d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Scenes\SceneClass">
+      <UniqueIdentifier>{1e49b5e6-211f-4b35-bf24-a2c71f15afa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scenes\SceneManager">
+      <UniqueIdentifier>{8a8fa9cd-4715-4995-b08e-f4f66c06b770}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\shader.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Scene.cpp">
-      <Filter>Source Files\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="Src\SimpleScene_Quad.cpp">
       <Filter>Source Files\Scenes</Filter>
@@ -60,13 +63,16 @@
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp">
       <Filter>Source Files\Misc\DearImgui</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Scene.cpp">
+      <Filter>Source Files\Scenes\SceneClass</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\SceneManager.cpp">
+      <Filter>Source Files\Scenes\SceneManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\shader.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Scene.h">
-      <Filter>Source Files\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="Src\SimpleScene_Quad.h">
       <Filter>Source Files\Scenes</Filter>
@@ -100,6 +106,12 @@
     </ClInclude>
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h">
       <Filter>Source Files\Misc\DearImgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Scene.h">
+      <Filter>Source Files\Scenes\SceneClass</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\SceneManager.h">
+      <Filter>Source Files\Scenes\SceneManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

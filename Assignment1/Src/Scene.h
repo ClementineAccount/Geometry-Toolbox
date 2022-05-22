@@ -13,6 +13,7 @@
 //#include "SceneManager.h"
 //#include "VertexDataManager.h"
 
+#include "GLApplication.h"
 
 #define _GET_GL_ERROR   { GLenum err = glGetError(); std::cout << "[OpenGL Error] " << glewGetErrorString(err) << std::endl; }
 
@@ -21,7 +22,7 @@ class Scene
 
 public:
     Scene();
-    Scene( int windowWidth, int windowHeight );
+    Scene( int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr );
     virtual ~Scene();
 
     // Public methods
@@ -49,14 +50,16 @@ public:
 
     // NanoGUI stuff
     virtual void SetupNanoGUI(GLFWwindow *pWwindow) = 0;
-//    virtual void CleanupNanoGUI(GLFWwindow *pWwindow, const nanogui::FormHelper &screen) = 0;
+    //    virtual void CleanupNanoGUI(GLFWwindow *pWwindow, const nanogui::FormHelper &screen) = 0;
+
+
+    //To Do: Refactor better design pattern than passing in a ptr to the application
+    // This represents a reference to the application this scene currently 'lives in' but it should be refactored to a class or struct
+    GeometryToolbox::GLApplication* parentApplicationPtr;
 
 protected:
     int _windowHeight, _windowWidth;
 
-    // Common functionality for all scenes
-//    SceneManager                    _scnManager;
-//    std::vector<VertexDataManager>   VAOs;
 
 };
 

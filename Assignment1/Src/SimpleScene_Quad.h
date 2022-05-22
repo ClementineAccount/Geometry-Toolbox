@@ -20,7 +20,7 @@ class SimpleScene_Quad : public Scene
 
 public:
     SimpleScene_Quad() = default;
-    SimpleScene_Quad( int windowWidth, int windowHeight );
+    SimpleScene_Quad( int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr );
     virtual ~SimpleScene_Quad();
 
 
