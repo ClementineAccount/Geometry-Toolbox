@@ -7,28 +7,51 @@
 //for smart ptrs
 #include <memory> 
 
+//for a more hetero container
+#include <variant>
+#include <queue>
+
 //constexpr std::string defaultSceneName = "NULL";
 
 //To Do: better encapsulation if necessary with more time
 //To Do: copy constructor if necssary
-class SceneManager
+
+namespace Scenes
 {
-public:
+	class SceneManager
+	{
+	public:
 
-	SceneManager() {};
-	~SceneManager() {};
+		SceneManager() {};
+		~SceneManager() {};
 
-	//Disallow copy constructor as it is not a feature
-	SceneManager(const SceneManager&) = delete;
-	SceneManager& operator=(const SceneManager&) = delete;
+		//Disallow copy constructor as it is not a feature
+		SceneManager(const SceneManager&) = delete;
+		SceneManager& operator=(const SceneManager&) = delete;
 
-	//SceneManager() {};
-	//~SceneManager();
+		//SceneManager() {};
+		//~SceneManager();
+
+		//Using containers can allow possible multithreading support?
+
+		void addScene(std::string const&& sceneName, std::shared_ptr<SceneClass> scenePtr);
+
+		//Update the current runtime scenes
+		void runScenes(float deltaTime = 0.0f);
+
+	private:
+		//Access scene map via string key comparison
+		std::unordered_map <std::string, std::shared_ptr<SceneClass>> sceneMap;
 
 
-	bool MakeScene(std::string const& sceneName, std::unique_ptr<Scene> scenePtr);
+		//Queue of scenes that are currently in initialization phase
+		std::queue<std::weak_ptr<SceneClass>> initScenes;
 
-private:
-	//Access scene map via string key comparison
-	std::unordered_map<std::string, std::unique_ptr<Scene>> sceneMap;
-};
+		//The scenes that are currently in its runtime loops
+		std::vector<std::weak_ptr<SceneClass>> runtimeScenes;
+
+		//Queue of scenes to be cleaned up. (Could this be returned to a caller who would handle it?)
+		std::queue<std::weak_ptr<SceneClass>> cleanUpScenes;
+	};
+}
+

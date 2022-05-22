@@ -160,7 +160,6 @@
     <ClCompile Include="Src\Scene.cpp" />
     <ClCompile Include="Src\SceneManager.cpp" />
     <ClCompile Include="Src\shader.cpp" />
-    <ClCompile Include="Src\SimpleScene_Quad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dependencies\imgui\imconfig.h" />
@@ -176,7 +175,6 @@
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
     <ClInclude Include="Src\shader.hpp" />
-    <ClInclude Include="Src\SimpleScene_Quad.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\dependencies\imgui\Readme.md" />

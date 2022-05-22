@@ -36,9 +36,6 @@
     <ClCompile Include="Src\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\SimpleScene_Quad.cpp">
-      <Filter>Source Files\Scenes</Filter>
-    </ClCompile>
     <ClCompile Include="Src\GLApplication.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
@@ -63,19 +60,16 @@
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp">
       <Filter>Source Files\Misc\DearImgui</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Scene.cpp">
-      <Filter>Source Files\Scenes\SceneClass</Filter>
-    </ClCompile>
     <ClCompile Include="Src\SceneManager.cpp">
       <Filter>Source Files\Scenes\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Scene.cpp">
+      <Filter>Source Files\Scenes\SceneClass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\shader.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\SimpleScene_Quad.h">
-      <Filter>Source Files\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="Src\GLApplication.h">
       <Filter>Source Files\Main</Filter>

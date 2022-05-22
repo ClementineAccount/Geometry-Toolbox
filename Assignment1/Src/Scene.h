@@ -1,67 +1,56 @@
-//
-// Created by pushpak on 3/28/18.
-//
+#pragma once 
 
-#ifndef SAMPLE3_2_FBO_SCENE_H
-#define SAMPLE3_2_FBO_SCENE_H
+#include <functional>
+#include <vector>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
-//#include <nanogui/nanogui.h>
-
-//#include "SceneManager.h"
-//#include "VertexDataManager.h"
-
-#include "GLApplication.h"
-
-#define _GET_GL_ERROR   { GLenum err = glGetError(); std::cout << "[OpenGL Error] " << glewGetErrorString(err) << std::endl; }
-
-class Scene
+namespace Scenes
 {
+	// Thought long and hard about a possible template implmentation of sceneData without polymorphic inheritance that can work with a standard
+	// scene manager and std::containers simply but this seems to be the only way now.
+	struct SceneData
+	{
+	public:
+		  virtual ~SceneData() {};
+	};
 
-public:
-    Scene();
-    Scene( int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr );
-    virtual ~Scene();
+	struct SceneTimer : public SceneData 
+	{
+		SceneTimer() = default;
 
-    // Public methods
+		float elapsedDuration = 0.0f;
+		float sceneDuration = 10.0f;
+	};
 
-    // Init: called once when the currScene is initialized
-    virtual int Init();
+	struct SceneClass
+	{
+	public:
 
-    // LoadAllShaders: This is the placeholder for loading the shader files
-    virtual void LoadAllShaders();
+		bool isRuntime = true;
 
-    // Display : encapsulates per-frame behavior of the currScene
-    virtual int Display();
+		//The input parameter is float to account for passing in deltaTime. 
+		//The output is int to account for error returns
+		//The functions are to be run in sequence, from lhs to rhs ([0] onwards)
 
-    // preRender : called to setup stuff prior to rendering the frame
-    virtual int preRender();
+		using sceneFunctionType = std::function<int(std::vector<SceneData*>&, float)>;
+		using functionVector = typename std::vector<sceneFunctionType>;
+		using dataContainerType = typename std::vector<SceneData*>;
 
-    // Render : per frame rendering of the currScene
-    virtual int Render();
+		functionVector startupFunctions;
 
-    // postRender : Any updates to calculate after current frame
-    virtual int postRender();
+		functionVector runtimeFunctions;
+		functionVector shutdownFunctions;
 
-    // cleanup before destruction
-    virtual void CleanUp();
-
-    // NanoGUI stuff
-    virtual void SetupNanoGUI(GLFWwindow *pWwindow) = 0;
-    //    virtual void CleanupNanoGUI(GLFWwindow *pWwindow, const nanogui::FormHelper &screen) = 0;
-
-
-    //To Do: Refactor better design pattern than passing in a ptr to the application
-    // This represents a reference to the application this scene currently 'lives in' but it should be refactored to a class or struct
-    GeometryToolbox::GLApplication* parentApplicationPtr;
-
-protected:
-    int _windowHeight, _windowWidth;
+		//Allows some degree of polymorphism for dynamically serialized or allocated data for each scene in SceneManager
+		std::vector<SceneData*> sceneDataContainer;
+	};
 
 
-};
+	namespace SceneFunctions
+	{
+		SceneClass CreateEmptyScene(float sceneDuration = -1.0f);
+	}
+
+}
 
 
-#endif //SAMPLE3_2_FBO_SCENE_H

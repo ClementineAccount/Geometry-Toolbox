@@ -1,9 +1,13 @@
 #include "SceneManager.h"
 #include <utility>
+#include <assert.h>
 
-bool SceneManager::MakeScene(std::string const& sceneName, std::unique_ptr<Scene> scenePtr)
+using namespace Scenes;
+
+void SceneManager::addScene(std::string const&& sceneName, std::shared_ptr<SceneClass> scenePtr)
 {
-	//To Do: add check for this successful or failed
-	sceneMap.insert(std::make_pair(sceneName, std::move(scenePtr)));
-	return true;
+	//assert(sceneMap.count(sceneName) == 0 && "Scene with name already exists.");
+	sceneMap.insert({ sceneName, scenePtr });
+	initScenes.push(scenePtr);
+
 }

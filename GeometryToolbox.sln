@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssignmentOne", "Assignment
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonTests", "CommonTests\CommonTests.vcxproj", "{2B315948-D983-4FA7-B4E4-ED413401C8EF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D917BDD9-5962-4003-A6F6-3D075873B21C} = {D917BDD9-5962-4003-A6F6-3D075873B21C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssignmentOneTests", "AssignmentOneTests\AssignmentOneTests.vcxproj", "{50DC17DA-4068-4072-B7CB-D672CC97EF88}"
 EndProject

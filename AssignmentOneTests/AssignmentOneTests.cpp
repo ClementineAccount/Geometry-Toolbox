@@ -11,15 +11,15 @@ namespace AssignmentOneTests
 	{
 	public:
 		
-		TEST_METHOD(TestMethod1)
-		{
+		//TEST_METHOD(TestMethod1)
+		//{
 
-		}
+		//}
 
-		TEST_METHOD(TestSceneManager)
-		{
-			//Must initialize GLFW before testing
-			
-		}
+		//TEST_METHOD(TestSceneManager)
+		//{
+		//	//Must initialize GLFW before testing
+		//	
+		//}
 	};
 }

@@ -1,75 +1,58 @@
-//
-// Created by pushpak on 3/28/18.
-//
-
 #include "Scene.h"
-#include <assert.h>
+#include <iostream>
 
-Scene::Scene() : _windowWidth(100), _windowHeight(100)
+namespace Scenes
 {
+	//For unit testing, we can create a default scene
+	SceneClass SceneFunctions::CreateEmptyScene(float sceneDuration)
+	{
+		SceneClass defaultScene;
 
-}
+		//Memory can be managed by the scene
+		SceneTimer* duration = new SceneTimer();
+		duration->elapsedDuration = 0.0f;
+		duration->sceneDuration = sceneDuration;
 
-Scene::Scene(int windowWidth, int windowHeight, GeometryToolbox::GLApplication* parentApplicationPtr)
-{
-    _windowHeight = windowHeight;
-    _windowWidth = windowWidth;
-    parentApplicationPtr = parentApplicationPtr;
-    assert(parentApplicationPtr != nullptr && "Scenes must belong to an application");
-}
+		defaultScene.sceneDataContainer.push_back(duration);
+		std::vector<SceneData*>& dataContainer = defaultScene.sceneDataContainer;
 
-Scene::~Scene()
-{
-    CleanUp();
-}
+		using dataContainerType = SceneClass::dataContainerType;
 
-// Public methods
+		//To Do: Replace cout with a proper logger class
+		SceneClass::sceneFunctionType f_initScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+		{
+			std::cout << "f_initScene()\n";
+			return 0;
+		};
 
-// Init: called once when the currScene is initialized
-int Scene::Init()
-{
-    return -1;
-}
+		defaultScene.startupFunctions.push_back(f_initScene);
 
-// LoadAllShaders: This is the placeholder for loading the shader files
-void Scene::LoadAllShaders()
-{
-    return;
-}
+		SceneClass::sceneFunctionType f_updateScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+		{
+			SceneTimer* timerPtr = static_cast<SceneTimer*> (dataContainer[0]);
 
+			timerPtr->elapsedDuration += deltaTime;
+			if (timerPtr->elapsedDuration > timerPtr->sceneDuration)
+			{
+				std::cout << "f_updateScene(): Scene ended.\n";
+				return 1;
+			}
+			return 0;
+		};
 
-// preRender : called to setup stuff prior to rendering the frame
-int Scene::preRender()
-{
-    return -1;
-}
+		defaultScene.runtimeFunctions.push_back(f_updateScene);
 
-// Render : per frame rendering of the currScene
-int Scene::Render()
-{
-    return -1;
-}
+		SceneClass::sceneFunctionType f_endScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+		{
+			SceneTimer* timerPtr = static_cast<SceneTimer*> (dataContainer[0]);
+			delete timerPtr;
 
-// postRender : Any updates to calculate after current frame
-int Scene::postRender()
-{
-    return -1;
-}
+			std::cout << "f_endScene(): The scene has ended.\n";
+			return 0;
+		};
 
-// CleanUp : clean up resources before destruction
-void Scene::CleanUp()
-{
-    return;
-}
+		defaultScene.shutdownFunctions.push_back(f_endScene);
 
-// Display : Per-frame execution of the currScene
-int Scene::Display()
-{
-    preRender();
-
-    Render();
-
-    postRender();
-
-    return -1;
+		return defaultScene;
+	}
 }
