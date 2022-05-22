@@ -7,8 +7,6 @@
 //for smart ptrs
 #include <memory> 
 
-//for a more hetero container
-#include <variant>
 #include <queue>
 
 //constexpr std::string defaultSceneName = "NULL";
@@ -39,10 +37,10 @@ namespace Scenes
 		//Update the current runtime scenes
 		void runScenes(float deltaTime = 0.0f);
 
-	private:
+	//To Do: Add encapsulation later
+	public:
 		//Access scene map via string key comparison
 		std::unordered_map <std::string, std::shared_ptr<SceneClass>> sceneMap;
-
 
 		//Queue of scenes that are currently in initialization phase
 		std::queue<std::weak_ptr<SceneClass>> initScenes;

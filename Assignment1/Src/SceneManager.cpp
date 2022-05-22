@@ -9,5 +9,15 @@ void SceneManager::addScene(std::string const&& sceneName, std::shared_ptr<Scene
 	//assert(sceneMap.count(sceneName) == 0 && "Scene with name already exists.");
 	sceneMap.insert({ sceneName, scenePtr });
 	initScenes.push(scenePtr);
+}
 
+void SceneManager::runScenes(float deltaTime)
+{
+	for (auto const& scene : runtimeScenes)
+	{
+		for (SceneClass::sceneFunctionType func : scene.lock().get()->runtimeFunctions)
+		{
+			func(scene.lock().get()->sceneDataContainer, deltaTime);
+		}
+	}
 }
