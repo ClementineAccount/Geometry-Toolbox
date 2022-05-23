@@ -74,8 +74,8 @@ namespace SceneTesting
 		TEST_METHOD(SceneManagementUpdate)
 		{
 			//We simulate a tick per loop
-			constexpr float loopTick = 0.01f;
-			float durationTime = 5.0f;
+			constexpr float loopTick = 0.1f;
+			float durationTime = 1.0f;
 
 			using namespace Scenes;
 
@@ -83,8 +83,8 @@ namespace SceneTesting
 
 			SceneManager sm;
 
-			std::string sceneName = "Default Scene";
-			//sm.addScene(std::move(sceneName), defaultScene);
+			std::string sceneName = "TestUpdate";
+			sm.addScene(sceneName, defaultScene);
 			
 			sm.runtimeScenes.push_back(std::move(defaultScene));
 			while (durationTime > 0.0f)
@@ -92,7 +92,12 @@ namespace SceneTesting
 				sm.runScenes(loopTick);
 				durationTime -= loopTick;
 			}
-			Assert::IsTrue(static_cast<Scenes::SceneTimer*>(defaultScene.get()->sceneDataContainer[0].get())->elapsedDuration > durationTime);
+
+			//Can't think of ways to improve the use of .get() everywhere
+			auto const& scene = sm.getScene(sceneName);
+			auto timer = SceneFunctions::getSceneData<SceneTimer>(*scene.get());
+
+			Assert::IsTrue(timer.get()->elapsedDuration > durationTime);
 		}
 	};
 }

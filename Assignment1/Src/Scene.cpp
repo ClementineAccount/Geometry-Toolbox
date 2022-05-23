@@ -10,6 +10,7 @@ namespace Scenes
 
 		//Memory can be managed by the scene
 
+
 		std::shared_ptr<SceneTimer> sceneTimerPtr = std::make_shared<SceneTimer>();
 		sceneTimerPtr.get()->elapsedDuration = 0.0f;
 		sceneTimerPtr.get()->sceneDuration = sceneDuration;

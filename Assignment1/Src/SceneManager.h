@@ -20,8 +20,12 @@ namespace Scenes
 	{
 	public:
 
+		using SceneReferenceTypeMap = typename std::shared_ptr<SceneClass>;
+		using SceneReferenceTypeContainer = typename std::weak_ptr<SceneClass>;
+
 		SceneManager() {};
 		~SceneManager() {};
+
 
 		//Disallow copy constructor as it is not a feature
 		SceneManager(const SceneManager&) = delete;
@@ -32,24 +36,26 @@ namespace Scenes
 
 		//Using containers can allow possible multithreading support?
 
-		void addScene(std::string const&& sceneName, std::shared_ptr<SceneClass> scenePtr);
+		void addScene(std::string const& sceneName, std::shared_ptr<SceneClass> scenePtr);
 
 		//Update the current runtime scenes
 		void runScenes(float deltaTime = 0.0f);
 
+		SceneReferenceTypeMap getScene(std::string const& sceneName);
+
 	//To Do: Add encapsulation later
 	public:
 		//Access scene map via string key comparison
-		std::unordered_map <std::string, std::shared_ptr<SceneClass>> sceneMap;
+		std::unordered_map <std::string, SceneReferenceTypeMap> sceneMap;
 
 		//Queue of scenes that are currently in initialization phase
-		std::queue<std::weak_ptr<SceneClass>> initScenes;
+		std::queue<SceneReferenceTypeContainer> initScenes;
 
 		//The scenes that are currently in its runtime loops
-		std::vector<std::weak_ptr<SceneClass>> runtimeScenes;
+		std::vector<SceneReferenceTypeContainer> runtimeScenes;
 
 		//Queue of scenes to be cleaned up. (Could this be returned to a caller who would handle it?)
-		std::queue<std::weak_ptr<SceneClass>> cleanUpScenes;
+		std::queue<SceneReferenceTypeContainer> cleanUpScenes;
 	};
 }
 
