@@ -19,10 +19,10 @@ namespace SceneTesting
 
 			constexpr float durationSet = 10.0f;
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
-
-
-			Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
-			Assert::AreEqual(durationSet, timerPtr->sceneDuration);
+			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
+			
+			//To Do: Possibly refactor that long cast to allow better generic function input output stuff?
+			Assert::AreEqual(durationSet, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
 		};
 
 		TEST_METHOD(EmptyScene2)
@@ -31,8 +31,7 @@ namespace SceneTesting
 
 			constexpr float durationSet = -23.0f;
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
-			Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
-			Assert::AreEqual(durationSet, timerPtr->sceneDuration);
+			Assert::AreEqual(durationSet, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
 		};
 
 		TEST_METHOD(EmptyScene3)
@@ -43,11 +42,11 @@ namespace SceneTesting
 			float durationAdd = 10.0f;
 
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
-			Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
-			timerPtr->sceneDuration += durationAdd;
+			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
+			//timerPtr->sceneDuration += durationAdd;
+			static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration += 10.0f;
 
-
-			Assert::AreEqual(durationSet + durationAdd, timerPtr->sceneDuration);
+			Assert::AreEqual(durationSet + durationAdd, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
 		};
 	};
 
@@ -89,7 +88,7 @@ namespace SceneTesting
 				sm.runScenes(loopTick);
 				durationTime -= loopTick;
 			}
-			Assert::IsTrue(static_cast<Scenes::SceneTimer*>(defaultScene.get()->sceneDataContainer[0])->elapsedDuration > durationTime);
+			Assert::IsTrue(static_cast<Scenes::SceneTimer*>(defaultScene.get()->sceneDataContainer[0].get())->elapsedDuration > durationTime);
 		}
 	};
 }

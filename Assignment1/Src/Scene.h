@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <vector>
-
+#include <memory>
 
 namespace Scenes
 {
@@ -32,9 +32,10 @@ namespace Scenes
 		//The output is int to account for error returns
 		//The functions are to be run in sequence, from lhs to rhs ([0] onwards)
 
-		using sceneFunctionType = std::function<int(std::vector<SceneData*>&, float)>;
+		using dataContainerType = typename std::vector<std::shared_ptr<SceneData>>;
+		using sceneFunctionType = std::function<int(dataContainerType&, float)>;
 		using functionVector = typename std::vector<sceneFunctionType>;
-		using dataContainerType = typename std::vector<SceneData*>;
+
 
 		functionVector startupFunctions;
 
@@ -42,7 +43,7 @@ namespace Scenes
 		functionVector shutdownFunctions;
 
 		//Allows some degree of polymorphism for dynamically serialized or allocated data for each scene in SceneManager
-		std::vector<SceneData*> sceneDataContainer;
+		dataContainerType sceneDataContainer;
 	};
 
 
