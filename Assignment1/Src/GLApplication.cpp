@@ -31,7 +31,46 @@
 #include "shader.hpp"
 #include "Scenes/SimpleScene_Quad.h"
 
+//for simple testing
 
+
+void makeQuadScene(GeometryToolbox::GLApplication* ptr)
+{
+    //Example of Option #1 of scene creation
+    std::shared_ptr<Scenes::SceneClass> scenePtr = std::make_shared<Scenes::SceneClass>(Scenes::SceneQuad::CreateQuadScene());
+
+
+    //Why use container of functions instead of polymorphism? Because we can do this
+    {
+        using dataContainerType = Scenes::SceneClass::dataContainerType;
+        Scenes::SceneClass::sceneFunctionType f_initScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+        {
+            std::cout << "Creating a new function to an existing scene\n";
+            return 0;
+        };
+
+        Scenes::SceneClass::sceneFunctionType f_initScene2 = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+        {
+            std::cout << "Another one\n";
+            return 0;
+        };
+
+        scenePtr.get()->startupFunctions.push_back(f_initScene);
+        scenePtr.get()->startupFunctions.push_back(f_initScene2);
+    }
+
+    //Placeholder: just pass the parent application ptr directly
+    std::static_pointer_cast<Scenes::SceneQuad::QuadData>(scenePtr.get()->sceneDataContainer[0]).get()->parentApplication
+        = ptr;
+
+
+    //To Do: SceneManager automatically init added scenes when suitable
+    //Scenes::SceneFunctions::LoopFunctions(scenePtr.get()->startupFunctions, scenePtr.get()->sceneDataContainer, 0.0f);
+
+    ptr->sm.addScene("QuadScene", scenePtr);
+    ptr->sm.initScenes();
+
+}
 
 double GeometryToolbox::GLApplication::getDeltaTime()
 {
@@ -56,6 +95,46 @@ float GeometryToolbox::GLApplication::getAspectRatio()
     return gAspectRatio;
 }
 
+int GeometryToolbox::GLApplication::shutdownApplication()
+{
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
+    return 0;
+}
+
+int GeometryToolbox::GLApplication::updateApplication()
+{
+    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0)
+    {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        //Update the universal deltaTime between frames
+        double currFrameTime = glfwGetTime();
+        gDeltaTime = currFrameTime - gLastFrameTime;
+        gLastFrameTime = currFrameTime;
+
+        //Need to have sceneManager update here
+        //Scenes::SceneFunctions::LoopFunctions(scenePtr.get()->runtimeFunctions, scenePtr.get()->sceneDataContainer, 0.0f);
+
+        sm.runScenes(gDeltaTime);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Swap buffers
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    return 0;
+}
 
 int GeometryToolbox::GLApplication::initApplication()
 {
@@ -63,7 +142,6 @@ int GeometryToolbox::GLApplication::initApplication()
     gWindowHeight = 600;
     gAspectRatio = 0.0f;
 
-    
     // Initialise GLFW
     if (!glfwInit())
     {
@@ -126,71 +204,17 @@ int GeometryToolbox::GLApplication::initApplication()
     gDeltaTime = 0.0;
     gLastFrameTime = 0.0;
 
-
-    //Example of Option #1 of scene creation
-    Scenes::SceneClass scene = Scenes::SceneQuad::CreateQuadScene();
-
-    //Why use container of functions instead of polymorphism? Because we can do this
-    {
-        using dataContainerType = Scenes::SceneClass::dataContainerType;
-        Scenes::SceneClass::sceneFunctionType f_initScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
-        {
-            std::cout << "Creating a new function to an existing scene\n";
-            return 0;
-        };
-
-        Scenes::SceneClass::sceneFunctionType f_initScene2 = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
-        {
-            std::cout << "Another one\n";
-            return 0;
-        };
-
-        scene.startupFunctions.push_back(f_initScene);
-        scene.startupFunctions.push_back(f_initScene2);
-    }
-
-    //Placeholder: just pass the parent application ptr directly
-    std::static_pointer_cast<Scenes::SceneQuad::QuadData>(scene.sceneDataContainer[0]).get()->parentApplication
-        = this;
-
-    Scenes::SceneFunctions::LoopFunctions(scene.startupFunctions, scene.sceneDataContainer, 0.0f);
-
-    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0)
-    {
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        //Update the universal deltaTime between frames
-        double currFrameTime = glfwGetTime();
-        gDeltaTime = currFrameTime - gLastFrameTime;
-        gLastFrameTime = currFrameTime;
-
-        Scenes::SceneFunctions::LoopFunctions(scene.runtimeFunctions, scene.sceneDataContainer, 0.0f);
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // Swap buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    // Close OpenGL window and terminate GLFW
-    glfwTerminate();
-
-
     return 0;
 }
 
 int main()
 {
     GeometryToolbox::GLApplication app;
+    
     app.initApplication();
+    
+    makeQuadScene(&app);
+
+    app.updateApplication();
+    app.shutdownApplication();
 }

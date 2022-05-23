@@ -10,7 +10,7 @@
 #pragma once
 
 //forward declare
-class Scene;
+
 class GLFWindow;
 
 // Include GLEW
@@ -19,6 +19,8 @@ class GLFWindow;
 // Include GLFW
 #include <GLFW/glfw3.h>
 
+#include "SceneManager.h"
+
 namespace GeometryToolbox
 {
 	class GLApplication
@@ -26,8 +28,8 @@ namespace GeometryToolbox
 		//Possible to do: encapsulation if necessary of member variables
 		public:
 
+			Scenes::SceneManager sm;
 			GLFWwindow* window;
-			Scene* currScene;
 
 			double gDeltaTime;
 			double gLastFrameTime;
@@ -38,6 +40,8 @@ namespace GeometryToolbox
 
 			//Calculate and cache this if window size change
 			GLfloat gAspectRatio;
+
+			//Eventually we'd want to have a SceneManager here or a way to call it so that Update calls it
 
 		public:
 
@@ -53,6 +57,8 @@ namespace GeometryToolbox
 			int initApplication();
 
 			int updateApplication();
+
+			int shutdownApplication();
 
 			/**
 			* Returns a value copy of current deltaTime, which is calculated after every frame

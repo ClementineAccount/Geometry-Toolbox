@@ -38,6 +38,8 @@ namespace Scenes
 
 		void addScene(std::string const& sceneName, std::shared_ptr<SceneClass> scenePtr);
 
+		void initScenes(float deltaTime = 0.0f);
+
 		//Update the current runtime scenes
 		void runScenes(float deltaTime = 0.0f);
 
@@ -49,13 +51,13 @@ namespace Scenes
 		std::unordered_map <std::string, SceneReferenceTypeMap> sceneMap;
 
 		//Queue of scenes that are currently in initialization phase
-		std::queue<SceneReferenceTypeContainer> initScenes;
+		std::queue<SceneReferenceTypeContainer> initSceneQueue;
 
 		//The scenes that are currently in its runtime loops
-		std::vector<SceneReferenceTypeContainer> runtimeScenes;
+		std::vector<SceneReferenceTypeContainer> runtimeScenesVector;
 
 		//Queue of scenes to be cleaned up. (Could this be returned to a caller who would handle it?)
-		std::queue<SceneReferenceTypeContainer> cleanUpScenes;
+		std::queue<SceneReferenceTypeContainer> cleanUpScenesQueue;
 	};
 }
 

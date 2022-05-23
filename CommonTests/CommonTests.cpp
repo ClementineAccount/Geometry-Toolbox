@@ -68,7 +68,7 @@ namespace SceneTesting
 			std::string sceneName = "Default Scene";
 			sm.addScene(std::move(sceneName), defaultScene);
 
-			Assert::IsTrue(defaultScene == sm.initScenes.front().lock());
+			Assert::IsTrue(defaultScene == sm.initSceneQueue.front().lock());
 		}
 
 		TEST_METHOD(SceneManagementUpdate)
@@ -86,7 +86,7 @@ namespace SceneTesting
 			std::string sceneName = "TestUpdate";
 			sm.addScene(sceneName, defaultScene);
 			
-			sm.runtimeScenes.push_back(std::move(defaultScene));
+			sm.runtimeScenesVector.push_back(std::move(defaultScene));
 			while (durationTime > 0.0f)
 			{
 				sm.runScenes(loopTick);
