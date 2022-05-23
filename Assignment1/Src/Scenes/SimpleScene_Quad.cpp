@@ -1,0 +1,163 @@
+#pragma once
+#include "SimpleScene_Quad.h"
+#include "../shader.hpp"
+
+
+// Include Dear Imgui
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+
+namespace Scenes
+{
+	namespace SceneQuad
+	{
+		SceneClass::sceneFunctionReturnType Init(SceneClass::dataContainerType& dataCont, float deltaTime)
+		{
+			std::shared_ptr<QuadData> data = std::static_pointer_cast<QuadData>(dataCont[0]);
+
+			data.get()->programID = LoadShaders("../Common/Shaders/QuadVertexShader.vert", "../Common/Shaders/QuadFragmentShader.frag");
+
+			data.get()->geometryBuffer = 
+			{ 0.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						0.0f, 1.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						1.0f, 1.0f, 0.0f,
+						0.0f, 1.0f, 0.0f
+			};
+
+			data.get()->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+			data.get()->cameraTargetPos = glm::vec3(0.0f, 0.0f, 0.0f); //origin start
+
+			data.get()->fieldOfView = 90.0f;
+
+
+			data.get()->quadScale = glm::vec3(1.0f, 1.0f, 1.0f);
+			data.get()->quadAngles = glm::vec3(0.0f, 0.0f, 0.0f);
+			data.get()->quadPos = glm::vec3(0.0f, 0.0f, -3.0f);
+
+
+			data.get()->backgroundColor = glm::vec3(0.0f, 0.0f, 0.7f);
+
+			glGenVertexArrays(1, &(data.get()->VertexArrayID));
+			glBindVertexArray(data.get()->VertexArrayID);
+
+			glGenBuffers(1, &(data.get()->vertexbuffer));
+
+			glBindBuffer(GL_ARRAY_BUFFER, data.get()->vertexbuffer);
+			glBufferData(GL_ARRAY_BUFFER, data.get()->geometryBuffer.size() * sizeof(GLfloat),
+				data.get()->geometryBuffer.data(), GL_STATIC_DRAW);
+
+			return 1;
+		}
+		SceneClass::sceneFunctionReturnType Render(SceneClass::dataContainerType& dataCont, float deltaTime)
+		{
+			static float f = 0.0f;
+			static int counter = 0;
+
+			std::shared_ptr<QuadData> data = std::static_pointer_cast<QuadData>(dataCont[0]);
+
+			ImGui::Begin("Settings");
+			ImGui::DragFloat3("Camera Position", (float*)&data.get()->cameraPos, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat3("Camera Target Position", (float*)&data.get()->cameraTargetPos, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat("FOV", &data.get()->fieldOfView, 0.01f, 1.0f, 110.0f);
+			ImGui::DragFloat3("Quad-Plane Position", (float*)&data.get()->quadPos, 0.01f, -20.0f, 20.0f);
+			ImGui::DragFloat3("Quad-Plane Scale", (float*)&data.get()->quadScale, 0.01f, -20.0f, 20.0f);
+			ImGui::DragFloat3("Quad-Plane Rotation (Degrees)", (float*)&data.get()->quadAngles, 0.01f, -360.0f, 360.0f);
+			ImGui::DragFloat3("Background Color", (float*)&data.get()->backgroundColor, 0.001f, 0.0f, 1.0f);
+
+			ImGui::End();
+
+
+			glClearColor(data.get()->backgroundColor.r, data.get()->backgroundColor.g, data.get()->backgroundColor.b, 1.0f);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+
+			glUseProgram(data.get()->programID);
+
+			glEnableVertexAttribArray(0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, data.get()->vertexbuffer);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+
+
+			// Uniform matrix
+			// Uniform transformation (vertex shader)
+			GLint vTransformLoc = glGetUniformLocation(data.get()->programID, "vertexTransform");
+
+			// Draw the triangle !
+			// T * R * S * Vertex
+			glm::mat4 modelMat = glm::mat4(1.0f);
+			glm::vec3 scaleVector = glm::vec3(1.0f);
+			glm::vec3 centroid = glm::vec3(0.0f, -0.0f, 0.0f);
+			glm::vec3 triPos = glm::vec3(0.0f, -0.5f, -1.0f);
+
+			modelMat = glm::translate(modelMat, data.get()->quadPos);
+
+			float pivotPercentFromLeft = 0.5f;
+
+			modelMat = glm::translate(modelMat, glm::vec3(pivotPercentFromLeft * data.get()->quadScale.x, 
+				pivotPercentFromLeft * data.get()->quadScale.y, 
+				pivotPercentFromLeft * data.get()->quadScale.z));
+
+			modelMat = glm::rotate(modelMat, data.get()->quadAngles.z, glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::rotate(modelMat, data.get()->quadAngles.y, glm::vec3(0.0f, 1.0f, 1.0f));
+			modelMat = glm::rotate(modelMat, data.get()->quadAngles.x, glm::vec3(1.0f, 0.0f, 1.0f));
+			modelMat = glm::translate(modelMat, glm::vec3(-pivotPercentFromLeft * data.get()->quadScale.x, -pivotPercentFromLeft * data.get()->quadScale.y, -pivotPercentFromLeft * data.get()->quadScale.z));
+
+			modelMat = glm::scale(modelMat, data.get()->quadScale);
+
+
+			// Prototype perspective projection (to do: refactor this out later)
+			glm::mat4 perspectiveMat = glm::mat4(1.0f);
+			GLfloat fov = 45.0f;
+			GLfloat aspectRatio = static_cast<GLfloat>(data.get()->parentApplication->getAspectRatio());
+			GLfloat nearPlanePoint = 0.1f;
+			GLfloat farPlanePoint = 100.0f;
+
+			perspectiveMat = glm::perspective(glm::radians(data.get()->fieldOfView), aspectRatio, nearPlanePoint, farPlanePoint);
+
+			//perspectiveMat = glm::mat4(1.0f);
+			glm::mat4 viewMat = glm::mat4(1.0f);
+
+			glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+			viewMat = glm::lookAt(data.get()->cameraPos, data.get()->cameraTargetPos, upVector);
+
+
+			glm::mat4 mvpMat = glm::mat4(1.0f);
+			mvpMat = perspectiveMat * viewMat * modelMat;
+
+			// To Do: Calculate and inject the view matrix into here before we pass it to the shader
+
+
+			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			glDisableVertexAttribArray(0);
+
+			data.get()->angleOfRotation += 0.01f * (data.get()->parentApplication->getDeltaTime());
+
+			return 0;
+		}
+
+		SceneClass CreateQuadScene()
+		{
+			SceneClass quadScene;
+			quadScene.sceneDataContainer.emplace_back(std::make_shared<QuadData>());
+			
+			SceneClass::sceneFunctionType f = Init;
+			quadScene.startupFunctions.push_back(f);
+
+			SceneClass::sceneFunctionType f2 = Render;
+			quadScene.runtimeFunctions.push_back(f2);
+
+			return quadScene;
+		}
+	}
+}
+

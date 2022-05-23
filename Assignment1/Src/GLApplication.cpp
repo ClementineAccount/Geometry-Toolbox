@@ -29,6 +29,7 @@
 #include "GLApplication.h"
 #include "Scene.h"
 #include "shader.hpp"
+#include "Scenes/SimpleScene_Quad.h"
 
 
 
@@ -58,12 +59,138 @@ float GeometryToolbox::GLApplication::getAspectRatio()
 
 int GeometryToolbox::GLApplication::initApplication()
 {
+    gWindowWidth = 800;
+    gWindowHeight = 600;
+    gAspectRatio = 0.0f;
+
+    
+    // Initialise GLFW
+    if (!glfwInit())
+    {
+        fprintf(stderr, "Failed to initialize GLFW\n");
+        getchar();
+        return -1;
+    }
+
+    // Setting up OpenGL properties
+    glfwWindowHint(GLFW_SAMPLES, 1); // change for anti-aliasing
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Open a window and create its OpenGL context
+    window = glfwCreateWindow(gWindowWidth, gWindowHeight, // window dimensions
+        "Sample 1 - Simple scene (Quad) with Scene Class", // window title
+        nullptr, // which monitor (if full-screen mode)
+        nullptr); // if sharing context with another window
+    if (window == nullptr)
+    {
+        fprintf(stderr,
+            "Failed to open GLFW window. If you have an Intel GPU, they are not 4.0 compatible.\n");
+        getchar();
+        glfwTerminate();
+        return -1;
+    }
+
+    // OpenGL resource model - "glfwCreateWindow" creates the necessary data storage for the OpenGL
+    // context but does NOT make the created context "current". We MUST make it current with the following
+    // call
+    glfwMakeContextCurrent(window);
+
+    // Initialize GLEW
+    glewExperimental = static_cast<GLboolean>(true); // Needed for core profile
+    if (glewInit() != GLEW_OK)
+    {
+        fprintf(stderr, "Failed to initialize GLEW\n");
+        getchar();
+        glfwTerminate();
+        return -1;
+    }
+
+    // Ensure we can capture the escape key being pressed below
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    // See https://github.com/ocornut/imgui/blob/master/examples/example_glfw_opengl3/main.cpp as reference
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    std::string glslVersion = "#version 410";
+    ImGui_ImplOpenGL3_Init(glslVersion.c_str());
+
+    //Set initial values for the time calculations
+    gDeltaTime = 0.0;
+    gLastFrameTime = 0.0;
+
+
+    //Example of Option #1 of scene creation
+    Scenes::SceneClass scene = Scenes::SceneQuad::CreateQuadScene();
+
+    //Why use container of functions instead of polymorphism? Because we can do this
+    {
+        using dataContainerType = Scenes::SceneClass::dataContainerType;
+        Scenes::SceneClass::sceneFunctionType f_initScene = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+        {
+            std::cout << "Creating a new function to an existing scene\n";
+            return 0;
+        };
+
+        Scenes::SceneClass::sceneFunctionType f_initScene2 = [](dataContainerType& dataContainer, float deltaTime = 0.0f)
+        {
+            std::cout << "Another one\n";
+            return 0;
+        };
+
+        scene.startupFunctions.push_back(f_initScene);
+        scene.startupFunctions.push_back(f_initScene2);
+    }
+
+    //Placeholder: just pass the parent application ptr directly
+    std::static_pointer_cast<Scenes::SceneQuad::QuadData>(scene.sceneDataContainer[0]).get()->parentApplication
+        = this;
+
+    Scenes::SceneFunctions::LoopFunctions(scene.startupFunctions, scene.sceneDataContainer, 0.0f);
+
+    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0)
+    {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        //Update the universal deltaTime between frames
+        double currFrameTime = glfwGetTime();
+        gDeltaTime = currFrameTime - gLastFrameTime;
+        gLastFrameTime = currFrameTime;
+
+        Scenes::SceneFunctions::LoopFunctions(scene.runtimeFunctions, scene.sceneDataContainer, 0.0f);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Swap buffers
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
+
+
     return 0;
 }
 
 int main()
 {
     GeometryToolbox::GLApplication app;
-
-    //app.initApplication();
+    app.initApplication();
 }

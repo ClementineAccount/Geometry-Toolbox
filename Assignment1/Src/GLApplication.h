@@ -52,6 +52,8 @@ namespace GeometryToolbox
 			 */
 			int initApplication();
 
+			int updateApplication();
+
 			/**
 			* Returns a value copy of current deltaTime, which is calculated after every frame
 			* and defined as the time between frames.

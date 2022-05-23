@@ -4,13 +4,11 @@
 namespace Scenes
 {
 	//For unit testing, we can create a default scene
-	SceneClass SceneFunctions::CreateEmptyScene(float sceneDuration)
+	SceneClass SceneFunctions::CreateTestScene(float sceneDuration)
 	{
 		SceneClass defaultScene;
 
 		//Memory can be managed by the scene
-
-
 		std::shared_ptr<SceneTimer> sceneTimerPtr = std::make_shared<SceneTimer>();
 		sceneTimerPtr.get()->elapsedDuration = 0.0f;
 		sceneTimerPtr.get()->sceneDuration = sceneDuration;
@@ -55,5 +53,14 @@ namespace Scenes
 		defaultScene.shutdownFunctions.push_back(f_endScene);
 
 		return defaultScene;
+	}
+
+	void SceneFunctions::LoopFunctions(SceneClass::functionVector& functionList, SceneClass::dataContainerType& data, float deltaTime)
+	{
+		//copied from scenemanager for prototyping
+		for (Scenes::SceneClass::sceneFunctionType func : functionList)
+		{
+			func(data, deltaTime);
+		}
 	}
 }

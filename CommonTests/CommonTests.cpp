@@ -15,10 +15,10 @@ namespace SceneTesting
 		
 		TEST_METHOD(EmptyScene1)
 		{
-			Scenes::SceneFunctions::CreateEmptyScene();
+			Scenes::SceneFunctions::CreateTestScene();
 
 			constexpr float durationSet = 10.0f;
-			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
+			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateTestScene(durationSet);
 			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
 			
 			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
@@ -29,22 +29,22 @@ namespace SceneTesting
 
 		TEST_METHOD(EmptyScene2)
 		{
-			Scenes::SceneFunctions::CreateEmptyScene();
+			Scenes::SceneFunctions::CreateTestScene();
 
 			constexpr float durationSet = -23.0f;
-			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
+			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateTestScene(durationSet);
 			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
 			Assert::AreEqual(durationSet, timer.get()->sceneDuration);
 		};
 
 		TEST_METHOD(EmptyScene3)
 		{
-			Scenes::SceneFunctions::CreateEmptyScene();
+			Scenes::SceneFunctions::CreateTestScene();
 
 			float durationSet = 0.0f;
 			float durationAdd = 10.0f;
 
-			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
+			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateTestScene(durationSet);
 			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
 			//timerPtr->sceneDuration += durationAdd;
 			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
@@ -61,7 +61,7 @@ namespace SceneTesting
 		{
 			using namespace Scenes;
 
-			std::shared_ptr<SceneClass> defaultScene = std::make_shared<SceneClass>(SceneFunctions::CreateEmptyScene());
+			std::shared_ptr<SceneClass> defaultScene = std::make_shared<SceneClass>(SceneFunctions::CreateTestScene());
 
 			SceneManager sm;
 			
@@ -79,7 +79,7 @@ namespace SceneTesting
 
 			using namespace Scenes;
 
-			std::shared_ptr<SceneClass> defaultScene = std::make_shared<SceneClass>(SceneFunctions::CreateEmptyScene(durationTime));
+			std::shared_ptr<SceneClass> defaultScene = std::make_shared<SceneClass>(SceneFunctions::CreateTestScene(durationTime));
 
 			SceneManager sm;
 

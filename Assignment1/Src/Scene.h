@@ -25,32 +25,39 @@ namespace Scenes
 	struct SceneClass
 	{
 	public:
+		using dataContainerType = typename std::vector<std::shared_ptr<SceneData>>;
 
-		bool isRuntime = true;
+		using sceneFunctionReturnType = int;
+		using sceneFunctionType = std::function<sceneFunctionReturnType(dataContainerType&, float)>;
+		using functionVector = typename std::vector<sceneFunctionType>;
+		
+		SceneClass() = default;
+		SceneClass(dataContainerType& _dataContainer) : sceneDataContainer(_dataContainer) {};
+
+		//bool isRuntime = true;
 
 		//The input parameter is float to account for passing in deltaTime. 
 		//The output is int to account for error returns
 		//The functions are to be run in sequence, from lhs to rhs ([0] onwards)
 
-		using dataContainerType = typename std::vector<std::shared_ptr<SceneData>>;
-		using sceneFunctionType = std::function<int(dataContainerType&, float)>;
-		using functionVector = typename std::vector<sceneFunctionType>;
 
+		dataContainerType sceneDataContainer;
 
 		functionVector startupFunctions;
-
 		functionVector runtimeFunctions;
 		functionVector shutdownFunctions;
 
 		//Allows some degree of polymorphism for dynamically serialized or allocated data for each scene in SceneManager
-		dataContainerType sceneDataContainer;
+
 	};
 
 
 	namespace SceneFunctions
 	{
-		SceneClass CreateEmptyScene(float sceneDuration = -1.0f);
-		
+		SceneClass CreateTestScene(float sceneDuration = -1.0f);
+
+		void LoopFunctions(SceneClass::functionVector& functionList, SceneClass::dataContainerType& data, float deltaTime = 0.0f);
+
 		template <typename T>
 		std::shared_ptr<T> getSceneData(SceneClass const& sceneRef, size_t index = 0)
 		{
