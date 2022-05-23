@@ -50,6 +50,12 @@ namespace Scenes
 	namespace SceneFunctions
 	{
 		SceneClass CreateEmptyScene(float sceneDuration = -1.0f);
+		
+		template <typename T>
+		std::shared_ptr<T> getSceneData(SceneClass const& sceneRef, size_t index = 0)
+		{
+			return std::dynamic_pointer_cast<T>(sceneRef.sceneDataContainer[index]);
+		}
 	}
 
 }

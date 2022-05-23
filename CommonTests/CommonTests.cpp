@@ -21,8 +21,10 @@ namespace SceneTesting
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
 			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
 			
+			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
+
 			//To Do: Possibly refactor that long cast to allow better generic function input output stuff?
-			Assert::AreEqual(durationSet, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
+			Assert::AreEqual(durationSet, timer.get()->sceneDuration);
 		};
 
 		TEST_METHOD(EmptyScene2)
@@ -31,7 +33,8 @@ namespace SceneTesting
 
 			constexpr float durationSet = -23.0f;
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
-			Assert::AreEqual(durationSet, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
+			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
+			Assert::AreEqual(durationSet, timer.get()->sceneDuration);
 		};
 
 		TEST_METHOD(EmptyScene3)
@@ -44,9 +47,10 @@ namespace SceneTesting
 			Scenes::SceneClass scene = Scenes::SceneFunctions::CreateEmptyScene(durationSet);
 			//Scenes::SceneTimer* timerPtr = static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0]);
 			//timerPtr->sceneDuration += durationAdd;
-			static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration += 10.0f;
+			auto timer = SceneFunctions::getSceneData<Scenes::SceneTimer>(scene);
+			timer.get()->sceneDuration += durationAdd;
 
-			Assert::AreEqual(durationSet + durationAdd, static_cast<Scenes::SceneTimer*>(scene.sceneDataContainer[0].get())->sceneDuration);
+			Assert::AreEqual(durationSet + durationAdd, timer.get()->sceneDuration);
 		};
 	};
 
