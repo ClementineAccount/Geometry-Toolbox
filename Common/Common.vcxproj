@@ -157,6 +157,12 @@
     <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\GLApplication.h" />
+    <ClInclude Include="Src\Global.hpp" />
+    <ClInclude Include="Src\Scene.h" />
+    <ClInclude Include="Src\SceneManager.h" />
+    <ClInclude Include="Src\Scenes\SimpleScene_Quad.h" />
+    <ClInclude Include="Src\shader.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp" />
@@ -166,7 +172,12 @@
     <ClCompile Include="..\dependencies\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Src\GLApplication.cpp" />
+    <ClCompile Include="Src\main-driver.cpp" />
+    <ClCompile Include="Src\Scene.cpp" />
+    <ClCompile Include="Src\SceneManager.cpp" />
+    <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp" />
+    <ClCompile Include="Src\shader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
