@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{0775309f-de1a-4d03-86b2-d4df5dd0a199}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies">
+      <UniqueIdentifier>{66f8489b-4780-4961-9ed3-d180406e69c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{02f9d850-6e8c-419a-abfb-282d97fb7b3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GLApplication">
+      <UniqueIdentifier>{d8fee7d5-1ead-4b35-9917-7482358b2fb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Main Driver">
+      <UniqueIdentifier>{6c2f76e5-4e54-403c-bcd0-8023a0b0d9e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene">
+      <UniqueIdentifier>{8b6bc4d3-4473-48b5-9fe0-04d5b3281e46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene\Sample Scenes">
+      <UniqueIdentifier>{aa91d1e9-dd47-44bd-abc8-1f42e12ece2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shader Class">
+      <UniqueIdentifier>{b4fb84f3-64ec-405e-a392-3c97d1cf91b2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\DiffuseShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\DiffuseShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\QuadFragmentShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\QuadVertexShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\dependencies\imgui\Readme.md">
+      <Filter>Dependencies</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dependencies\imgui\imconfig.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_glfw.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_opengl3.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_internal.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_textedit.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imstb_truetype.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\GLApplication.h">
+      <Filter>Source\GLApplication</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Scene.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\SceneManager.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Scenes\SimpleScene_Quad.h">
+      <Filter>Source\Scene\Sample Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\shader.hpp">
+      <Filter>Source\Shader Class</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dependencies\imgui\imgui.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_demo.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_draw.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_impl_glfw.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp">
+      <Filter>Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GLApplication.cpp">
+      <Filter>Source\GLApplication</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\main-driver.cpp">
+      <Filter>Source\Main Driver</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Scene.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\SceneManager.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp">
+      <Filter>Source\Scene\Sample Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\shader.cpp">
+      <Filter>Source\Shader Class</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
