@@ -40,7 +40,6 @@ namespace Scenes
 		//The output is int to account for error returns
 		//The functions are to be run in sequence, from lhs to rhs ([0] onwards)
 
-
 		dataContainerType sceneDataContainer;
 
 		functionVector startupFunctions;

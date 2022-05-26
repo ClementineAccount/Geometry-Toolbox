@@ -20,6 +20,7 @@ class GLFWindow;
 #include <GLFW/glfw3.h>
 
 #include "SceneManager.h"
+#include "Scene.h"
 
 namespace GeometryToolbox
 {

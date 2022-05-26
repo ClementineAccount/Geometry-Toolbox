@@ -51,6 +51,79 @@ namespace Scenes
 
 			return 1;
 		}
+
+
+		//Simple testing if we can have alternative Quad Scenes
+		SceneClass::sceneFunctionReturnType InitColor(SceneClass::dataContainerType& dataCont, float deltaTime)
+		{
+			std::shared_ptr<QuadData> data = std::static_pointer_cast<QuadData>(dataCont[0]);
+
+			data.get()->programID = LoadShaders("../Common/Shaders/QuadVertexShader.vert", "../Common/Shaders/QuadFragmentShader.frag");
+
+
+			constexpr float quadColorR = 0.0f;
+			constexpr float quadColorG = 1.0f;
+			constexpr float quadColorB = 0.85f;
+
+			//AOS geometry Buffer
+			data.get()->geometryBuffer =
+			{			
+						//Vertex positions
+						0.0f, 0.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						0.0f, 1.0f, 0.0f,
+						1.0f, 0.0f, 0.0f,
+						1.0f, 1.0f, 0.0f,
+						0.0f, 1.0f, 0.0f,
+
+						//Vertex Colors
+
+						quadColorR, quadColorG, quadColorB,
+						quadColorR, quadColorG, quadColorB,
+						quadColorR, quadColorG, quadColorB,
+						quadColorR, quadColorG, quadColorB,
+						quadColorR, quadColorG, quadColorB,
+						quadColorR, quadColorG, quadColorB,
+			};
+
+			data.get()->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+			data.get()->cameraTargetPos = glm::vec3(0.0f, 0.0f, 0.0f); //origin start
+
+			data.get()->fieldOfView = 90.0f;
+
+
+			data.get()->quadScale = glm::vec3(1.0f, 1.0f, 1.0f);
+			data.get()->quadAngles = glm::vec3(0.0f, 0.0f, 0.0f);
+			data.get()->quadPos = glm::vec3(0.0f, 0.0f, -3.0f);
+
+
+			data.get()->backgroundColor = glm::vec3(0.0f, 0.0f, 0.7f);
+
+			glGenVertexArrays(1, &(data.get()->VertexArrayID));
+			glBindVertexArray(data.get()->VertexArrayID);
+
+			glGenBuffers(1, &(data.get()->vertexbuffer));
+
+			glBindBuffer(GL_ARRAY_BUFFER, data.get()->vertexbuffer);
+			glBufferData(GL_ARRAY_BUFFER, data.get()->geometryBuffer.size() * sizeof(GLfloat),
+				data.get()->geometryBuffer.data(), GL_STATIC_DRAW);
+
+
+
+			//Now for color
+
+			//const size_t offsetToFirstColor = 15; //in index before converted to bytes
+			//const size_t vertexColorStride = 0;
+			//const size_t indexOfColor = 1; //in the fragment shader
+			//const size_t numberColorPerVertex = 3;
+
+			//glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
+			//glEnableVertexAttribArray(indexOfColor);
+
+
+			return 1;
+		}
+
 		SceneClass::sceneFunctionReturnType Render(SceneClass::dataContainerType& dataCont, float deltaTime)
 		{
 			static float f = 0.0f;
@@ -69,7 +142,6 @@ namespace Scenes
 
 			ImGui::End();
 
-
 			glClearColor(data.get()->backgroundColor.r, data.get()->backgroundColor.g, data.get()->backgroundColor.b, 1.0f);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -78,10 +150,31 @@ namespace Scenes
 
 			glUseProgram(data.get()->programID);
 
-			glEnableVertexAttribArray(0);
+			//glEnableVertexAttribArray(0);
 
-			glBindBuffer(GL_ARRAY_BUFFER, data.get()->vertexbuffer);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			const size_t offsetToFirstPos = 0; //in index before converted to bytes
+			const size_t vertexCoordinateStride = 0;
+			const size_t indexOfPosition = 0; //in the fragment shader
+			const size_t numberPosCoordinatesPerVertex = 3;
+
+			glEnableVertexAttribArray(indexOfPosition);
+			glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
+
+
+			const size_t offsetToFirstColor = 18; //in index before converted to bytes
+			const size_t vertexColorStride = 0;
+			const size_t indexOfColor = 1; //in the fragment shader
+			const size_t numberColorPerVertex = 3;
+
+			glEnableVertexAttribArray(indexOfColor);
+			glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
+
+
+			//glBindBuffer(GL_ARRAY_BUFFER, data.get()->vertexbuffer);
+			
+			
+			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 
 
@@ -151,6 +244,20 @@ namespace Scenes
 			quadScene.sceneDataContainer.emplace_back(std::make_shared<QuadData>());
 			
 			SceneClass::sceneFunctionType f = Init;
+			quadScene.startupFunctions.push_back(f);
+
+			SceneClass::sceneFunctionType f2 = Render;
+			quadScene.runtimeFunctions.push_back(f2);
+
+			return quadScene;
+		}
+
+		SceneClass CreateColorQuadScene()
+		{
+			SceneClass quadScene;
+			quadScene.sceneDataContainer.emplace_back(std::make_shared<QuadData>());
+
+			SceneClass::sceneFunctionType f = InitColor;
 			quadScene.startupFunctions.push_back(f);
 
 			SceneClass::sceneFunctionType f2 = Render;

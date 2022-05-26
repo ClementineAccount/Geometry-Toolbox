@@ -37,7 +37,8 @@ namespace Scenes
             glm::vec3 backgroundColor;
         };
 
-        SceneClass CreateQuadScene();
+       SceneClass CreateQuadScene();
+       SceneClass CreateColorQuadScene();
 
        SceneClass::sceneFunctionReturnType Init(SceneClass::dataContainerType& dataCont, float deltaTime = 0.0f);
        SceneClass::sceneFunctionReturnType Render(SceneClass::dataContainerType& dataCont, float deltaTime = 0.0f);

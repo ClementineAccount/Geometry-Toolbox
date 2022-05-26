@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{50DC17DA-4068-4072-B7CB-D672CC97EF88}</ProjectGuid>
+    <ProjectGuid>{43945998-9CC9-4761-819C-E0FDB6CD0960}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>AssignmentOneTests</RootNamespace>
+    <RootNamespace>AssignmentTests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
   </PropertyGroup>
@@ -43,7 +43,7 @@
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -70,7 +70,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Property Pages\Debug-x64.props" />
+    <Import Project="..\..\Property Pages\Debug-x64.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -157,7 +157,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AssignmentOneTests.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\dependencies\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="AssignmentTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -166,14 +173,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\dependencies\imgui\imconfig.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imgui.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Assignment1\Assignment1.vcxproj">
+    <ProjectReference Include="..\Assignment1.vcxproj">
       <Project>{d917bdd9-5962-4003-a6f6-3d075873b21c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Common\Common.vcxproj">
-      <Project>{18c1b774-97e2-44b7-b5ac-fe56bef22d55}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

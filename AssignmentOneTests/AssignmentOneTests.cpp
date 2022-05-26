@@ -1,7 +1,13 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
-//#include "../Assignment1/Src/GLApplication.h"
+#include "../Assignment1/Src/GLApplication.h"
+#include "../Assignment1/Src/GlApplication.cpp"
+
+// Include Dear Imgui
+//#include "../imgui/imgui.h"
+//#include "../imgui/imgui_impl_glfw.h"
+//#include "../imgui/imgui_impl_opengl3.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -11,15 +17,13 @@ namespace AssignmentOneTests
 	{
 	public:
 		
-		//TEST_METHOD(TestMethod1)
-		//{
+		TEST_METHOD(GLAppicationInit)
+		{
+			GeometryToolbox::GLApplication app;
+			//app.initApplication();
 
-		//}
-
-		//TEST_METHOD(TestSceneManager)
-		//{
-		//	//Must initialize GLFW before testing
-		//	
-		//}
+			//Assert::IsNotNull(app.window, L"Window should have been initialized");
+			//app.shutdownApplication();
+		}
 	};
 }

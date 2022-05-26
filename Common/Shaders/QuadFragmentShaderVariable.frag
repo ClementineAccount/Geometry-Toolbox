@@ -4,12 +4,10 @@
 // Conceptually equivalent to
 // "WritePixel( x, y, rasterColor )"
 
-in vec3 fragColor;
-
 // Output data
 out vec3 color;
 
 void main()
 {
-	color = fragColor;
+	color = vec3(0.564f, 0.0f, 0.125f);
 }
