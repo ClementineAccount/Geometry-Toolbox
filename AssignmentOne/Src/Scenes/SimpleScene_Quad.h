@@ -43,7 +43,4 @@ namespace Scenes
        SceneClass::sceneFunctionReturnType Init(SceneClass::dataContainerType& dataCont, float deltaTime = 0.0f);
        SceneClass::sceneFunctionReturnType Render(SceneClass::dataContainerType& dataCont, float deltaTime = 0.0f);
     }
-
-
-    
 }

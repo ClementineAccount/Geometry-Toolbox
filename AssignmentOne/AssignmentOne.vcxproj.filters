@@ -13,17 +13,29 @@
     <Filter Include="Source\GLApplication">
       <UniqueIdentifier>{d8fee7d5-1ead-4b35-9917-7482358b2fb6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Main Driver">
-      <UniqueIdentifier>{6c2f76e5-4e54-403c-bcd0-8023a0b0d9e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Scene">
-      <UniqueIdentifier>{8b6bc4d3-4473-48b5-9fe0-04d5b3281e46}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Scene\Sample Scenes">
-      <UniqueIdentifier>{aa91d1e9-dd47-44bd-abc8-1f42e12ece2d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Shader Class">
       <UniqueIdentifier>{b4fb84f3-64ec-405e-a392-3c97d1cf91b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\AssignmentOne">
+      <UniqueIdentifier>{a6879aeb-ea43-4d6d-b4ab-5dc69d1f6243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ignore">
+      <UniqueIdentifier>{57c1a07d-58c4-45f5-8e58-ecced408e6c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ignore\Scene Classes">
+      <UniqueIdentifier>{e6671868-e1b3-4ada-9d2b-2eea8bf235cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ignore\Scenes">
+      <UniqueIdentifier>{8b6bc4d3-4473-48b5-9fe0-04d5b3281e46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ignore\Scenes\Sample Scenes">
+      <UniqueIdentifier>{aa91d1e9-dd47-44bd-abc8-1f42e12ece2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Ignore\Scenes\Assignment Scenes">
+      <UniqueIdentifier>{9215f444-0ea0-4ef3-b84e-ae22bf28017b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Main">
+      <UniqueIdentifier>{6c2f76e5-4e54-403c-bcd0-8023a0b0d9e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +53,12 @@
     </None>
     <None Include="..\dependencies\imgui\Readme.md">
       <Filter>Dependencies</Filter>
+    </None>
+    <None Include="Shaders\FragShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\VertexShader.vert">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -74,17 +92,20 @@
     <ClInclude Include="Src\GLApplication.h">
       <Filter>Source\GLApplication</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Scene.h">
-      <Filter>Source\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\SceneManager.h">
-      <Filter>Source\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Scenes\SimpleScene_Quad.h">
-      <Filter>Source\Scene\Sample Scenes</Filter>
+      <Filter>Source\Ignore\Scenes\Sample Scenes</Filter>
     </ClInclude>
     <ClInclude Include="Src\shader.hpp">
       <Filter>Source\Shader Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\SceneManager.h">
+      <Filter>Source\Ignore\Scene Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Scene.h">
+      <Filter>Source\Ignore\Scene Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\AssignmentOne.h">
+      <Filter>Source\AssignmentOne</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -112,20 +133,23 @@
     <ClCompile Include="Src\GLApplication.cpp">
       <Filter>Source\GLApplication</Filter>
     </ClCompile>
-    <ClCompile Include="Src\main-driver.cpp">
-      <Filter>Source\Main Driver</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Scene.cpp">
-      <Filter>Source\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\SceneManager.cpp">
-      <Filter>Source\Scene</Filter>
+    <ClCompile Include="Src\main.cpp">
+      <Filter>Source\Main</Filter>
     </ClCompile>
     <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp">
-      <Filter>Source\Scene\Sample Scenes</Filter>
+      <Filter>Source\Ignore\Scenes\Sample Scenes</Filter>
     </ClCompile>
     <ClCompile Include="Src\shader.cpp">
       <Filter>Source\Shader Class</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Scene.cpp">
+      <Filter>Source\Ignore\Scene Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\SceneManager.cpp">
+      <Filter>Source\Ignore\Scene Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\AssignmentOne.cpp">
+      <Filter>Source\AssignmentOne</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

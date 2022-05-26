@@ -144,8 +144,10 @@
     <None Include="..\dependencies\imgui\Readme.md" />
     <None Include="Shaders\DiffuseShader.frag" />
     <None Include="Shaders\DiffuseShader.vert" />
+    <None Include="Shaders\FragShader.frag" />
     <None Include="Shaders\QuadFragmentShader.frag" />
     <None Include="Shaders\QuadVertexShader.vert" />
+    <None Include="Shaders\VertexShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dependencies\imgui\imconfig.h" />
@@ -157,6 +159,7 @@
     <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\AssignmentOne.h" />
     <ClInclude Include="Src\GLApplication.h" />
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
@@ -171,8 +174,9 @@
     <ClCompile Include="..\dependencies\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Src\AssignmentOne.cpp" />
     <ClCompile Include="Src\GLApplication.cpp" />
-    <ClCompile Include="Src\main-driver.cpp" />
+    <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Scene.cpp" />
     <ClCompile Include="Src\SceneManager.cpp" />
     <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp" />

@@ -31,7 +31,7 @@
 #include "shader.hpp"
 #include "Scenes/SimpleScene_Quad.h"
 
-
+#include "AssignmentOne.h"
 
 
 double GeometryToolbox::GLApplication::getDeltaTime()
@@ -86,7 +86,12 @@ int GeometryToolbox::GLApplication::updateApplication()
         //Need to have sceneManager update here
         //Scenes::SceneFunctions::LoopFunctions(scenePtr.get()->runtimeFunctions, scenePtr.get()->sceneDataContainer, 0.0f);
 
-        sm.runScenes(gDeltaTime);
+        //sm.runScenes(gDeltaTime);
+
+        for (auto const& updateFunc : updateFunctions)
+        {
+            updateFunc();
+        }
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

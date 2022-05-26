@@ -22,6 +22,10 @@ class GLFWindow;
 #include "SceneManager.h"
 #include "Scene.h"
 
+
+#include <functional>
+#include <vector>
+
 namespace GeometryToolbox
 {
 	class GLApplication
@@ -41,6 +45,8 @@ namespace GeometryToolbox
 
 			//Calculate and cache this if window size change
 			GLfloat gAspectRatio;
+
+			std::vector<std::function<void(void)>> updateFunctions;
 
 			//Eventually we'd want to have a SceneManager here or a way to call it so that Update calls it
 

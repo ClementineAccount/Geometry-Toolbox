@@ -1,5 +1,5 @@
 #include "GLApplication.h"
-
+#include "AssignmentOne.h"
 #include <memory>
 #include <iostream>
 
@@ -43,29 +43,6 @@ void makeQuadScene(GeometryToolbox::GLApplication* ptr)
 
 }
 
-
-//Intergration tests are necessary if we are using DearImgui or graphics stuff
-
-
-//Testing just creating an application
-int test0()
-{
-    GeometryToolbox::GLApplication app;
-    app.initApplication();
-
-    //To Do: Think of a test manager class or logger so I can have an output check
-    if (app.window != nullptr)
-    {
-        std::cout << "Test 0: Window Created\n";
-    }
-    else
-        std::cout << "Test 0: Window Creation Failed\n";
-
-    app.shutdownApplication();
-    return (app.window == nullptr);
-}
-
-
 int mainQuad()
 {
     GeometryToolbox::GLApplication app;
@@ -78,12 +55,23 @@ int mainQuad()
     return 0;
 }
 
+int mainAssignmentOne()
+{
+    GeometryToolbox::GLApplication app;
+    app.initApplication();
+
+    AssignmentOne::InitAssignment();
+    app.updateFunctions.emplace_back(AssignmentOne::RenderAssignment);
+
+    app.updateApplication(); //has an update loop
+    app.shutdownApplication();
+    return 0;
+}
+
 //can have argc
 int main(int argc, char* argv[])
 {
-    if (argc == 1)
-        test0();
-    
-    mainQuad();
+
+    mainAssignmentOne();
     return 0;
 }
