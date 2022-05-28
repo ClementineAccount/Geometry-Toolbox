@@ -63,6 +63,8 @@ namespace AssignmentOne
         unsigned int VAO = 0;
         unsigned int VBO = 0;
 
+        unsigned int arrayCount;
+
         GLchar drawType = GL_TRIANGLES;
         bool isDrawElements = false;
         GLuint* indices = nullptr;

@@ -36,19 +36,25 @@ namespace AssignmentOne
 	glm::vec3 axisColorUp{ 0.0f, 1.0f, 0.0f };
 	glm::vec3 axisColorForward{ 0.0f, 0.0f, 1.0f };
 
+	glm::vec3 pointDefaultColor = { 0.0f, 1.0f, 0.0f };
+
 
 	namespace MeshNames
 	{
 		//can be used for planes too
 		const char quad[] = "quad";
 		const char axis[] = "axis";
+		const char point[] = "point";
 	}
 
+	//To Do: Can allow dynamic model names here too, of course
 	namespace ModelNames
 	{
 		const char floorPlane[] = "floorPlaneModel";
+		const char pointModel[] = "pointModel"; //for debugging points
 	}
 
+	constexpr bool runDebugTests = true;
 }
 
 
@@ -101,6 +107,54 @@ namespace AssignmentOne
 	std::vector<drawObject> drawList;
 
 
+	std::vector<GLfloat> verticesFromVectorList(std::vector<glm::vec3> vectorList)
+	{
+		std::vector<GLfloat> vertices;
+		for (auto& point : vectorList)
+		{
+			vertices.push_back(point.x);
+			vertices.push_back(point.y);
+			vertices.push_back(point.z);
+		}
+
+		return vertices;
+	}
+
+	// Does the counter-clockwise triangle vertex assignment automatically. 
+	// Assumptions: The first vertex passed in is the 'top-left' vertex
+	// the coordinates past in are normalized to a 1x1x1 NDC
+	// Example: 
+	//
+	// 1st 
+	// |------|
+	// |\     |
+	// | \    |
+	// |  \   |
+    // |   \  | 
+	// |    \ |
+	// |------|
+    // 2nd  3rd
+	//
+	// 4th point is the 3rd
+	// 5th point from the diagonal vector from the 2nd
+	// 6th point is 1st
+	// 
+	// relativeUp and relativeRight refers to the unit basis vector that is seen if looking from the quad's normal
+	// An example is that if the quad's normal is the positive rightVector, the relativeUp is the upVector but the relativeRight is the negativeForward vector
+	// This is useful for calculating a primitive of a sphere's face (as that value can be complicated using theta and phi) or for conviencne (generating 1x1x1 cube)
+	std::vector<GLfloat> makeQuadFromVertices(std::vector <glm::vec3> tri, glm::vec3 relativeRight, glm::vec3 relativeUp, float scaleNDC = 2.0f)
+	{
+		//4th point counting from 1
+		tri.emplace_back(glm::vec3{tri[2]});
+		tri.emplace_back(glm::vec3{ tri[1] + (relativeRight + relativeUp) * scaleNDC });
+		tri.emplace_back(glm::vec3{ tri[0] });
+
+		return verticesFromVectorList(tri);
+	}
+
+
+
+
 	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
 	Mesh initVBOArrays(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
@@ -133,6 +187,8 @@ namespace AssignmentOne
 
 		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
 		glEnableVertexAttribArray(indexOfColor);
+
+		mesh.arrayCount = meshPositions.size();
 
 		return mesh;
 	}
@@ -175,8 +231,28 @@ namespace AssignmentOne
 		return axisMesh;
 	}
 
+	//Don't use: it's buggy and unfinished
+	Mesh InitPoint()
+	{
+		std::vector<GLfloat> point
+		{
+			worldOrigin.x, worldOrigin.y, worldOrigin.z
+		};
+
+		std::vector <GLfloat> color
+		{
+			pointDefaultColor.r, pointDefaultColor.g, pointDefaultColor.b
+		};
+
+		Mesh pointMesh = initVBOArrays(point, color);
+		pointMesh.drawType = GL_POINT; //just the one I guess
+		return pointMesh;
+	}
+
 	Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
+
+
 		//Allows me to set quad positions normalized to 1 unit while applying the 0.5 scale afterwards
 		for (GLfloat& i : quadPositions)
 			i *= quadScale;
@@ -270,29 +346,33 @@ namespace AssignmentOne
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
 			glBindVertexArray(currDraw.mesh.VAO);
 
+
+
+		/*	glPointSize(currDraw.model.scale.x);
+			glPointColor*/
+
+			//It kind of makes sense to use the scale in the model to set the glPointSize for this draw 
+			//if (currDraw.mesh.drawType == GL_POINT)
+				
+
 			if (currDraw.mesh.isDrawElements)
 				glDrawElements(currDraw.mesh.drawType, 0, GL_UNSIGNED_INT, currDraw.mesh.indices);
 			else
-				glDrawArrays(currDraw.mesh.drawType, 0, 6);
+				glDrawArrays(currDraw.mesh.drawType, 0, currDraw.mesh.arrayCount);
 		}
 	}
 
+
 	void InitMeshes()
 	{
+
+
 		meshMap.emplace(MeshNames::quad, InitQuadMesh(upQuadPositions));
 		meshMap.emplace(MeshNames::axis, InitAxis());
+		//meshMap.emplace(MeshNames::point, InitPoint());
 	}
 
-	int InitAssignment()
-	{
-		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
-		std::cout << "Assignment Shaders Loaded\n";
 
-		InitMeshes();
-		ObjectMaker::MakeFloor();
-
-		return 0;
-	}
 
 	void UpdateAssignment()
 	{
@@ -377,10 +457,77 @@ namespace AssignmentOne
 
 		SubmitDraw(Model{}, meshMap.at(MeshNames::quad));
 		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
-		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
+		//Model pointModel;
+		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
+
+		SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
 
 		DrawAll(drawList);
+		drawList.clear();
 	}
+}
+
+namespace AssignmentOne
+{
+	namespace DebugTesting
+	{
+		//Test the function 'makeQuadFromVertices'
+		void TestQuadVertices1()
+		{
+			//Example used is the z-front of a cube
+			std::vector<glm::vec3> tri;
+			tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+			tri.emplace_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+			tri.emplace_back(glm::vec3(1.0f, -1.0f, 1.0f));
+
+			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
+
+			std::vector<GLfloat> expected =
+			{
+				-1.0f, 1.0f, 1.0f,
+				-1.0f, -1.0f, 1.0f,
+				1.0f, -1.0f, 1.0f,
+				1.0f, -1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f
+			};
+
+			assert(actual == expected && "Test1() Failed");
+		}
+
+		void TestQuadVertices2()
+		{
+			//Example used is the z-front of a cube
+			std::vector<glm::vec3> tri;
+			tri.emplace_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+			tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+			tri.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+
+			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, - 1.0f);
+
+			std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
+
+			std::vector<GLfloat> expected =
+			{
+				-1.0f, 1.0f, -1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, -1.0f,
+				-1.0f, 1.0f, -1.0f
+			};
+
+			assert(actual == expected && "Test2() Failed");
+
+		}
+
+	}
+
 }
 
 
@@ -400,6 +547,26 @@ namespace AssignmentOne
 		planeModel.rotDegrees = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		modelMap.emplace(ModelNames::floorPlane, planeModel);
+	}
+
+
+
+	int InitAssignment()
+	{
+		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
+		std::cout << "Assignment Shaders Loaded\n";
+
+		if (runDebugTests)
+		{
+			DebugTesting::TestQuadVertices1();
+			DebugTesting::TestQuadVertices2();
+		}
+
+
+		InitMeshes();
+		ObjectMaker::MakeFloor();
+
+		return 0;
 	}
 }
 
