@@ -60,8 +60,12 @@ namespace AssignmentOne
 
     struct Mesh
     {
-        unsigned int VAO;
-        unsigned int VBO;
+        unsigned int VAO = 0;
+        unsigned int VBO = 0;
+
+        GLchar drawType = GL_TRIANGLES;
+        bool isDrawElements = false;
+        GLuint* indices = nullptr;
     };
 
 
@@ -69,15 +73,33 @@ namespace AssignmentOne
     constexpr glm::vec3 worldOrigin = { 0.0f, 0.0f, 0.0f };
     constexpr glm::vec3 worldUp = { 0.0f, 1.0f, 0.0f };
     constexpr glm::vec3 worldRight = { 1.0f, 0.0f, 0.0f };
+    constexpr glm::vec3 worldForward = { 0.0f, 0.0f, 1.0f };
+
+    constexpr glm::vec3 defaultPivotPercent = { 0.5f, 0.5f, 0.0f };
     constexpr float defaultFOV = 90.0f;
+
+
+    //Cheap and easy subsitition to allow user to rotate in a set order
+    //struct AxisRotation
+    //{
+    //    float rotationDegrees = 0.0f;
+    //    glm::vec3 rotationAxis = worldRight; //User must choose one of the three rotDegrees axis
+
+    //};
 
     struct Model
     {
+
+        glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
         glm::vec3 pos{ worldOrigin };
-        glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
         //in degrees for each axis
-        glm::vec3 rotation{ 0.0f, 0.0f, 0.0f };
+        glm::vec3 rotDegrees{ 0.0f, 0.0f, 0.0f };
+
+        glm::vec3 pivotPercent{ defaultPivotPercent };
+
+        //Can be inserted into the shader if wanted
+        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
     };
 
     //View matrix
@@ -91,8 +113,6 @@ namespace AssignmentOne
        float FOV{ defaultFOV };
     };
 
-
-
     //For testing some functions. I can just assign it here and then pass it in
     //Model placeholderModels[10];
 
@@ -102,35 +122,40 @@ namespace AssignmentOne
     {
         Model const& model;
         Mesh const& mesh;
+        bool isRendering = true;
     };
 
     //Submit to the drawList
     void SubmitDraw(Model const& model, Mesh const& mesh);
 
-    
     //Draws all 
     void DrawAll(std::vector<drawObject> const& drawList);
 
-    struct AABB
-    {
-        bool isRendering;
+    Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
-        //For rendering
-        Mesh mesh;
-    };
+    //I only wanna create meshes once so..
+    void InitMeshes();
 
-
-    Mesh InitQuadMesh();
     int InitAssignment();
 
     void setApplicationPtr(GeometryToolbox::GLApplication& appPtr);
 
     void RenderDearImguiDefault();
 
+    void UpdateAssignment();
+
     //Render with the mesh struct instead of more hardcoded approach
     void RenderQuadMesh();
     void RenderAssignment();
 
+    //Functions that just add objects to scenes.  Gonna make it a class for now in case I want to make it a proper class in the future
+    class ObjectMaker
+    {
+    public:
+        static void MakeFloor();
+    };
+
+ 
 }
 
 

@@ -63,7 +63,10 @@ int mainAssignmentOne()
     AssignmentOne::setApplicationPtr(app);
 
     AssignmentOne::InitAssignment();
+
+    app.updateFunctions.emplace_back(AssignmentOne::UpdateAssignment);
     app.updateFunctions.emplace_back(AssignmentOne::RenderAssignment);
+
 
     app.updateApplication(); //has an update loop
     app.shutdownApplication();

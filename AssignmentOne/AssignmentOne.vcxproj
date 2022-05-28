@@ -175,6 +175,7 @@
     <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\AssignmentOne.cpp" />
+    <ClCompile Include="Src\AssignmentOneSettings.h" />
     <ClCompile Include="Src\GLApplication.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Scene.cpp" />

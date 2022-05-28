@@ -151,5 +151,8 @@
     <ClCompile Include="Src\AssignmentOne.cpp">
       <Filter>Source\AssignmentOne</Filter>
     </ClCompile>
+    <ClCompile Include="Src\AssignmentOneSettings.h">
+      <Filter>Source\AssignmentOne</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
