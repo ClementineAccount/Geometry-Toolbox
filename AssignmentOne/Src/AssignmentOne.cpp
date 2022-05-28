@@ -152,6 +152,23 @@ namespace AssignmentOne
 		return verticesFromVectorList(tri);
 	}
 
+	std::vector<GLfloat> makeQuadFromPointTopLeft(glm::vec3 topLeft, glm::vec3 relativeRight, glm::vec3 relativeUp, float scaleNDC = 2.0f)
+	{
+		glm::vec3 bottomLeft = topLeft - (relativeUp) * (scaleNDC);
+		glm::vec3 bottomRight = topLeft + (relativeRight - relativeUp) * scaleNDC; //go diagonally
+		return makeQuadFromVertices(std::vector<glm::vec3>{topLeft, bottomLeft, bottomRight}, relativeRight, relativeUp, scaleNDC);
+	}
+	std::vector<GLfloat> makeQuadFromPointBottomLeft(glm::vec3 bottomLeft, glm::vec3 relativeRight, glm::vec3  relativeUp, float scaleNDC = 2.0f)
+	{
+		return makeQuadFromPointTopLeft(bottomLeft + (relativeUp)*scaleNDC, relativeRight, relativeUp, scaleNDC);
+	}
+
+	std::vector<GLfloat> makeQuadFromPointBottomRight(glm::vec3 bottomRight, glm::vec3 relativeRight, glm::vec3  relativeUp, float scaleNDC = 2.0f)
+	{
+		return makeQuadFromPointTopLeft(bottomRight - (relativeRight - relativeUp) * scaleNDC, relativeRight, relativeUp, scaleNDC);
+	}
+
+
 
 
 
@@ -189,6 +206,8 @@ namespace AssignmentOne
 		glEnableVertexAttribArray(indexOfColor);
 
 		mesh.arrayCount = meshPositions.size();
+		GLchar defaultDrawType = GL_TRIANGLES;
+		mesh.drawType = defaultDrawType;
 
 		return mesh;
 	}
@@ -229,6 +248,63 @@ namespace AssignmentOne
 		Mesh axisMesh = initVBOArrays(axisPoints, axisColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
+	}
+
+
+	//For seeing the makeQuadFromVertex function in action
+	Mesh InitTestAlignedPlanes()
+	{
+		std::vector<GLfloat> finalBuffer;
+		glm::vec3 relativeRight = worldRight;
+		glm::vec3 relativeUp = worldUp;
+		std::vector<GLfloat> buffer;
+
+
+		//std::reverse(buffer.begin(), buffer.end());
+
+
+		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
+
+		glm::vec3 zFrontTL{ -1.0f, 1.0f, 1.0f };
+
+		relativeRight = worldRight;
+		relativeUp = worldUp;
+
+		buffer = makeQuadFromPointTopLeft(zFrontTL, relativeRight, relativeUp);
+		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
+
+
+		glm::vec3 yFrontBL{ -1.0f, 1.0f, 1.0f };
+		
+		relativeRight = worldRight;
+		relativeUp = -worldForward;
+		buffer.clear();
+		buffer = makeQuadFromPointBottomLeft(yFrontBL, relativeRight, relativeUp);
+
+		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
+
+
+
+		glm::vec3 xBackBR{ -1.0f, -1.0f, 1.0f };
+		relativeRight = worldForward;
+		relativeUp = worldUp;
+
+		buffer.clear();
+		buffer = makeQuadFromPointBottomRight(xBackBR, relativeRight, relativeUp);
+
+		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
+
+		glm::vec3 color{ 0.6f, 0.0f, 0.34f };
+		std::vector<GLfloat> colorBuffer;
+
+		for (size_t i = 0; i < finalBuffer.size() / 3; ++i)
+		{
+			colorBuffer.push_back(color.r);
+			colorBuffer.push_back(color.g);
+			colorBuffer.push_back(color.b);
+		}
+
+		return initVBOArrays(finalBuffer, colorBuffer);
 	}
 
 	//Don't use: it's buggy and unfinished
@@ -369,6 +445,7 @@ namespace AssignmentOne
 
 		meshMap.emplace(MeshNames::quad, InitQuadMesh(upQuadPositions));
 		meshMap.emplace(MeshNames::axis, InitAxis());
+		meshMap.emplace("Test", InitTestAlignedPlanes());
 		//meshMap.emplace(MeshNames::point, InitPoint());
 	}
 
@@ -455,13 +532,17 @@ namespace AssignmentOne
 
 		RenderDearImguiDefault();
 
-		SubmitDraw(Model{}, meshMap.at(MeshNames::quad));
+		//SubmitDraw(Model{}, meshMap.at(MeshNames::quad));
 		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
+
+		Model testModel;
+		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
+		SubmitDraw(testModel, meshMap.at("Test"));
 		//Model pointModel;
 		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
 
-		SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
+		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
 
 		DrawAll(drawList);
 		drawList.clear();
@@ -523,9 +604,52 @@ namespace AssignmentOne
 			};
 
 			assert(actual == expected && "Test2() Failed");
-
 		}
 
+		void TestQuadVertices3()
+		{
+			glm::vec3 pt(-1.0f, 1.0f, 1.0f);
+
+			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
+
+			std::vector<GLfloat> expected =
+			{
+				-1.0f, 1.0f, 1.0f,
+				-1.0f, -1.0f, 1.0f,
+				1.0f, -1.0f, 1.0f,
+				1.0f, -1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f
+			};
+
+			assert(actual == expected && "Test3() Failed");
+		}
+
+		void TestQuadVertices4()
+		{
+
+			glm::vec3 pt(-1.0f, 1.0f, -1.0f);
+
+			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, -1.0f);
+
+			std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
+
+			std::vector<GLfloat> expected =
+			{
+				-1.0f, 1.0f, -1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, -1.0f,
+				-1.0f, 1.0f, -1.0f
+			};
+
+			assert(actual == expected && "Test4() Failed");
+		}
 	}
 
 }
@@ -560,10 +684,14 @@ namespace AssignmentOne
 		{
 			DebugTesting::TestQuadVertices1();
 			DebugTesting::TestQuadVertices2();
+			DebugTesting::TestQuadVertices3();
+			DebugTesting::TestQuadVertices4();
 		}
 
 
 		InitMeshes();
+
+
 		ObjectMaker::MakeFloor();
 
 		return 0;
