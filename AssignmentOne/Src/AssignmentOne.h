@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 
+
 // Include GLFW
 #include <GLFW/glfw3.h>
 #include "shader.hpp"
@@ -17,6 +18,8 @@
 
 namespace AssignmentOne
 {
+    constexpr GLuint defaultShaderID = 0;
+
     struct shaderFilePath
     {
         std::string vertexFilePath;
@@ -43,8 +46,6 @@ namespace AssignmentOne
         }
     };
 
-
-
     struct Vertex
     {
         glm::vec3 position;
@@ -63,6 +64,30 @@ namespace AssignmentOne
         unsigned int VBO;
     };
 
+    struct Model
+    {
+        glm::vec3 pos;
+    };
+
+
+    //For testing some functions. I can just assign it here and then pass it in
+    //Model placeholderModels[10];
+
+    //void RenderModel(Model const& model, GLuint const shaderID = defaultShaderID);
+
+    struct drawObject
+    {
+        Model const& model;
+        Mesh const& mesh;
+    };
+
+    //Submit to the drawList
+    void SubmitDraw(Model const& model, Mesh const& mesh);
+
+    
+    //Draws all 
+    void DrawAll(std::vector<drawObject> const& drawList);
+
 
 
     struct AABB
@@ -80,7 +105,13 @@ namespace AssignmentOne
     Mesh InitQuadMesh();
     int InitAssignment();
 
+
+
+    //Render with the mesh struct instead of more hardcoded approach
+    void RenderQuadMesh();
     void RenderAssignment();
+
+    
 
 }
 

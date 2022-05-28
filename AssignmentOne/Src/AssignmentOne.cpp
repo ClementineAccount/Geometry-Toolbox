@@ -8,13 +8,16 @@ namespace AssignmentOne
 	std::string vertexShaderPath = shaderFolderPath + "VertexShader.vert";
 	std::string fragShaderPath = shaderFolderPath + "FragShader.frag";
 
-	shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader"};
+	shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
 
 	glm::vec3 backgroundColor{ 0.0f, 0.0f, 0.0f };
 
 	Mesh quadMesh;
-
 	ShaderContainer assignmentShaders;
+
+
+	std::vector<drawObject> drawList;
+
 
 	Mesh InitQuadMesh()
 	{
@@ -78,6 +81,35 @@ namespace AssignmentOne
 		return quadMesh;
 	}
 
+	void SubmitDraw(Model const& model, Mesh const& mesh)
+	{
+		drawList.emplace_back(drawObject{ model, mesh });
+	}
+
+	void DrawAll(std::vector<drawObject> const& drawList)
+	{
+		for (drawObject const& currDraw : drawList)
+		{
+			//mvp
+			glm::mat4 modelMat = glm::mat4(1.0f);
+			glm::mat4 viewMat = glm::mat4(1.0f);
+			glm::mat4 perspectiveMat = glm::mat4(1.0f);
+
+			glm::mat4 mvpMat = glm::mat4(1.0f);
+			mvpMat = perspectiveMat * viewMat * modelMat;
+
+			//use default shader for now
+			unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
+			glUseProgram(programID);
+
+			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
+
+			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
+			glBindVertexArray(drawList[0].mesh.VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+	}
+
 	int InitAssignment()
 	{
 		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
@@ -85,6 +117,8 @@ namespace AssignmentOne
 
 		//Create cube
 		quadMesh = InitQuadMesh();
+		
+
 
 		return 0;
 	}
@@ -135,7 +169,6 @@ namespace AssignmentOne
 
 		glBindVertexArray(quadMesh.VAO);
 
-
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//glDisableVertexAttribArray(0);
@@ -151,7 +184,9 @@ namespace AssignmentOne
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		RenderQuadTest();
+		SubmitDraw(Model{}, quadMesh);
+		DrawAll(drawList);
+		drawList.clear();
 	}
 
 }
