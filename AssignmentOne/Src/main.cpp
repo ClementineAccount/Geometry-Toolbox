@@ -60,6 +60,8 @@ int mainAssignmentOne()
     GeometryToolbox::GLApplication app;
     app.initApplication();
 
+    AssignmentOne::setApplicationPtr(app);
+
     AssignmentOne::InitAssignment();
     app.updateFunctions.emplace_back(AssignmentOne::RenderAssignment);
 

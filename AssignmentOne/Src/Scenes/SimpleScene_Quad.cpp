@@ -15,7 +15,6 @@ namespace Scenes
 		SceneClass::sceneFunctionReturnType Init(SceneClass::dataContainerType& dataCont, float deltaTime)
 		{
 			std::shared_ptr<QuadData> data = std::static_pointer_cast<QuadData>(dataCont[0]);
-
 			data->programID = LoadShaders("../Common/Shaders/QuadVertexShader.vert", "../Common/Shaders/QuadFragmentShader.frag");
 
 			data->geometryBuffer = 

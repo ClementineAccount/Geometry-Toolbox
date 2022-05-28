@@ -1,6 +1,11 @@
 #include "AssignmentOne.h"
 #include <iostream>
 
+// Include Dear Imgui
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+
 namespace AssignmentOne
 {
 	const std::string shaderFolderPath = "../Common/Shaders/";
@@ -15,9 +20,21 @@ namespace AssignmentOne
 	Mesh quadMesh;
 	ShaderContainer assignmentShaders;
 
+	//Default camera
+	constexpr Camera defaultLookAtCamera;
+
+	Camera currCamera = defaultLookAtCamera;
+
+	//Yea its ugly but just set it in the main. I'll abstract it away later
+	GeometryToolbox::GLApplication* applicationPtr;
+
+
+	void setApplicationPtr(GeometryToolbox::GLApplication& appPtr)
+	{
+		applicationPtr = &appPtr;
+	}
 
 	std::vector<drawObject> drawList;
-
 
 	Mesh InitQuadMesh()
 	{
@@ -93,7 +110,19 @@ namespace AssignmentOne
 			//mvp
 			glm::mat4 modelMat = glm::mat4(1.0f);
 			glm::mat4 viewMat = glm::mat4(1.0f);
+
+			//Calculate the view mat
+
+			viewMat = glm::lookAt(currCamera.pos, currCamera.targetPos, currCamera.up);
+
+
 			glm::mat4 perspectiveMat = glm::mat4(1.0f);
+			GLfloat fov = currCamera.FOV;
+			GLfloat aspectRatio = static_cast<GLfloat>(applicationPtr->getAspectRatio());
+			GLfloat nearPlanePoint = 0.1f;
+			GLfloat farPlanePoint = 100.0f;
+
+			perspectiveMat = glm::perspective(glm::radians(currCamera.FOV), aspectRatio, nearPlanePoint, farPlanePoint);
 
 			glm::mat4 mvpMat = glm::mat4(1.0f);
 			mvpMat = perspectiveMat * viewMat * modelMat;
@@ -121,6 +150,19 @@ namespace AssignmentOne
 
 
 		return 0;
+	}
+
+	//Has to be different per thing later
+	void RenderDearImguiDefault()
+	{
+		ImGui::Begin("Settings");
+
+		ImGui::DragFloat3("Camera Position", (float*) &currCamera.pos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
+		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
+
+		ImGui::End();
 	}
 
 	//Temp values for testing
@@ -184,8 +226,11 @@ namespace AssignmentOne
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
+		RenderDearImguiDefault();
+
 		SubmitDraw(Model{}, quadMesh);
 		DrawAll(drawList);
+
 		drawList.clear();
 	}
 

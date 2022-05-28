@@ -88,8 +88,6 @@ namespace GeometryToolbox
 			int getWindowWidth();
 
 			float getAspectRatio();
-
-
 	};
 }
 

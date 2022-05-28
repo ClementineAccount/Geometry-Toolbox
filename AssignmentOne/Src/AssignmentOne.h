@@ -64,10 +64,33 @@ namespace AssignmentOne
         unsigned int VBO;
     };
 
+
+    //The origin for use in model and view projection
+    constexpr glm::vec3 worldOrigin = { 0.0f, 0.0f, 0.0f };
+    constexpr glm::vec3 worldUp = { 0.0f, 1.0f, 0.0f };
+    constexpr glm::vec3 worldRight = { 1.0f, 0.0f, 0.0f };
+    constexpr float defaultFOV = 90.0f;
+
     struct Model
     {
-        glm::vec3 pos;
+        glm::vec3 pos{ worldOrigin };
+        glm::vec3 scale{1.0f, 1.0f, 1.0f};
+
+        //in degrees for each axis
+        glm::vec3 rotation{ 0.0f, 0.0f, 0.0f };
     };
+
+    //View matrix
+    struct Camera
+    {
+        glm::vec3 pos{ 1.0f, 1.0f, 1.0f };
+        glm::vec3 targetPos{ worldOrigin }; //looking at the origin as the default
+        glm::vec3 up{ worldUp };
+        glm::vec3 right{ worldRight };
+
+       float FOV{ defaultFOV };
+    };
+
 
 
     //For testing some functions. I can just assign it here and then pass it in
@@ -88,8 +111,6 @@ namespace AssignmentOne
     //Draws all 
     void DrawAll(std::vector<drawObject> const& drawList);
 
-
-
     struct AABB
     {
         bool isRendering;
@@ -99,19 +120,16 @@ namespace AssignmentOne
     };
 
 
-
-
-    //Make a cube
     Mesh InitQuadMesh();
     int InitAssignment();
 
+    void setApplicationPtr(GeometryToolbox::GLApplication& appPtr);
 
+    void RenderDearImguiDefault();
 
     //Render with the mesh struct instead of more hardcoded approach
     void RenderQuadMesh();
     void RenderAssignment();
-
-    
 
 }
 

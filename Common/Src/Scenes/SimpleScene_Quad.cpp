@@ -132,6 +132,7 @@ namespace Scenes
 			std::shared_ptr<QuadData> data = std::static_pointer_cast<QuadData>(dataCont[0]);
 
 			ImGui::Begin("Settings");
+
 			ImGui::DragFloat3("Camera Position", (float*)&data.get()->cameraPos, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat3("Camera Target Position", (float*)&data.get()->cameraTargetPos, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat("FOV", &data.get()->fieldOfView, 0.01f, 1.0f, 110.0f);
