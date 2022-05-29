@@ -1,6 +1,4 @@
 #pragma once
-
-
 #include "GLApplication.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -10,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 
+//#include "CollisionHelper.h"
 
 // Include GLFW
 #include <GLFW/glfw3.h>
@@ -131,18 +130,28 @@ namespace AssignmentOne
 
     //void RenderModel(Model const& model, GLuint const shaderID = defaultShaderID);
 
-    struct drawObject
+    struct Gameobject
+    {
+        Model model; //the transforms
+        std::string meshID; //To Do: You could change this to use uint_32 instead eventually
+        bool isActive = true;
+    };
+
+    struct drawCall
     {
         Model const& model;
         Mesh const& mesh;
-        bool isRendering = true;
+        bool isRendering = true; //idk if we should have this
     };
+
+
+
 
     //Submit to the drawList
     void SubmitDraw(Model const& model, Mesh const& mesh);
 
     //Draws all 
-    void DrawAll(std::vector<drawObject> const& drawList);
+    void DrawAll(std::vector<drawCall> const& drawList);
 
     Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 

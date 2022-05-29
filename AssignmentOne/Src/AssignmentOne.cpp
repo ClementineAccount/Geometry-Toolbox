@@ -1,6 +1,9 @@
 #include "AssignmentOne.h"
 #include "AssignmentOneSettings.h"
 
+#include "CollisionHelper.h"
+
+#include <functional>
 #include <iostream>
 
 // Include Dear Imgui
@@ -70,6 +73,7 @@ namespace AssignmentOne
 		const char cube[] = "cube";
 	}
 
+
 	//To Do: Can allow dynamic model names here too, of course
 	namespace ModelNames
 	{
@@ -119,7 +123,7 @@ namespace AssignmentOne
 		applicationPtr = &appPtr;
 	}
 
-	std::vector<drawObject> drawList;
+	std::vector<drawCall> drawList;
 
 
 	std::vector<GLfloat> verticesFromVectorList(std::vector<glm::vec3> vectorList)
@@ -184,9 +188,6 @@ namespace AssignmentOne
 	}
 
 
-
-
-
 	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
 	Mesh initVBOArrays(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
@@ -227,7 +228,13 @@ namespace AssignmentOne
 	}
 
 
+	//Mesh InitPolarSphere(size_t slices, size_t stacks, float radius)
+	//{
 
+
+
+
+	//}
 	
 	//Using GL lines
 	Mesh InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
@@ -373,15 +380,11 @@ namespace AssignmentOne
 	{
 		namespace Sphere
 		{
-			//Note: Stacks and Slices count from 1 and not 0. Think of it it like ij in matrices
-
-			//Phi -> The rotation about the vertical axis
-			//Theta -> The rotation about the forward axis
-
+			//Note: Stacks and Slices count from 0
 			static float getAngleSegmentDegrees(unsigned int currSegment, unsigned int totalSegments, float startingOffsetDegrees, float angleMax)
 			{
-				static float anglePerStack = angleMax / totalSegments;
-				return (startingOffsetDegrees + anglePerStack * (currSegment - 1)); //subtract by 1 because we start from offset of 0 degrees at bottom
+				float anglePerStack = angleMax / totalSegments;
+				return (startingOffsetDegrees + anglePerStack * (currSegment)); 
 			}
 
 			//Start from the bottom of the sphere means we must rotate ccw by 270 first by default (so we can start from lowest point)
@@ -482,7 +485,7 @@ namespace AssignmentOne
 
 	void SubmitDraw(Model const& model, Mesh const& mesh)
 	{
-		drawList.emplace_back(drawObject{ model, mesh });
+		drawList.emplace_back(drawCall{ model, mesh });
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
@@ -514,7 +517,7 @@ namespace AssignmentOne
 
 	}
 
-	void DrawAll(std::vector<drawObject> const& drawList, Camera const& drawCamera)
+	void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera)
 	{
 		auto makePivotVector = [](Model const& model)
 		{
@@ -526,7 +529,7 @@ namespace AssignmentOne
 
 		
 
-		for (drawObject const& currDraw : drawList)
+		for (drawCall const& currDraw : drawList)
 		{
 			//Redo the concept of 'isRendering' to avoid iterating through non rendering objects (remove them from the list is better)
 			//if (!currDraw.isRendering)
@@ -892,10 +895,38 @@ namespace AssignmentOne
 		}
 
 		//Testing functions to help with sphere construction
-		void TestSphereAngel1()
+		void TestSphereAngle1()
 		{
-			//Basic test for a sphere with 3 stacks
+			//Basic test for a sphere with 4 stacks
 			size_t numStacks = 4;
+
+			auto approximateEplisionCheck = [](float lhs, float rhs)
+			{
+				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+			};
+
+
+			auto checkStack = [&](size_t currSlice, float expectedDegrees)
+			{
+				float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
+				return (approximateEplisionCheck(actual, expectedDegrees));
+			};
+
+			assert(checkStack(0, 270.0f));
+			assert(checkStack(1, 270.0f + 45.0f));
+			assert(checkStack(2, 270.0f + 90.0f));
+			assert(checkStack(3, 270.0f + 135.0f));
+			assert(checkStack(4, 270.0f + 180.0f));
+		}
+
+		void TestSphereAngle2()
+		{
+			//Test the phi side
+			
+			//Basic test for a sphere with 4 slices
+			size_t numSlices = 4;
+
+			//Getting the angle of slices are very similar to doing a circle 
 
 			auto approximateEplisionCheck = [](float lhs, float rhs)
 			{
@@ -905,14 +936,81 @@ namespace AssignmentOne
 
 			auto checkSlice = [&](size_t currSlice, float expectedDegrees)
 			{
+				float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+				return (approximateEplisionCheck(actual, expectedDegrees));
+			};
+
+
+			assert(checkSlice(0, 0.0f));
+			assert(checkSlice(1, 90.0f));
+			assert(checkSlice(2, 180.0f));
+			assert(checkSlice(3, 270.0f));
+			assert(checkSlice(4, 360.0f));
+		}
+
+		void TestSphereAngle3()
+		{
+			//Test the supposed mid section for 
+			// totalStack = 5. currStack = 2.
+			// totalSlice = 4. Loop thorugh all slice (draw from left to right)
+
+			size_t numStacks = 3;
+			size_t currStack = 1;
+
+			size_t numSlices = 4;
+
+			auto approximateEplisionCheck = [](float lhs, float rhs)
+			{
+				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+			};
+
+			auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+			{
+				float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+				return (approximateEplisionCheck(actual, expectedDegrees));
+			};
+
+			auto checkStack = [&](size_t currSlice, float expectedDegrees)
+			{
 				float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
 				return (approximateEplisionCheck(actual, expectedDegrees));
 			};
 
-			assert(checkSlice(1, 270.0f));
-			assert(checkSlice(2, 270.0f + 45.0f));
-			assert(checkSlice(3, 270.0f + 90.0f));
-			assert(checkSlice(4, 270.0f + 135.0f));
+			std::vector<glm::vec2> anglePairs;
+
+			//Each slice has a 'pair' for the stack
+			for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
+			{
+				//Stacks must alternative
+				float thisPhi = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+				float stackOne = MeshConstructor::Sphere::getThetaDegrees(currStack, numStacks);
+				float stackTwo = MeshConstructor::Sphere::getThetaDegrees(currStack + 1, numStacks);
+
+				anglePairs.push_back(glm::vec2(stackOne, thisPhi));
+				anglePairs.push_back(glm::vec2(stackTwo, thisPhi));
+			}
+
+			std::vector<glm::vec2> expectedAnglePairs =
+			{
+				glm::vec2(60.0f + 270.0f, 0.0f),
+				glm::vec2(120.0f +270.0f, 0.0f),
+				glm::vec2(60.0f + 270.0f, 90.0f),
+				glm::vec2(120.0f + 270.0f, 90.0f),
+				glm::vec2(60.0f + 270.0f, 180.0f),
+				glm::vec2(120.0f + 270.0f, 180.0f),
+				glm::vec2(60.0f + 270.0f, 270.0f),
+				glm::vec2(120.0f + 270.0f, 270.0f),
+				glm::vec2(60.0f + 270.0f, 360.0f),
+				glm::vec2(120.0f + 270.0f, 360.0f)
+			};
+
+			std::function<bool(glm::vec2, glm::vec2)> checkPair = [&](glm::vec2 lhs, glm::vec2 rhs)
+			{
+				return (approximateEplisionCheck(lhs.x, rhs.x) == (approximateEplisionCheck(lhs.y, rhs.y) == true));
+			};
+
+			assert(std::equal(expectedAnglePairs.begin(), expectedAnglePairs.end(), anglePairs.begin(), anglePairs.end(),
+				checkPair));
 		}
 
 	}
@@ -953,7 +1051,9 @@ namespace AssignmentOne
 			DebugTesting::TestQuadVertices2();
 			DebugTesting::TestQuadVertices3();
 			DebugTesting::TestQuadVertices4();
-			DebugTesting::TestSphereAngel1();
+			DebugTesting::TestSphereAngle1();
+			DebugTesting::TestSphereAngle2();
+			DebugTesting::TestSphereAngle3();
 		}
 
 		topDownCamera.pos = topDownCameraPos;
