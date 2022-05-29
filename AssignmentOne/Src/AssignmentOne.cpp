@@ -20,13 +20,16 @@ namespace AssignmentOne
 	static shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
 	static shaderFilePath colorShader{ shaderFolderPath + "UniformColor.vert", shaderFolderPath + "UniformColor.frag", "colorShader" };
 
+	static bool wireFrameMode = false;
 
 	static glm::vec3 niceOrangeColor{ 1.0f, 0.341f, 0.2f };
 	static glm::vec3 coolPurpleColor{ 0.565f, 0.046f, 0.243f };
 	static glm::vec3 maroonColor{ 0.78f, 0.0f, 0.224f };
 	static glm::vec3 coolOrange{ 1.0f, 0.765f, 0.0f };
+	static glm::vec3 basicBlue{ 0.0f, 0.0f, 1.0f };
 
 	static glm::vec3 defaultQuadColor = coolOrange;
+	static glm::vec3 defaultCubeColor = basicBlue;
 
 	static glm::vec3 backgroundColor = coolPurpleColor;
 
@@ -63,6 +66,7 @@ namespace AssignmentOne
 		const char point[] = "point";
 		const char worldLine[] = "worldLine";
 		const char quadForward[] = "quadFoward";
+		const char cube[] = "cube";
 	}
 
 	//To Do: Can allow dynamic model names here too, of course
@@ -362,6 +366,60 @@ namespace AssignmentOne
 		return pointMesh;
 	}
 
+
+	Mesh initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
+	{
+		glm::vec3 relativeUp;
+		glm::vec3 relativeRight;
+
+		std::vector<GLfloat> buffer;
+
+		std::vector<GLfloat> posBuffer;
+
+		auto makeFace = [&posBuffer](glm::vec3 bottomLeft, glm::vec3 relativeUp, glm::vec3 relativeRight)
+		{
+			std::vector<GLfloat> buffer;
+			buffer = makeQuadFromPointBottomLeft(bottomLeft, relativeRight, relativeUp);
+			posBuffer.insert(posBuffer.end(), buffer.begin(), buffer.end());
+		};
+
+		//z face (front)
+		makeFace(glm::vec3(-1.0f, -1.0f, 1.0f), worldUp, worldRight);
+
+		//z face (back)
+		makeFace(glm::vec3(1.0f, -1.0f, 1.0f), worldUp, -worldRight);
+
+		//y face (front)
+		makeFace(glm::vec3(-1.0f, 1.0f, 1.0f), -worldForward, worldRight);
+
+		//y face (bak)
+		makeFace(glm::vec3(1.0f, -1.0f, 1.0f), -worldForward, -worldRight);
+
+		//x face (front)
+		makeFace(glm::vec3(1.0f, -1.0f, 1.0f), worldUp, -worldForward);
+
+		//x face (back)
+		makeFace(glm::vec3(-1.0f, -1.0f, -1.0f), worldUp, worldForward);
+
+
+		for (GLfloat& i : posBuffer)
+			i *= cubeScale;
+
+
+		std::vector<GLfloat> colorBuffer;
+
+		for (size_t i = 0; i < posBuffer.size() / 3; ++i)
+		{
+			colorBuffer.push_back(defaultCubeColor.r);
+			colorBuffer.push_back(defaultCubeColor.g);
+			colorBuffer.push_back(defaultCubeColor.b);
+		}
+
+		Mesh cubeMesh = initVBOArrays(posBuffer, colorBuffer);
+		cubeMesh.drawType = GL_TRIANGLES;
+		return cubeMesh;
+	}
+
 	Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
 
@@ -524,6 +582,7 @@ namespace AssignmentOne
 
 		meshMap.emplace(MeshNames::axis, InitAxis());
 		meshMap.emplace(MeshNames::axisInverted, InitAxis(-worldRight, -worldUp, -worldForward));
+		meshMap.emplace(MeshNames::cube, initCubeMesh());
 
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 
@@ -548,6 +607,8 @@ namespace AssignmentOne
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
+		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
+		
 		ImGui::End();
 	}
 
@@ -629,6 +690,9 @@ namespace AssignmentOne
 	
 	void RenderPictureinPicture()
 	{
+		//I have it so PictureInPicture doesn't have wireframe
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 		//Treat the viewports like transformations.
 
 		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
@@ -648,6 +712,12 @@ namespace AssignmentOne
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (wireFrameMode)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
 
 		RenderDearImguiDefault();
 
@@ -669,6 +739,12 @@ namespace AssignmentOne
 		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
 		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
+
+		static Model testCube;
+		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
+
+		SubmitDraw(testCube, meshMap.at(MeshNames::cube));
 
 		SubmitDraw(worldLineTestMode, meshMap.at(MeshNames::worldLine));
 
