@@ -66,8 +66,11 @@ namespace AssignmentOne
         unsigned int arrayCount;
 
         GLchar drawType = GL_TRIANGLES;
+
+
         bool isDrawElements = false;
-        GLuint* indices = nullptr;
+        unsigned int elementCount;
+        unsigned int EBO;
     };
 
 

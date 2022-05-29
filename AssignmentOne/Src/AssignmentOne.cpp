@@ -31,11 +31,15 @@ namespace AssignmentOne
 	static glm::vec3 coolOrange{ 1.0f, 0.765f, 0.0f };
 	static glm::vec3 basicBlue{ 0.0f, 0.0f, 1.0f };
 	static glm::vec3 skyBlue{ 0.149f,0.902f,1.0f };
+	static glm::vec3 greenscreenGreen{ 0.0f, 1.0f, 0.f };
+	static glm::vec3 blackish{ 0.1f, 0.05f, 0.0f };
 
+	static glm::vec3 defaultRingColor = greenscreenGreen;
+	static glm::vec3 defaultSphereColor = greenscreenGreen;
 	static glm::vec3 defaultQuadColor = coolOrange;
 	static glm::vec3 defaultCubeColor = basicBlue;
 
-	static glm::vec3 backgroundColor = skyBlue;
+	static glm::vec3 backgroundColor = blackish;
 
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
 	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 1000.0f };
@@ -71,6 +75,8 @@ namespace AssignmentOne
 		const char worldLine[] = "worldLine";
 		const char quadForward[] = "quadFoward";
 		const char cube[] = "cube";
+		const char ring[] = "ring";
+		const char sphere[] = "sphere";
 	}
 
 
@@ -78,7 +84,7 @@ namespace AssignmentOne
 	namespace ModelNames
 	{
 		const char floorPlane[] = "floorPlaneModel";
-		const char pointModel[] = "pointModel"; //for debugging points
+		const char pointModel[] = "pointModel"; //for debugging posBuffer
 	}
 
 	constexpr bool runDebugTests = true;
@@ -189,7 +195,7 @@ namespace AssignmentOne
 
 
 	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
-	Mesh initVBOArrays(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
+	Mesh initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
 		std::vector<GLfloat> vertices;
 		vertices.insert(vertices.end(), std::make_move_iterator(meshPositions.begin()), std::make_move_iterator(meshPositions.end()));
@@ -227,14 +233,6 @@ namespace AssignmentOne
 		return mesh;
 	}
 
-
-	//Mesh InitPolarSphere(size_t slices, size_t stacks, float radius)
-	//{
-
-
-
-
-	//}
 	
 	//Using GL lines
 	Mesh InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
@@ -269,7 +267,7 @@ namespace AssignmentOne
 			axisColorForward.r,	axisColorForward.g, axisColorForward.b,
 		};
 
-		Mesh axisMesh = initVBOArrays(axisPoints, axisColor);
+		Mesh axisMesh = initVBO(axisPoints, axisColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
@@ -292,7 +290,7 @@ namespace AssignmentOne
 			axisColorRight.r, axisColorRight.g, axisColorRight.b,
 		};
 
-		Mesh axisMesh = initVBOArrays(linePoints, lineColor);
+		Mesh axisMesh = initVBO(linePoints, lineColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
@@ -353,7 +351,7 @@ namespace AssignmentOne
 			colorBuffer.push_back(color.b);
 		}
 
-		return initVBOArrays(finalBuffer, colorBuffer);
+		return initVBO(finalBuffer, colorBuffer);
 	}
 
 	//Don't use: it's buggy and unfinished
@@ -369,7 +367,7 @@ namespace AssignmentOne
 			pointDefaultColor.r, pointDefaultColor.g, pointDefaultColor.b
 		};
 
-		Mesh pointMesh = initVBOArrays(point, color);
+		Mesh pointMesh = initVBO(point, color);
 		pointMesh.drawType = GL_POINT; //just the one I guess
 		return pointMesh;
 	}
@@ -401,6 +399,159 @@ namespace AssignmentOne
 		}
 	}
 
+	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
+	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
+	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
+	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
+	{
+		float PI = 3.14f;
+
+		float sliceStep = 2 * PI / numSlices;
+		float stackStep = PI / numStacks;
+		float sliceAngle, stackAngle;
+
+		float x, y, z, stack_xy;
+		std::vector<GLfloat> positions;
+
+		for (size_t currStack = 0; currStack <= numStacks; ++currStack)
+		{
+			//starting from the bottom stack (so we rotate ccw by 270 and then add onto that)
+			stackAngle = PI / 2 - currStack * stackStep;
+
+			stack_xy = sphereRadius * cosf(stackAngle);
+			z = sphereRadius * sinf((stackAngle));
+
+			for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
+			{
+				sliceAngle = currSlice * sliceStep;
+
+				x = stack_xy * cosf(sliceAngle);
+				y = stack_xy * sinf(sliceAngle);
+
+				positions.push_back(x);
+				positions.push_back(y);
+				positions.push_back(z);
+			}
+		}
+
+		//http://www.songho.ca/opengl/gl_sphere.html
+
+		std::vector<GLfloat> colorBuffer;
+
+		for (size_t i = 0; i < positions.size() / 3; ++i)
+		{
+			colorBuffer.push_back(sphereColor.r);
+			colorBuffer.push_back(sphereColor.g);
+			colorBuffer.push_back(sphereColor.b);
+		}
+		Mesh sphereMesh = initVBO(positions, colorBuffer);
+
+
+		//Genererate the EBO
+		std::vector<int> indices;
+		int k1, k2;
+		for (int i = 0; i < numStacks; ++i)
+		{
+			k1 = i * (numSlices + 1);     // beginning of current stack
+			k2 = k1 + numSlices + 1;      // beginning of next stack
+
+			for (int j = 0; j < numSlices; ++j, ++k1, ++k2)
+			{
+				//Same counter-clockwise idea
+				// 2 triangles per sector excluding first and last stacks
+				// k1 => k2 => k1+1
+				if (i != 0)
+				{
+					indices.push_back(k1);
+					indices.push_back(k2);
+					indices.push_back(k1 + 1);
+				}
+
+				// k1+1 => k2 => k2+1
+				if (i != (numStacks - 1))
+				{
+					indices.push_back(k1 + 1);
+					indices.push_back(k2);
+					indices.push_back(k2 + 1);
+				}
+			}
+		}
+
+		glGenBuffers(1, &sphereMesh.EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereMesh.EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
+
+		sphereMesh.elementCount = indices.size();
+		sphereMesh.isDrawElements = true;
+		sphereMesh.drawType = GL_TRIANGLES; //So we can do texture stuff with this later
+		return sphereMesh;
+	}
+
+
+	//Didn't finish it 
+	//Ring for testing. It's the same as a stack for the Sphere (ring is similar to sphere so it uses 0, 0, 0 as center
+	Mesh initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
+	{
+		std::vector<GLfloat> posBuffer;
+
+		//glm::vec3 radiusRightVector = worldRight * ringRadiusScale;
+
+		////Each slice has a 'pair' for the stack
+		//for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
+		//{
+		//	//Stacks must alternative
+		//	float thisPhi = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+		//	float stackOne = heightAngleDegree;
+		//	float stackTwo = heightAngleDegree + heightAngleDegree;
+
+		//	//Rotate about the z-axis
+		//	glm::vec4 vectorFromCenter  = glm::vec4(radiusRightVector, 0.0f); //Vector
+
+		//	//about the z-axis
+		//	//glm::mat4 rotateMatrix = glm::mat4{glm::vec3()}
+
+		//	vectorFromCenter =  rotateMatrix * vectorFromCenter;
+
+		//	//about the y-axis
+		//	rotateMatrix = glm::rotate(thisPhi, worldUp);
+		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
+
+
+		//	posBuffer.push_back(vectorFromCenter.x);
+		//	posBuffer.push_back(vectorFromCenter.y);
+		//	posBuffer.push_back(vectorFromCenter.z);
+
+		//	//Rotate about the z-axis
+		//	vectorFromCenter = glm::vec4(radiusRightVector, 0.0f); //Vector
+
+		//	//about the z-axis
+		//	rotateMatrix = glm::rotate(stackTwo, worldForward);
+		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
+
+
+		//	//about the y-axis
+		//	
+		//	rotateMatrix = glm::rotate(thisPhi, worldUp);
+		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
+
+		//	posBuffer.push_back(vectorFromCenter.x);
+		//	posBuffer.push_back(vectorFromCenter.y);
+		//	posBuffer.push_back(vectorFromCenter.z);
+		//}
+
+		std::vector<GLfloat> colorBuffer;
+
+		for (size_t i = 0; i < posBuffer.size() / 3; ++i)
+		{
+			colorBuffer.push_back(ringColor.r);
+			colorBuffer.push_back(ringColor.g);
+			colorBuffer.push_back(ringColor.b);
+		}
+
+		Mesh ringMesh = initVBO(posBuffer, colorBuffer);
+		ringMesh.drawType = GL_TRIANGLE_STRIP;
+		return ringMesh;
+	}
 	
 
 
@@ -452,7 +603,7 @@ namespace AssignmentOne
 			colorBuffer.push_back(defaultCubeColor.b);
 		}
 
-		Mesh cubeMesh = initVBOArrays(posBuffer, colorBuffer);
+		Mesh cubeMesh = initVBO(posBuffer, colorBuffer);
 		cubeMesh.drawType = GL_TRIANGLES;
 		return cubeMesh;
 	}
@@ -479,7 +630,7 @@ namespace AssignmentOne
 			quadColorR, quadColorG, quadColorB,
 		};
 
-		Mesh quadMesh = initVBOArrays(quadPositions, quadColors);
+		Mesh quadMesh = initVBO(quadPositions, quadColors);
 		return quadMesh;
 	}
 
@@ -588,7 +739,11 @@ namespace AssignmentOne
 			//if (currDraw.mesh.drawType == GL_POINT)
 
 			if (currDraw.mesh.isDrawElements)
-				glDrawElements(currDraw.mesh.drawType, 0, GL_UNSIGNED_INT, currDraw.mesh.indices);
+			{
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currDraw.mesh.EBO);
+				glDrawElements(currDraw.mesh.drawType, currDraw.mesh.elementCount, GL_UNSIGNED_INT, 0);
+			}
+
 			else
 				glDrawArrays(currDraw.mesh.drawType, 0, currDraw.mesh.arrayCount);
 		}
@@ -622,6 +777,8 @@ namespace AssignmentOne
 		meshMap.emplace(MeshNames::cube, initCubeMesh());
 
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
+		meshMap.emplace(MeshNames::sphere, initSphereMesh());
+		meshMap.emplace(MeshNames::ring, initRingMesh());
 
 		meshMap.emplace("Test", InitTestAlignedPlanes());
 		//meshMap.emplace(MeshNames::point, InitPoint());
@@ -768,7 +925,13 @@ namespace AssignmentOne
 		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
 
-		SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
+		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
+		//SubmitDraw(Model{}, meshMap.at(MeshNames::ring));
+		
+		Model sphereModel;
+		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+		SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
 		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
 		SubmitDraw(Model{}, meshMap.at(MeshNames::axisInverted));
 
@@ -781,7 +944,7 @@ namespace AssignmentOne
 		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
 
-		SubmitDraw(testCube, meshMap.at(MeshNames::cube));
+		//SubmitDraw(testCube, meshMap.at(MeshNames::cube));
 
 		SubmitDraw(worldLineTestMode, meshMap.at(MeshNames::worldLine));
 
