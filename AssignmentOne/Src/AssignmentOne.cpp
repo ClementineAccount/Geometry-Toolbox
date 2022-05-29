@@ -27,11 +27,12 @@ namespace AssignmentOne
 	static glm::vec3 maroonColor{ 0.78f, 0.0f, 0.224f };
 	static glm::vec3 coolOrange{ 1.0f, 0.765f, 0.0f };
 	static glm::vec3 basicBlue{ 0.0f, 0.0f, 1.0f };
+	static glm::vec3 skyBlue{ 0.149f,0.902f,1.0f };
 
 	static glm::vec3 defaultQuadColor = coolOrange;
 	static glm::vec3 defaultCubeColor = basicBlue;
 
-	static glm::vec3 backgroundColor = coolPurpleColor;
+	static glm::vec3 backgroundColor = skyBlue;
 
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
 	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 1000.0f };
@@ -84,7 +85,7 @@ namespace AssignmentOne
 
 namespace AssignmentOne
 {
-
+	
 	std::vector<GLfloat> upQuadPositions =
 	{
 		-1.0f, 0.0f,  1.0f,  // 0
@@ -365,6 +366,39 @@ namespace AssignmentOne
 		pointMesh.drawType = GL_POINT; //just the one I guess
 		return pointMesh;
 	}
+
+
+	//To Do: Move all these into a mesh construction class? 
+	namespace MeshConstructor
+	{
+		namespace Sphere
+		{
+			//Note: Stacks and Slices count from 1 and not 0. Think of it it like ij in matrices
+
+			//Phi -> The rotation about the vertical axis
+			//Theta -> The rotation about the forward axis
+
+			static float getAngleSegmentDegrees(unsigned int currSegment, unsigned int totalSegments, float startingOffsetDegrees, float angleMax)
+			{
+				static float anglePerStack = angleMax / totalSegments;
+				return (startingOffsetDegrees + anglePerStack * (currSegment - 1)); //subtract by 1 because we start from offset of 0 degrees at bottom
+			}
+
+			//Start from the bottom of the sphere means we must rotate ccw by 270 first by default (so we can start from lowest point)
+			static float getThetaDegrees(unsigned int currStack, unsigned int totalStacks, float startingOffsetDegrees = 270.0f, float angleMax = 180.0f)
+			{
+				return getAngleSegmentDegrees(currStack, totalStacks, startingOffsetDegrees, angleMax);
+
+			}
+
+			static float getPhiDegrees(unsigned int currSlice, unsigned int totalSlices, float startingOffsetDegrees = 0.0f, float angleMax = 360.0f)
+			{
+				return getAngleSegmentDegrees(currSlice, totalSlices, startingOffsetDegrees, angleMax);
+			}
+		}
+	}
+
+	
 
 
 	Mesh initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
@@ -856,6 +890,31 @@ namespace AssignmentOne
 
 			assert(actual == expected && "Test4() Failed");
 		}
+
+		//Testing functions to help with sphere construction
+		void TestSphereAngel1()
+		{
+			//Basic test for a sphere with 3 stacks
+			size_t numStacks = 4;
+
+			auto approximateEplisionCheck = [](float lhs, float rhs)
+			{
+				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+			};
+
+
+			auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+			{
+				float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
+				return (approximateEplisionCheck(actual, expectedDegrees));
+			};
+
+			assert(checkSlice(1, 270.0f));
+			assert(checkSlice(2, 270.0f + 45.0f));
+			assert(checkSlice(3, 270.0f + 90.0f));
+			assert(checkSlice(4, 270.0f + 135.0f));
+		}
+
 	}
 
 }
@@ -894,6 +953,7 @@ namespace AssignmentOne
 			DebugTesting::TestQuadVertices2();
 			DebugTesting::TestQuadVertices3();
 			DebugTesting::TestQuadVertices4();
+			DebugTesting::TestSphereAngel1();
 		}
 
 		topDownCamera.pos = topDownCameraPos;
