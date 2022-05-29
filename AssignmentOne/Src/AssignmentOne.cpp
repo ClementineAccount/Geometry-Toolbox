@@ -57,7 +57,7 @@ namespace AssignmentOne
 
 	glm::vec3 pointDefaultColor = { 0.0f, 1.0f, 0.0f };
 
-	glm::vec3 topDownCameraPos = { 0.0f, 10.0f, 0.0f };
+	glm::vec3 topDownCameraPos = { 0.0f, 3.0f, 0.0f };
 
 	//from the bottomleft
 	glm::vec2 positionTopRightViewportPercent = { 0.55f, 0.55f };
@@ -926,7 +926,11 @@ namespace AssignmentOne
 		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
 		FillScreen();
 
+
 		glViewport(topRightViewport.bottomLeft.x, topRightViewport.bottomLeft.y, topRightViewport.viewportScale.x, topRightViewport.viewportScale.y);
+		
+		FillScreen(backgroundColor);
+
 		DrawAll(drawList, topDownCamera);
 	}
 
