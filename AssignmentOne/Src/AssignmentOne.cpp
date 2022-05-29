@@ -645,14 +645,14 @@ namespace AssignmentOne
 		return quadMesh;
 	}
 
-	void SubmitDraw(std::string const modelName, std::string const meshName)
+	void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
 	{
-		drawList.emplace_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName)});
+		drawList.emplace_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName), assignmentShaders.getShaderID(shaderName) });
 	}
 
-	void SubmitDraw(Model model, std::string const meshName)
+	void SubmitDraw(Model model, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
 	{
-		drawList.emplace_back(drawCall{ model, meshMap.at(meshName) });
+		drawList.emplace_back(drawCall{ model, meshMap.at(meshName), assignmentShaders.getShaderID(shaderName)});
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
@@ -670,7 +670,6 @@ namespace AssignmentOne
 		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &modelMat[0][0]);
 
 		GLint colorLoc = glGetUniformLocation(programID, "setColor");
-
 		glUniform3fv(colorLoc, 1, (float*)&colorFill);
 
 
@@ -735,25 +734,22 @@ namespace AssignmentOne
 			mvpMat = perspectiveMat * viewMat * modelMat;
 
 			//use default shader for now
-			unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
-			glUseProgram(programID);
+			unsigned int programID = currDraw.shaderID;
+			glUseProgram(currDraw.shaderID);
 
 			Mesh const& currMesh = currDraw.mesh;
 
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
+
+			if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
+			{
+				GLint colorLoc = glGetUniformLocation(programID, "setColor");
+				glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
+			}
+
 			glBindVertexArray(currMesh.VAO);
-
-
-
-		/*	glPointSize(currModel.scale.x);
-			glPointColor*/
-
-			//It kind of makes sense to use the scale in the model to set the glPointSize for this draw 
-			//if (currDraw.mesh.drawType == GL_POINT)
-
-
 
 			if (currMesh.isDrawElements)
 			{
@@ -1321,11 +1317,13 @@ namespace AssignmentOne
 			{
 				sphereOne.radius = 0.25f;
 				sphereOne.centerPos = glm::vec3(0.0f, 1.0f, -10.0f);
-				sphereOnePhysics.speed = 0.75f;
+				sphereOnePhysics.speed = 2.0f;
 				sphereOnePhysics.normVector = worldForward;
+				sphereOne.model.color = basicBlue;
 
 				sphereTwo.radius = 1.0f;
 				sphereTwo.centerPos = glm::vec3(0.0f, 1.0f, 0.0f);
+				sphereTwo.model.color = greenscreenGreen;
 
 				currCamera.pos = glm::vec3(5.0f, 5.0f, 3.0f);
 			}
@@ -1337,9 +1335,20 @@ namespace AssignmentOne
 
 				//To Do: Have it so it updates the sphere colors instead
 				if (collisionCheck(sphereOne, sphereTwo))
+				{
+					sphereOne.model.color = coolOrange;
+					sphereTwo.model.color = coolPurpleColor;
+
 					backgroundColor = collidedBackgroundColor;
+
+				}
 				else
+				{
+					sphereTwo.model.color = greenscreenGreen;
+					sphereOne.model.color = basicBlue;
 					backgroundColor = neutralBackgroundColor;
+				}
+
 
 				sphereOne.UpdateModel();
 				sphereTwo.UpdateModel();
@@ -1348,8 +1357,8 @@ namespace AssignmentOne
 			void Render()
 			{
 				RenderAxis();
-				SubmitDraw(sphereOne.model, sphereOne.meshID);
-				SubmitDraw(sphereTwo.model, sphereOne.meshID);
+				SubmitDraw(sphereOne.model, sphereOne.meshID, colorShader.shaderName);
+				SubmitDraw(sphereTwo.model, sphereTwo.meshID, colorShader.shaderName);
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
 				drawList.clear();

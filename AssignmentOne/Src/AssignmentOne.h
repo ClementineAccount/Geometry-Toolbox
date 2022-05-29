@@ -147,6 +147,8 @@ namespace AssignmentOne
 
     //void RenderModel(Model const& model, GLuint const shaderID = defaultShaderID);
 
+
+    //Bad 
     struct GameObject
     {
         Model model; //the transforms
@@ -161,6 +163,9 @@ namespace AssignmentOne
     {
         Model const& model;
         Mesh const& mesh;
+
+        GLuint shaderID = 0;
+
         bool isRendering = true; //idk if we should have this
     };
 
@@ -177,7 +182,7 @@ namespace AssignmentOne
 
 
     //Submit to the drawList
-    void SubmitDraw(std::string const modelName, std::string const meshName);
+    //void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName);
 
     //Draws all 
     void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera);
