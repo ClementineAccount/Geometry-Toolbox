@@ -95,7 +95,6 @@ namespace AssignmentOne
 
     struct Model
     {
-
         glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
         glm::vec3 pos{ worldOrigin };
 
@@ -107,6 +106,7 @@ namespace AssignmentOne
         //Can be inserted into the shader if wanted
         glm::vec3 color{ 1.0f, 1.0f, 1.0f };
     };
+
 
     //View matrix
     struct Camera

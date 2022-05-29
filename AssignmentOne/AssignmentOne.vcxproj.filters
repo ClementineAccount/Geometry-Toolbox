@@ -113,6 +113,9 @@
     <ClInclude Include="Src\AssignmentOne.h">
       <Filter>Source\AssignmentOne</Filter>
     </ClInclude>
+    <ClInclude Include="Src\CollisionHelper.h">
+      <Filter>Source\AssignmentOne</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp">
@@ -158,6 +161,9 @@
       <Filter>Source\AssignmentOne</Filter>
     </ClCompile>
     <ClCompile Include="Src\AssignmentOneSettings.h">
+      <Filter>Source\AssignmentOne</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\CollisionHelper.cpp">
       <Filter>Source\AssignmentOne</Filter>
     </ClCompile>
   </ItemGroup>
