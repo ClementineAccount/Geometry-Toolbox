@@ -20,7 +20,7 @@ namespace AssignmentOne
 
 	static shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
 
-	static glm::vec3 backgroundColor{ 0.0f, 0.0f, 0.0f };
+	static glm::vec3 backgroundColor{ 1.0f, 1.0f, 1.0f };
 
 	constexpr glm::vec3 planeScale = { 1000.0f, 1.0f, 1000.0f };
 	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 100.0f };
@@ -38,6 +38,11 @@ namespace AssignmentOne
 
 	glm::vec3 pointDefaultColor = { 0.0f, 1.0f, 0.0f };
 
+	glm::vec3 topDownCameraPos = { 0.0f, 10.0f, 0.0f };
+
+	//from the bottomleft
+	glm::vec2 positionTopRightViewportPercent = { 0.75f, 0.75f };
+	glm::vec2 scaleTopRightViewportPercent = { 0.25f, 0.25f };
 
 	namespace MeshNames
 	{
@@ -45,6 +50,7 @@ namespace AssignmentOne
 		const char quad[] = "quad";
 		const char axis[] = "axis";
 		const char point[] = "point";
+		const char worldLine[] = "worldLine";
 	}
 
 	//To Do: Can allow dynamic model names here too, of course
@@ -92,8 +98,7 @@ namespace AssignmentOne
 
 	//Default camera
 	constexpr Camera defaultLookAtCamera;
-
-
+	Camera topDownCamera = defaultLookAtCamera;
 	Camera currCamera = defaultLookAtCamera;
 
 	//Yea its ugly but just set it in the main. I'll abstract it away later
@@ -251,6 +256,34 @@ namespace AssignmentOne
 	}
 
 
+	//Line that is affected by MVP projection (so it exists in the world). The default orientation is pointing to the Right vector
+	Mesh InitWorldLine(glm::vec3 basisVector = worldRight, float lineScale = 1.0f)
+	{
+		glm::vec3 vectorDir = worldOrigin + (basisVector * lineScale);
+		std::vector<GLfloat> linePoints
+		{
+			worldOrigin.x, worldOrigin.y, worldOrigin.z,
+			vectorDir.x, vectorDir.y, vectorDir.z,
+		};
+
+		//Doesn't matter because we will eventually use another fragment shader for it
+		std::vector<GLfloat> lineColor
+		{
+			axisColorRight.r, axisColorRight.g, axisColorRight.b,
+			axisColorRight.r, axisColorRight.g, axisColorRight.b,
+		};
+
+		Mesh axisMesh = initVBOArrays(linePoints, lineColor);
+		axisMesh.drawType = GL_LINES;
+		return axisMesh;
+	}
+
+	//Unit 1x1x1 Cube for Model transform
+	//Mesh InitCubeMesh(float cubeScale = 0.5f)
+	//{
+	//	return Mesh mesh;
+	//}
+
 	//For seeing the makeQuadFromVertex function in action
 	Mesh InitTestAlignedPlanes()
 	{
@@ -258,7 +291,6 @@ namespace AssignmentOne
 		glm::vec3 relativeRight = worldRight;
 		glm::vec3 relativeUp = worldUp;
 		std::vector<GLfloat> buffer;
-
 
 		//std::reverse(buffer.begin(), buffer.end());
 
@@ -273,7 +305,6 @@ namespace AssignmentOne
 		buffer = makeQuadFromPointTopLeft(zFrontTL, relativeRight, relativeUp);
 		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
 
-
 		glm::vec3 yFrontBL{ -1.0f, 1.0f, 1.0f };
 		
 		relativeRight = worldRight;
@@ -282,7 +313,6 @@ namespace AssignmentOne
 		buffer = makeQuadFromPointBottomLeft(yFrontBL, relativeRight, relativeUp);
 
 		finalBuffer.insert(finalBuffer.end(), std::make_move_iterator(buffer.begin()), std::make_move_iterator(buffer.end()));
-
 
 
 		glm::vec3 xBackBR{ -1.0f, -1.0f, 1.0f };
@@ -362,7 +392,7 @@ namespace AssignmentOne
 
 	}
 
-	void DrawAll(std::vector<drawObject> const& drawList)
+	void DrawAll(std::vector<drawObject> const& drawList, Camera const& drawCamera)
 	{
 		auto makePivotVector = [](Model const& model)
 		{
@@ -371,6 +401,8 @@ namespace AssignmentOne
 				model.pivotPercent.y * model.scale.y,
 				model.pivotPercent.z * model.scale.z);
 		};
+
+		
 
 		for (drawObject const& currDraw : drawList)
 		{
@@ -388,9 +420,9 @@ namespace AssignmentOne
 
 			//modelMat = glm::translate(modelMat, pivotTransVector);
 
-			//modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.x), worldRight);
-			//modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.y), worldUp);
-			//modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.z), worldForward);
+			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.x), worldRight);
+			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.y), worldUp);
+			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.z), worldForward);
 
 			//modelMat = glm::translate(modelMat, -pivotTransVector);
 			modelMat = glm::scale(modelMat, currDraw.model.scale);
@@ -400,15 +432,15 @@ namespace AssignmentOne
 
 			//Calculate the view mat
 
-			viewMat = glm::lookAt(currCamera.pos, currCamera.targetPos, currCamera.up);
+			viewMat = glm::lookAt(drawCamera.pos, drawCamera.targetPos, drawCamera.up);
 
 			glm::mat4 perspectiveMat = glm::mat4(1.0f);
-			GLfloat fov = currCamera.FOV;
+			GLfloat fov = drawCamera.FOV;
 			GLfloat aspectRatio = static_cast<GLfloat>(applicationPtr->getAspectRatio());
 			GLfloat nearPlanePoint = 0.1f;
 			GLfloat farPlanePoint = 100.0f;
 
-			perspectiveMat = glm::perspective(glm::radians(currCamera.FOV), aspectRatio, nearPlanePoint, farPlanePoint);
+			perspectiveMat = glm::perspective(glm::radians(drawCamera.FOV), aspectRatio, nearPlanePoint, farPlanePoint);
 
 			glm::mat4 mvpMat = glm::mat4(1.0f);
 			mvpMat = perspectiveMat * viewMat * modelMat;
@@ -429,7 +461,6 @@ namespace AssignmentOne
 
 			//It kind of makes sense to use the scale in the model to set the glPointSize for this draw 
 			//if (currDraw.mesh.drawType == GL_POINT)
-				
 
 			if (currDraw.mesh.isDrawElements)
 				glDrawElements(currDraw.mesh.drawType, 0, GL_UNSIGNED_INT, currDraw.mesh.indices);
@@ -439,12 +470,14 @@ namespace AssignmentOne
 	}
 
 
+
 	void InitMeshes()
 	{
 
-
 		meshMap.emplace(MeshNames::quad, InitQuadMesh(upQuadPositions));
 		meshMap.emplace(MeshNames::axis, InitAxis());
+		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
+
 		meshMap.emplace("Test", InitTestAlignedPlanes());
 		//meshMap.emplace(MeshNames::point, InitPoint());
 	}
@@ -537,14 +570,31 @@ namespace AssignmentOne
 
 		Model testModel;
 		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
-		SubmitDraw(testModel, meshMap.at("Test"));
+		//SubmitDraw(testModel, meshMap.at("Test"));
 		//Model pointModel;
 		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
 
+		static Model worldLineTestMode;
+		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+		worldLineTestMode.pos = glm::vec3(0.0f, 1.0f, 0.0f);
+		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
+
+		SubmitDraw(worldLineTestMode, meshMap.at(MeshNames::worldLine));
 		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
 
-		DrawAll(drawList);
+
+		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
+
+		DrawAll(drawList, currCamera);
+
+		glViewport(applicationPtr->getWindowWidth() - applicationPtr->getWindowWidth() * (1.0f - positionTopRightViewportPercent.x), 
+			applicationPtr->getWindowHeight() - applicationPtr->getWindowHeight() * (1.0f - positionTopRightViewportPercent.y), 
+			applicationPtr->getWindowWidth() * scaleTopRightViewportPercent.x, 
+			applicationPtr->getWindowHeight() * scaleTopRightViewportPercent.y);
+
+		DrawAll(drawList, topDownCamera);
+
 		drawList.clear();
 	}
 }
@@ -687,6 +737,10 @@ namespace AssignmentOne
 			DebugTesting::TestQuadVertices3();
 			DebugTesting::TestQuadVertices4();
 		}
+
+		topDownCamera.pos = topDownCameraPos;
+		topDownCamera.right = worldRight;
+		topDownCamera.up = -worldForward;
 
 
 		InitMeshes();
