@@ -60,6 +60,12 @@
     <None Include="Shaders\VertexShader.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\UniformColor.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\UniformColor.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\dependencies\imgui\imconfig.h">

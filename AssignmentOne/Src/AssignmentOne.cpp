@@ -12,20 +12,28 @@
 //Settings
 namespace AssignmentOne
 {
-	const std::string shaderFolderPath = "../Common/Shaders/";
+	const std::string shaderFolderPath = "../AssignmentOne/Shaders/";
 
 	static std::string vertexShaderPath = shaderFolderPath + "VertexShader.vert";
-
 	static std::string fragShaderPath = shaderFolderPath + "FragShader.frag";
 
 	static shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
+	static shaderFilePath colorShader{ shaderFolderPath + "UniformColor.vert", shaderFolderPath + "UniformColor.frag", "colorShader" };
 
-	static glm::vec3 backgroundColor{ 1.0f, 1.0f, 1.0f };
 
-	constexpr glm::vec3 planeScale = { 1000.0f, 1.0f, 1000.0f };
-	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 100.0f };
+	static glm::vec3 niceOrangeColor{ 1.0f, 0.341f, 0.2f };
+	static glm::vec3 coolPurpleColor{ 0.565f, 0.046f, 0.243f };
+	static glm::vec3 maroonColor{ 0.78f, 0.0f, 0.224f };
+	static glm::vec3 coolOrange{ 1.0f, 0.765f, 0.0f };
 
-	constexpr float floorSpawnPos = -1.0f;
+	static glm::vec3 defaultQuadColor = coolOrange;
+
+	static glm::vec3 backgroundColor = coolPurpleColor;
+
+	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
+	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 1000.0f };
+
+	constexpr float floorSpawnPos = -0.01f;
 
 	//Cannot store as glm::vec3 because 'Right' might not mean x-axis
 	constexpr float axisScaleRight = 100.0f;
@@ -41,7 +49,9 @@ namespace AssignmentOne
 	glm::vec3 topDownCameraPos = { 0.0f, 10.0f, 0.0f };
 
 	//from the bottomleft
-	glm::vec2 positionTopRightViewportPercent = { 0.75f, 0.75f };
+	glm::vec2 positionTopRightViewportPercent = { 0.55f, 0.55f };
+
+	//should be based off aspect ratio
 	glm::vec2 scaleTopRightViewportPercent = { 0.25f, 0.25f };
 
 	namespace MeshNames
@@ -49,8 +59,10 @@ namespace AssignmentOne
 		//can be used for planes too
 		const char quad[] = "quad";
 		const char axis[] = "axis";
+		const char axisInverted[] = "axisInverted";
 		const char point[] = "point";
 		const char worldLine[] = "worldLine";
+		const char quadForward[] = "quadFoward";
 	}
 
 	//To Do: Can allow dynamic model names here too, of course
@@ -68,16 +80,6 @@ namespace AssignmentOne
 
 namespace AssignmentOne
 {
-
-	std::vector<GLfloat> forwardQuadVertexPos =
-	{
-		0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f
-	};
 
 	std::vector<GLfloat> upQuadPositions =
 	{
@@ -100,6 +102,9 @@ namespace AssignmentOne
 	constexpr Camera defaultLookAtCamera;
 	Camera topDownCamera = defaultLookAtCamera;
 	Camera currCamera = defaultLookAtCamera;
+
+	ViewportModel topRightViewport;
+	ViewportModel topRightViewportBorder; //for a border effect
 
 	//Yea its ugly but just set it in the main. I'll abstract it away later
 	GeometryToolbox::GLApplication* applicationPtr;
@@ -201,7 +206,6 @@ namespace AssignmentOne
 		glEnableVertexAttribArray(indexOfPosition);
 		glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
 
-
 		const size_t offsetToFirstColor = meshPositions.size(); //in index before converted to bytes (6 times 3)
 		const size_t vertexColorStride = 0;
 		const size_t indexOfColor = 1; //in the fragment shader
@@ -217,12 +221,15 @@ namespace AssignmentOne
 		return mesh;
 	}
 
+
+
+	
 	//Using GL lines
-	Mesh InitAxis()
+	Mesh InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
 	{
-		glm::vec3 rightAxis = worldOrigin + (worldRight * axisScaleRight);
-		glm::vec3 upAxis = worldOrigin + (worldUp * axisScaleUp);
-		glm::vec3 forwardAxis = worldOrigin + (worldForward * axisScaleForward);
+		glm::vec3 rightAxis = worldOrigin + (axisRight * axisScaleRight);
+		glm::vec3 upAxis = worldOrigin + (axisUp * axisScaleUp);
+		glm::vec3 forwardAxis = worldOrigin + (axisForward * axisScaleForward);
 
 		//Why not just have a Line mesh and then transform three of them? Becuase I still need an axis to debug coordinate space
 
@@ -257,7 +264,7 @@ namespace AssignmentOne
 
 
 	//Line that is affected by MVP projection (so it exists in the world). The default orientation is pointing to the Right vector
-	Mesh InitWorldLine(glm::vec3 basisVector = worldRight, float lineScale = 1.0f)
+	Mesh InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
 	{
 		glm::vec3 vectorDir = worldOrigin + (basisVector * lineScale);
 		std::vector<GLfloat> linePoints
@@ -363,9 +370,9 @@ namespace AssignmentOne
 		for (GLfloat& i : quadPositions)
 			i *= quadScale;
 
-		constexpr float quadColorR = 0.0f;
-		constexpr float quadColorG = 1.0f;
-		constexpr float quadColorB = 0.85f;
+		float quadColorR = defaultQuadColor.r;
+		float quadColorG = defaultQuadColor.g;
+		float quadColorB = defaultQuadColor.b;
 
 		std::vector<GLfloat> quadColors =
 		{
@@ -384,6 +391,29 @@ namespace AssignmentOne
 	void SubmitDraw(Model const& model, Mesh const& mesh)
 	{
 		drawList.emplace_back(drawObject{ model, mesh });
+	}
+
+	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
+	void FillScreen(glm::vec3 colorFill = glm::vec3(1.0f, 1.0f, 1.0f))
+	{
+		Mesh quadMesh = meshMap.at(MeshNames::quadForward);
+
+		glm::mat4 modelMat = glm::mat4(1.0f);
+		modelMat = glm::scale(modelMat, glm::vec3(1000.0f, 1000.0f, 1000.0f));
+
+		unsigned int programID = assignmentShaders.getShaderID(colorShader.shaderName);
+		glUseProgram(programID);
+
+		GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &modelMat[0][0]);
+
+		GLint colorLoc = glGetUniformLocation(programID, "setColor");
+
+		glUniform3fv(colorLoc, 1, (float*)&colorFill);
+
+
+		glBindVertexArray(quadMesh.VAO);
+		glDrawArrays(quadMesh.drawType, 0, quadMesh.arrayCount);
 	}
 
 	void DrawAxis()
@@ -473,9 +503,28 @@ namespace AssignmentOne
 
 	void InitMeshes()
 	{
+		glm::vec3 pt(-1.0f, 0.0f, 1.0f);
 
-		meshMap.emplace(MeshNames::quad, InitQuadMesh(upQuadPositions));
+		glm::vec3 relativeRight = worldRight;
+		glm::vec3 relativeUp = -worldForward;
+
+		std::vector<GLfloat> quadPlanepos = makeQuadFromPointBottomLeft(pt, relativeRight, relativeUp);
+
+
+		meshMap.emplace(MeshNames::quad, InitQuadMesh(quadPlanepos));
+
+		pt = glm::vec3(-1.0f, -1.0f, 0.0f);
+
+		relativeRight = worldRight;
+		relativeUp = worldUp;
+
+		quadPlanepos = makeQuadFromPointBottomLeft(pt, relativeRight, relativeUp);
+
+		meshMap.emplace(MeshNames::quadForward, InitQuadMesh(quadPlanepos));
+
 		meshMap.emplace(MeshNames::axis, InitAxis());
+		meshMap.emplace(MeshNames::axisInverted, InitAxis(-worldRight, -worldUp, -worldForward));
+
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 
 		meshMap.emplace("Test", InitTestAlignedPlanes());
@@ -555,8 +604,45 @@ namespace AssignmentOne
 		return 0;
 	}
 
+	void initPictureInPicture()
+	{
+		//Hardcoded testing of ideas in pixels
+
+		//in pixels
+
+		//Add this twice to each edge (think of a picture frame)
+		float borderSideLength = 2.0f;
+		float borderSideHeight = 2.0f;
+
+		topRightViewport.viewportScale = glm::vec2(200.0f, 200.0f);
+		topRightViewport.bottomLeft.x = (applicationPtr->getWindowWidth() - topRightViewport.viewportScale.x - topRightViewport.viewportScale.x * 0.1f);
+		topRightViewport.bottomLeft.y = (applicationPtr->getWindowHeight() - topRightViewport.viewportScale.y - topRightViewport.viewportScale.y * 0.1f);
+
+
+		topRightViewportBorder.bottomLeft = topRightViewport.bottomLeft;
+		topRightViewportBorder.bottomLeft.x -= borderSideLength;
+		topRightViewportBorder.bottomLeft.y -= borderSideHeight;
+
+
+		topRightViewportBorder.viewportScale = glm::vec2(topRightViewport.viewportScale.x + borderSideLength * 2.0f, topRightViewport.viewportScale.y + borderSideHeight * 2.0f);
+	}
+	
+	void RenderPictureinPicture()
+	{
+		//Treat the viewports like transformations.
+
+		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
+		FillScreen();
+
+		glViewport(topRightViewport.bottomLeft.x, topRightViewport.bottomLeft.y, topRightViewport.viewportScale.x, topRightViewport.viewportScale.y);
+		DrawAll(drawList, topDownCamera);
+	}
+
 	void RenderAssignment()
 	{
+
+		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
+
 		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -566,7 +652,7 @@ namespace AssignmentOne
 		RenderDearImguiDefault();
 
 		//SubmitDraw(Model{}, meshMap.at(MeshNames::quad));
-		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
+
 
 		Model testModel;
 		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -575,26 +661,20 @@ namespace AssignmentOne
 		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
 
+		SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
+		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
+		SubmitDraw(Model{}, meshMap.at(MeshNames::axisInverted));
+
 		static Model worldLineTestMode;
 		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-		worldLineTestMode.pos = glm::vec3(0.0f, 1.0f, 0.0f);
+		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
 		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
 
 		SubmitDraw(worldLineTestMode, meshMap.at(MeshNames::worldLine));
-		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
-
-
-		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
 
 		DrawAll(drawList, currCamera);
 
-		glViewport(applicationPtr->getWindowWidth() - applicationPtr->getWindowWidth() * (1.0f - positionTopRightViewportPercent.x), 
-			applicationPtr->getWindowHeight() - applicationPtr->getWindowHeight() * (1.0f - positionTopRightViewportPercent.y), 
-			applicationPtr->getWindowWidth() * scaleTopRightViewportPercent.x, 
-			applicationPtr->getWindowHeight() * scaleTopRightViewportPercent.y);
-
-		DrawAll(drawList, topDownCamera);
-
+		RenderPictureinPicture();
 		drawList.clear();
 	}
 }
@@ -728,6 +808,8 @@ namespace AssignmentOne
 	int InitAssignment()
 	{
 		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
+		assignmentShaders.loadShader(colorShader.shaderName, colorShader);
+
 		std::cout << "Assignment Shaders Loaded\n";
 
 		if (runDebugTests)
@@ -744,6 +826,8 @@ namespace AssignmentOne
 
 
 		InitMeshes();
+
+		initPictureInPicture();
 
 
 		ObjectMaker::MakeFloor();

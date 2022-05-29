@@ -34,6 +34,9 @@
 #include "AssignmentOne.h"
 
 
+constexpr unsigned int startWindowWidth = 1280;
+constexpr unsigned int startWindowHeight = 800;
+
 double GeometryToolbox::GLApplication::getDeltaTime()
 {
     return gDeltaTime;
@@ -105,8 +108,8 @@ int GeometryToolbox::GLApplication::updateApplication()
 
 int GeometryToolbox::GLApplication::initApplication()
 {
-    gWindowWidth = 800;
-    gWindowHeight = 600;
+    gWindowWidth = startWindowWidth;
+    gWindowHeight = startWindowHeight;
     gAspectRatio = 0.0f;
 
     // Initialise GLFW
@@ -126,7 +129,7 @@ int GeometryToolbox::GLApplication::initApplication()
 
     // Open a window and create its OpenGL context
     window = glfwCreateWindow(gWindowWidth, gWindowHeight, // window dimensions
-        "Sample 1 - Simple scene (Quad) with Scene Class", // window title
+        "Clementine Shamaney: Assignment 1", // window title
         nullptr, // which monitor (if full-screen mode)
         nullptr); // if sharing context with another window
     if (window == nullptr)

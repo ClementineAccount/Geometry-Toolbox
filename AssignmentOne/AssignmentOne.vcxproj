@@ -147,6 +147,8 @@
     <None Include="Shaders\FragShader.frag" />
     <None Include="Shaders\QuadFragmentShader.frag" />
     <None Include="Shaders\QuadVertexShader.vert" />
+    <None Include="Shaders\UniformColor.frag" />
+    <None Include="Shaders\UniformColor.vert" />
     <None Include="Shaders\VertexShader.vert" />
   </ItemGroup>
   <ItemGroup>

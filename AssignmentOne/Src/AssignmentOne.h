@@ -58,6 +58,7 @@ namespace AssignmentOne
         //glm::vec2 texture;
     };
 
+
     struct Mesh
     {
         unsigned int VAO = 0;
@@ -76,6 +77,9 @@ namespace AssignmentOne
     constexpr glm::vec3 worldUp = { 0.0f, 1.0f, 0.0f };
     constexpr glm::vec3 worldRight = { 1.0f, 0.0f, 0.0f };
     constexpr glm::vec3 worldForward = { 0.0f, 0.0f, 1.0f };
+
+    constexpr glm::vec3 unitLineBasisVector = worldRight;
+    constexpr float unitLineScale = 1.0f;
 
     constexpr glm::vec3 defaultPivotPercent = { 0.5f, 0.5f, 0.0f };
     constexpr float defaultFOV = 90.0f;
@@ -113,6 +117,13 @@ namespace AssignmentOne
         glm::vec3 right{ worldRight };
 
        float FOV{ defaultFOV };
+    };
+
+    //Viewports can be treated like 2D plane model transformations
+    struct ViewportModel
+    {
+        glm::vec2 bottomLeft{ 0.0f, 0.0f };
+        glm::vec2 viewportScale{ 1.0f, 1.0f }; //in pixels
     };
 
     //For testing some functions. I can just assign it here and then pass it in
