@@ -10,6 +10,12 @@
 *.userosscache
 *.sln.docstates
 
+backup/
+.autogit.sh
+.snapshot-subroutine.sh
+.gitignore.example
+
+
 # Depedencies
 #dependencies/
 
