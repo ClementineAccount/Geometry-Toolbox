@@ -80,9 +80,26 @@ namespace AssignmentOne
 	}
 
 
+	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
+	namespace SceneNames
+	{
+		const char defaultScene[] = "defaultScene";
+
+		//Just the axis and cube
+		const char TestSceneCube[] = "TestCube";
+
+		//Just the axis and sphere
+		const char TestSceneSphere[] = "TestSphere";
+	}
+
+
+	std::string currentSceneName;
+
+
 	//To Do: Can allow dynamic model names here too, of course
 	namespace ModelNames
 	{
+		const char defaultModel[] = "default";
 		const char floorPlane[] = "floorPlaneModel";
 		const char pointModel[] = "pointModel"; //for debugging posBuffer
 	}
@@ -106,7 +123,7 @@ namespace AssignmentOne
 		-1.0f, 0.0f, -1.0f  // 5
 	};
 
-
+	std::unordered_map<std::string, AssignmentScene> sceneMap;
 	std::unordered_map<std::string, Mesh> meshMap;
 	std::unordered_map<std::string, Model> modelMap;
 
@@ -402,7 +419,7 @@ namespace AssignmentOne
 	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
 	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
-	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
+	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 0.5f)
 	{
 		float PI = 3.14f;
 
@@ -634,9 +651,14 @@ namespace AssignmentOne
 		return quadMesh;
 	}
 
-	void SubmitDraw(Model const& model, Mesh const& mesh)
+	void SubmitDraw(std::string const modelName, std::string const meshName)
 	{
-		drawList.emplace_back(drawCall{ model, mesh });
+		drawList.emplace_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName)});
+	}
+
+	void SubmitDraw(Model model, std::string const meshName)
+	{
+		drawList.emplace_back(drawCall{ model, meshMap.at(meshName) });
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
@@ -662,11 +684,6 @@ namespace AssignmentOne
 		glDrawArrays(quadMesh.drawType, 0, quadMesh.arrayCount);
 	}
 
-	void DrawAxis()
-	{
-
-
-	}
 
 	void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera)
 	{
@@ -686,22 +703,24 @@ namespace AssignmentOne
 			//if (!currDraw.isRendering)
 			//	continue;
 
+			Model const& currModel = currDraw.model;
+
 			//mvp
 			glm::mat4 modelMat = glm::mat4(1.0f);
 
-			modelMat = glm::translate(modelMat, currDraw.model.pos);
+			modelMat = glm::translate(modelMat, currModel.pos);
 
 			//The vector that does rotation at the pivot specified
-			glm::vec3 pivotTransVector = makePivotVector(currDraw.model);
+			glm::vec3 pivotTransVector = makePivotVector(currModel);
 
 			//modelMat = glm::translate(modelMat, pivotTransVector);
 
-			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.x), worldRight);
-			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.y), worldUp);
-			modelMat = glm::rotate(modelMat, glm::radians(currDraw.model.rotDegrees.z), worldForward);
+			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.x), worldRight);
+			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.y), worldUp);
+			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.z), worldForward);
 
 			//modelMat = glm::translate(modelMat, -pivotTransVector);
-			modelMat = glm::scale(modelMat, currDraw.model.scale);
+			modelMat = glm::scale(modelMat, currModel.scale);
 
 
 			glm::mat4 viewMat = glm::mat4(1.0f);
@@ -725,27 +744,31 @@ namespace AssignmentOne
 			unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
 			glUseProgram(programID);
 
+			Mesh const& currMesh = currDraw.mesh;
+
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
-			glBindVertexArray(currDraw.mesh.VAO);
+			glBindVertexArray(currMesh.VAO);
 
 
 
-		/*	glPointSize(currDraw.model.scale.x);
+		/*	glPointSize(currModel.scale.x);
 			glPointColor*/
 
 			//It kind of makes sense to use the scale in the model to set the glPointSize for this draw 
 			//if (currDraw.mesh.drawType == GL_POINT)
 
-			if (currDraw.mesh.isDrawElements)
+
+
+			if (currMesh.isDrawElements)
 			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currDraw.mesh.EBO);
-				glDrawElements(currDraw.mesh.drawType, currDraw.mesh.elementCount, GL_UNSIGNED_INT, 0);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currMesh.EBO);
+				glDrawElements(currMesh.drawType, currMesh.elementCount, GL_UNSIGNED_INT, 0);
 			}
 
 			else
-				glDrawArrays(currDraw.mesh.drawType, 0, currDraw.mesh.arrayCount);
+				glDrawArrays(currMesh.drawType, 0, currMesh.arrayCount);
 		}
 	}
 
@@ -784,11 +807,10 @@ namespace AssignmentOne
 		//meshMap.emplace(MeshNames::point, InitPoint());
 	}
 
-
-
-	void UpdateAssignment()
+	void SetScene(std::string setScene)
 	{
-		modelMap.at(ModelNames::floorPlane).scale = floorPlaneScale;
+		sceneMap.at(setScene).initScene();
+		currentSceneName = setScene;
 	}
 
 	//Has to be different per thing later
@@ -896,9 +918,54 @@ namespace AssignmentOne
 		DrawAll(drawList, topDownCamera);
 	}
 
-	void RenderAssignment()
+	void RenderAxis()
+	{
+		SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
+		SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
+
+	}
+
+	void RenderAssignmentTesting()
 	{
 
+		Model testModel;
+		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
+
+		Model sphereModel;
+		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+		//SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
+
+		RenderAxis();
+		//SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
+		//SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
+
+
+		static Model worldLineTestMode;
+		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
+		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
+
+		SubmitDraw(worldLineTestMode, MeshNames::worldLine);
+
+		static Model testCube;
+		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
+
+
+		DrawAll(drawList, currCamera);
+
+	}
+
+	void UpdateAssignment()
+	{
+		sceneMap.at(currentSceneName).updateScene();
+	}
+
+
+
+	void RenderAssignment()
+	{
 		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
 
 		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
@@ -915,42 +982,14 @@ namespace AssignmentOne
 
 		RenderDearImguiDefault();
 
-		//SubmitDraw(Model{}, meshMap.at(MeshNames::quad));
+		RenderAssignmentTesting();
 
-
-		Model testModel;
-		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
-		//SubmitDraw(testModel, meshMap.at("Test"));
-		//Model pointModel;
-		//pointModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-		//SubmitDraw(pointModel, meshMap.at(MeshNames::point));
-
-		//SubmitDraw(modelMap.at(ModelNames::floorPlane), meshMap.at(MeshNames::quad));
-		//SubmitDraw(Model{}, meshMap.at(MeshNames::ring));
-		
-		Model sphereModel;
-		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-		SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
-		SubmitDraw(Model{}, meshMap.at(MeshNames::axis));
-		SubmitDraw(Model{}, meshMap.at(MeshNames::axisInverted));
-
-		static Model worldLineTestMode;
-		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
-		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
-
-		static Model testCube;
-		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
-
-		//SubmitDraw(testCube, meshMap.at(MeshNames::cube));
-
-		SubmitDraw(worldLineTestMode, meshMap.at(MeshNames::worldLine));
-
-		DrawAll(drawList, currCamera);
+		//DrawAll(drawList, currCamera);
 
 		RenderPictureinPicture();
+
+		//sceneMap.at(currentSceneName).renderScene();
+
 		drawList.clear();
 	}
 }
@@ -1181,6 +1220,58 @@ namespace AssignmentOne
 }
 
 
+
+//Scenes
+namespace AssignmentOne
+{
+	namespace Scene
+	{
+		//Scene that does nothing
+		namespace Default
+		{
+			void Init() {};
+			void Update() {};
+			void Render() {};
+		}
+
+		namespace Cube
+		{
+			Model cubeModel;
+
+			//Assumption: Meshes are already initialized so we are only creating models
+			void Init()
+			{
+				cubeModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+			}
+
+			void Update()
+			{
+				cubeModel.rotDegrees += applicationPtr->getDeltaTime() * 5.0f;
+			}
+
+
+			//The DearImgui for this scene
+			void RenderDearImgui()
+			{
+				RenderDearImguiDefault();
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(ModelNames::defaultModel, MeshNames::cube);
+				
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+
+				drawList.clear();
+			}
+		}
+	}
+}
+
+
 //For the object maker
 namespace AssignmentOne
 {
@@ -1199,7 +1290,25 @@ namespace AssignmentOne
 		modelMap.emplace(ModelNames::floorPlane, planeModel);
 	}
 
+	void InitScenes()
+	{
+		currentSceneName = SceneNames::defaultScene;
 
+		//AssignmentScene defaultScene;
+		//defaultScene.initScene = AssignmentOne::Scene::Default::Init;
+		//defaultScene.renderScene = AssignmentOne::Scene::Default::Render;
+		//defaultScene.updateScene = AssignmentOne::Scene::Default::Update;
+
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
+			AssignmentScene{ AssignmentOne::Scene::Default::Init,
+			AssignmentOne::Scene::Default::Render,  AssignmentOne::Scene::Default::Update }));
+
+		AssignmentScene cubeScene;
+		cubeScene.initScene = AssignmentOne::Scene::Cube::Init;
+		cubeScene.renderScene = AssignmentOne::Scene::Cube::Render;
+		cubeScene.updateScene = AssignmentOne::Scene::Cube::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
+	}
 
 	int InitAssignment()
 	{
@@ -1223,13 +1332,16 @@ namespace AssignmentOne
 		topDownCamera.right = worldRight;
 		topDownCamera.up = -worldForward;
 
-
 		InitMeshes();
-
 		initPictureInPicture();
-
-
 		ObjectMaker::MakeFloor();
+
+		Model model;
+
+		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));;
+
+		InitScenes();
+		currentSceneName = SceneNames::TestSceneCube;
 
 		return 0;
 	}

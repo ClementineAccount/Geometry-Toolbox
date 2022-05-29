@@ -148,13 +148,20 @@ namespace AssignmentOne
     };
 
 
+    using sceneFunction = std::function<void(void)>;
+    struct AssignmentScene
+    {
+        std::function<void(void)> initScene;
+        std::function<void(void)> updateScene;
+        std::function<void(void)> renderScene;
+    };
 
 
     //Submit to the drawList
-    void SubmitDraw(Model const& model, Mesh const& mesh);
+    void SubmitDraw(std::string const modelName, std::string const meshName);
 
     //Draws all 
-    void DrawAll(std::vector<drawCall> const& drawList);
+    void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera);
 
     Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
