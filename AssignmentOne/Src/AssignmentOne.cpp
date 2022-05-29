@@ -86,10 +86,10 @@ namespace AssignmentOne
 		const char defaultScene[] = "defaultScene";
 
 		//Just the axis and cube
-		const char TestSceneCube[] = "TestCube";
+		const char TestSceneCube[] = "Cube Example";
 
 		//Just the axis and sphere
-		const char TestSceneSphere[] = "TestSphere";
+		const char TestSceneSphere[] = "Sphere Example";
 	}
 
 
@@ -146,7 +146,7 @@ namespace AssignmentOne
 		applicationPtr = &appPtr;
 	}
 
-	std::vector<drawCall> drawList;
+	static std::vector<drawCall> drawList;
 
 
 	std::vector<GLfloat> verticesFromVectorList(std::vector<glm::vec3> vectorList)
@@ -826,6 +826,18 @@ namespace AssignmentOne
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
 		
 		ImGui::End();
+
+		ImGui::Begin("Scenes");
+		ImGui::Text(("Current Scene: " + currentSceneName).c_str());
+		if (ImGui::Button(SceneNames::TestSceneSphere))
+		{
+			currentSceneName = SceneNames::TestSceneSphere;
+		}
+		else if (ImGui::Button(SceneNames::TestSceneCube))
+		{
+			currentSceneName = SceneNames::TestSceneCube;
+		}
+		ImGui::End();
 	}
 
 	//Temp values for testing
@@ -982,15 +994,8 @@ namespace AssignmentOne
 
 		RenderDearImguiDefault();
 
-		RenderAssignmentTesting();
+		sceneMap.at(currentSceneName).renderScene();
 
-		//DrawAll(drawList, currCamera);
-
-		RenderPictureinPicture();
-
-		//sceneMap.at(currentSceneName).renderScene();
-
-		drawList.clear();
 	}
 }
 
@@ -1246,7 +1251,7 @@ namespace AssignmentOne
 
 			void Update()
 			{
-				cubeModel.rotDegrees += applicationPtr->getDeltaTime() * 5.0f;
+				cubeModel.rotDegrees.y += applicationPtr->getDeltaTime() * 200.0f;
 			}
 
 
@@ -1260,13 +1265,37 @@ namespace AssignmentOne
 			{
 				RenderAxis();
 
-				SubmitDraw(ModelNames::defaultModel, MeshNames::cube);
-				
+				SubmitDraw(cubeModel, MeshNames::cube);
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
-
 				drawList.clear();
 			}
+		}
+
+		namespace Sphere
+		{
+			Model sphereModel;
+
+			void Init()
+			{
+				sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+			}
+
+			void Update()
+			{
+				sphereModel.rotDegrees.y += applicationPtr->getDeltaTime() * 20.0f;
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(sphereModel, MeshNames::sphere);
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
 		}
 	}
 }
@@ -1308,6 +1337,12 @@ namespace AssignmentOne
 		cubeScene.renderScene = AssignmentOne::Scene::Cube::Render;
 		cubeScene.updateScene = AssignmentOne::Scene::Cube::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
+
+		AssignmentScene sphereScene;
+		sphereScene.initScene = AssignmentOne::Scene::Sphere::Init;
+		sphereScene.renderScene = AssignmentOne::Scene::Sphere::Render;
+		sphereScene.updateScene = AssignmentOne::Scene::Sphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
 	}
 
 	int InitAssignment()
@@ -1341,7 +1376,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));;
 
 		InitScenes();
-		currentSceneName = SceneNames::TestSceneCube;
+		currentSceneName = SceneNames::TestSceneSphere;
 
 		return 0;
 	}
