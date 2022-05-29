@@ -6,6 +6,8 @@
 #include <functional>
 #include <iostream>
 
+#include <map>
+
 // Include Dear Imgui
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
@@ -39,6 +41,9 @@ namespace AssignmentOne
 	static glm::vec3 defaultQuadColor = coolOrange;
 	static glm::vec3 defaultCubeColor = basicBlue;
 
+	static glm::vec3 collidedBackgroundColor = basicBlue;
+	static glm::vec3 neutralBackgroundColor = blackish;
+
 	static glm::vec3 backgroundColor = blackish;
 
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
@@ -65,19 +70,6 @@ namespace AssignmentOne
 	//should be based off aspect ratio
 	glm::vec2 scaleTopRightViewportPercent = { 0.25f, 0.25f };
 
-	namespace MeshNames
-	{
-		//can be used for planes too
-		const char quad[] = "quad";
-		const char axis[] = "axis";
-		const char axisInverted[] = "axisInverted";
-		const char point[] = "point";
-		const char worldLine[] = "worldLine";
-		const char quadForward[] = "quadFoward";
-		const char cube[] = "cube";
-		const char ring[] = "ring";
-		const char sphere[] = "sphere";
-	}
 
 
 	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
@@ -90,6 +82,8 @@ namespace AssignmentOne
 
 		//Just the axis and sphere
 		const char TestSceneSphere[] = "Sphere Example";
+
+		const char SphereOnSphere[] = "Sphere on Sphere";
 	}
 
 
@@ -123,8 +117,8 @@ namespace AssignmentOne
 		-1.0f, 0.0f, -1.0f  // 5
 	};
 
-	std::unordered_map<std::string, AssignmentScene> sceneMap;
-	std::unordered_map<std::string, Mesh> meshMap;
+	std::map<std::string, AssignmentScene> sceneMap;
+
 	std::unordered_map<std::string, Model> modelMap;
 
 	Mesh quadMesh;
@@ -419,7 +413,7 @@ namespace AssignmentOne
 	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
 	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
-	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 0.5f)
+	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
 	{
 		float PI = 3.14f;
 
@@ -809,6 +803,9 @@ namespace AssignmentOne
 
 	void SetScene(std::string setScene)
 	{
+		//That way there is a default background for every scene
+		backgroundColor = neutralBackgroundColor;
+
 		sceneMap.at(setScene).initScene();
 		currentSceneName = setScene;
 	}
@@ -829,13 +826,13 @@ namespace AssignmentOne
 
 		ImGui::Begin("Scenes");
 		ImGui::Text(("Current Scene: " + currentSceneName).c_str());
-		if (ImGui::Button(SceneNames::TestSceneSphere))
+		std::map<std::string, AssignmentScene>::iterator it;
+		for (it = sceneMap.begin(); it != sceneMap.end(); it++)
 		{
-			currentSceneName = SceneNames::TestSceneSphere;
-		}
-		else if (ImGui::Button(SceneNames::TestSceneCube))
-		{
-			currentSceneName = SceneNames::TestSceneCube;
+			if (ImGui::Button(it->first.c_str()))
+			{
+				SetScene(it->first.c_str());
+			}
 		}
 		ImGui::End();
 	}
@@ -939,6 +936,12 @@ namespace AssignmentOne
 		SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
 		SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
 
+	}
+
+	void UpdatePhysics(glm::vec3& pos, Kinematics const& kinematics)
+	{
+		//Currently assumes constant acceleration (also instanaous velocity anyways)
+		pos +=  static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * kinematics.normVector);
 	}
 
 	void RenderAssignmentTesting()
@@ -1233,9 +1236,9 @@ namespace AssignmentOne
 //Scenes
 namespace AssignmentOne
 {
-	namespace Scene
+	namespace AssignmentScenes
 	{
-		//Scene that does nothing
+		//AssignmentScenes that does nothing
 		namespace Default
 		{
 			void Init() {};
@@ -1282,7 +1285,9 @@ namespace AssignmentOne
 
 			void Init()
 			{
-				sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+				currCamera.pos = defaultLookAtCamera.pos;
+				sphereModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 			}
 
 			void Update()
@@ -1295,6 +1300,56 @@ namespace AssignmentOne
 				RenderAxis();
 
 				SubmitDraw(sphereModel, MeshNames::sphere);
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+		}
+
+		namespace SphereCollision 
+		{
+			//GameObject sphereObject;
+				
+			SphereCollider sphereOne;
+			SphereCollider sphereTwo;
+			Kinematics sphereOnePhysics;
+
+			//SphereCollider sphereTwo;
+
+			void Init()
+			{
+				sphereOne.radius = 0.25f;
+				sphereOne.centerPos = glm::vec3(0.0f, 1.0f, -10.0f);
+				sphereOnePhysics.speed = 0.75f;
+				sphereOnePhysics.normVector = worldForward;
+
+				sphereTwo.radius = 1.0f;
+				sphereTwo.centerPos = glm::vec3(0.0f, 1.0f, 0.0f);
+
+				currCamera.pos = glm::vec3(5.0f, 5.0f, 3.0f);
+			}
+
+			
+			void Update()
+			{
+				UpdatePhysics(sphereOne.centerPos, sphereOnePhysics);
+
+				//To Do: Have it so it updates the sphere colors instead
+				if (collisionCheck(sphereOne, sphereTwo))
+					backgroundColor = collidedBackgroundColor;
+				else
+					backgroundColor = neutralBackgroundColor;
+
+				sphereOne.UpdateModel();
+				sphereTwo.UpdateModel();
+			}
+
+			void Render()
+			{
+				RenderAxis();
+				SubmitDraw(sphereOne.model, sphereOne.meshID);
+				SubmitDraw(sphereTwo.model, sphereOne.meshID);
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
 				drawList.clear();
@@ -1328,25 +1383,38 @@ namespace AssignmentOne
 		currentSceneName = SceneNames::defaultScene;
 
 		//AssignmentScene defaultScene;
-		//defaultScene.initScene = AssignmentOne::Scene::Default::Init;
-		//defaultScene.renderScene = AssignmentOne::Scene::Default::Render;
-		//defaultScene.updateScene = AssignmentOne::Scene::Default::Update;
+		//defaultScene.initScene = AssignmentOne::AssignmentScenes::Default::Init;
+		//defaultScene.renderScene = AssignmentOne::AssignmentScenes::Default::Render;
+		//defaultScene.updateScene = AssignmentOne::AssignmentScenes::Default::Update;
 
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
-			AssignmentScene{ AssignmentOne::Scene::Default::Init,
-			AssignmentOne::Scene::Default::Render,  AssignmentOne::Scene::Default::Update }));
+			AssignmentScene{ AssignmentOne::AssignmentScenes::Default::Init,
+			AssignmentOne::AssignmentScenes::Default::Render,  AssignmentOne::AssignmentScenes::Default::Update }));
 
 		AssignmentScene cubeScene;
-		cubeScene.initScene = AssignmentOne::Scene::Cube::Init;
-		cubeScene.renderScene = AssignmentOne::Scene::Cube::Render;
-		cubeScene.updateScene = AssignmentOne::Scene::Cube::Update;
+		cubeScene.initScene = AssignmentOne::AssignmentScenes::Cube::Init;
+		cubeScene.renderScene = AssignmentOne::AssignmentScenes::Cube::Render;
+		cubeScene.updateScene = AssignmentOne::AssignmentScenes::Cube::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
 
 		AssignmentScene sphereScene;
-		sphereScene.initScene = AssignmentOne::Scene::Sphere::Init;
-		sphereScene.renderScene = AssignmentOne::Scene::Sphere::Render;
-		sphereScene.updateScene = AssignmentOne::Scene::Sphere::Update;
+		sphereScene.initScene = AssignmentOne::AssignmentScenes::Sphere::Init;
+		sphereScene.renderScene = AssignmentOne::AssignmentScenes::Sphere::Render;
+		sphereScene.updateScene = AssignmentOne::AssignmentScenes::Sphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
+
+		AssignmentScene sphereSceneTwo;
+		sphereSceneTwo.initScene = AssignmentScenes::SphereCollision::Init;
+		sphereSceneTwo.renderScene = AssignmentScenes::SphereCollision::Render;
+		sphereSceneTwo.updateScene = AssignmentScenes::SphereCollision::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereOnSphere, AssignmentScene(sphereSceneTwo)));
+
+		//Init every scene one by one 
+		std::map<std::string, AssignmentScene>::iterator it;
+		for (it = sceneMap.begin(); it != sceneMap.end(); it++)
+		{
+			it->second.initScene();
+		}
 	}
 
 	int InitAssignment()
@@ -1377,10 +1445,10 @@ namespace AssignmentOne
 
 		Model model;
 
-		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));;
+		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::TestSceneSphere;
+		currentSceneName = SceneNames::SphereOnSphere;
 
 		return 0;
 	}

@@ -8,12 +8,13 @@
 #include <vector>
 #include <unordered_map>
 
-//#include "CollisionHelper.h"
-
 // Include GLFW
 #include <GLFW/glfw3.h>
 #include "shader.hpp"
 
+
+//Forward declare
+class CollisionObject;
 
 namespace AssignmentOne
 {
@@ -109,6 +110,19 @@ namespace AssignmentOne
         glm::vec3 color{ 1.0f, 1.0f, 1.0f };
     };
 
+    struct Kinematics
+    {
+        float speed = 0.0f;
+        glm::vec3 normVector = glm::vec3(0.0f, 0.0f, 0.0f);
+
+
+        //Might implement later, would need to have all Kinematics update every frame
+        //float acceleration = 0.0f;
+        //glm::vec3 normAccelerationVector = glm::vec3(0.0f, 0.0f, 0.0f);
+    };
+
+    void UpdatePhysics(Model& model, Kinematics const& kinematics);
+
 
     //View matrix
     struct Camera
@@ -133,11 +147,14 @@ namespace AssignmentOne
 
     //void RenderModel(Model const& model, GLuint const shaderID = defaultShaderID);
 
-    struct Gameobject
+    struct GameObject
     {
         Model model; //the transforms
         std::string meshID; //To Do: You could change this to use uint_32 instead eventually
         bool isActive = true;
+        
+        std::unique_ptr<CollisionObject> colliderPtr;
+        std::unique_ptr<Kinematics> kinematics = std::make_unique<Kinematics>();
     };
 
     struct drawCall
@@ -155,6 +172,8 @@ namespace AssignmentOne
         std::function<void(void)> updateScene;
         std::function<void(void)> renderScene;
     };
+
+    static std::unordered_map<std::string, Mesh> meshMap;
 
 
     //Submit to the drawList
@@ -187,6 +206,20 @@ namespace AssignmentOne
         static void MakeFloor();
     };
 
+
+    namespace MeshNames
+    {
+        //can be used for planes too
+        static const char quad[] = "quad";
+        static const char axis[] = "axis";
+        static const char axisInverted[] = "axisInverted";
+        static const char point[] = "point";
+        static const char worldLine[] = "worldLine";
+        static const char quadForward[] = "quadFoward";
+        static const char cube[] = "cube";
+        static const char ring[] = "ring";
+        static const char sphere[] = "sphere";
+    }
  
 }
 

@@ -6,7 +6,7 @@ using namespace Scenes;
 
 void SceneManager::addScene(std::string const& sceneName, std::shared_ptr<SceneClass> scenePtr)
 {
-	//assert(sceneMap.count(sceneName) == 0 && "Scene with name already exists.");
+	//assert(sceneMap.count(sceneName) == 0 && "AssignmentScenes with name already exists.");
 	sceneMap.insert({ sceneName, scenePtr });
 	initSceneQueue.push(scenePtr);
 }
