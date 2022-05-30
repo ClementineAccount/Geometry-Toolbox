@@ -62,7 +62,9 @@ namespace AssignmentOne
 
 	glm::vec3 pointDefaultColor = { 0.0f, 1.0f, 0.0f };
 
-	glm::vec3 topDownCameraPos = { 0.0f, 3.0f, 0.0f };
+
+	float topDownCameraHeight = 6.0f;
+	//glm::vec3 topDownCameraPos = { 0.0f, 3.0f, 0.0f };
 
 	//from the bottomleft
 	glm::vec2 positionTopRightViewportPercent = { 0.55f, 0.55f };
@@ -128,6 +130,8 @@ namespace AssignmentOne
 	constexpr Camera defaultLookAtCamera;
 	Camera topDownCamera = defaultLookAtCamera;
 	Camera currCamera = defaultLookAtCamera;
+	//Camera firstPersonCamera;
+
 
 	ViewportModel topRightViewport;
 	ViewportModel topRightViewportBorder; //for a border effect
@@ -764,6 +768,7 @@ namespace AssignmentOne
 
 
 
+
 	void InitMeshes()
 	{
 		glm::vec3 pt(-1.0f, 0.0f, 1.0f);
@@ -797,6 +802,18 @@ namespace AssignmentOne
 		//meshMap.emplace(MeshNames::point, InitPoint());
 	}
 
+	//Moves the camera while preserving the targetVector (and hence the target will be adjusted
+	void MoveCameraAligned(Camera& moveCamera, glm::vec3 trans)
+	{
+
+
+		//Don't normalize so as to preserve Near/Far plane relationship for frustrum
+		glm::vec3 targetVector = (moveCamera.targetPos - moveCamera.pos); 
+		
+		moveCamera.pos += trans;
+		moveCamera.targetPos = moveCamera.pos + targetVector;
+	}
+
 	void SetScene(std::string setScene)
 	{
 		//That way there is a default background for every scene
@@ -815,9 +832,56 @@ namespace AssignmentOne
 		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
+		ImGui::DragFloat("Picture in Picture Zoom", (float*)&topDownCameraHeight, 0.05f, 0.0f, 40.0f);
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
-		
+
+		ImGui::End();
+
+		ImGui::Begin("Simple Camera Controls");
+
+		static float cameraMoveSpeed = 1.2f;
+		ImGui::TextWrapped("Move along the world axis");
+		ImGui::BulletText("Blue: Forward");
+		ImGui::BulletText("Red: Right");
+		ImGui::BulletText("Yellow: Up");
+
+		ImGui::Button("Right");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, worldRight * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Left");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, -worldRight * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Forward");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, worldForward * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Back");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, -worldForward * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Up");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, worldUp * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Down");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, -worldUp * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
 		ImGui::End();
 
 		ImGui::Begin("Scenes");
@@ -886,8 +950,13 @@ namespace AssignmentOne
 		return 0;
 	}
 
-	void initPictureInPicture()
+
+	void InitPictureInPicture()
 	{
+		topDownCamera.targetPos = currCamera.targetPos;
+		topDownCamera.pos = topDownCamera.targetPos;
+		topDownCamera.pos.y = topDownCameraHeight;
+
 		//Hardcoded testing of ideas in pixels
 
 		//in pixels
@@ -911,6 +980,13 @@ namespace AssignmentOne
 	
 	void RenderPictureinPicture()
 	{
+		topDownCamera.targetPos = currCamera.targetPos;
+		topDownCamera.pos = topDownCamera.targetPos;
+		topDownCamera.pos.y = topDownCameraHeight;
+		topDownCamera.right = worldRight;
+		topDownCamera.up = -worldForward;
+
+
 		//I have it so PictureInPicture doesn't have wireframe
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -998,8 +1074,10 @@ namespace AssignmentOne
 		RenderDearImguiDefault();
 
 		sceneMap.at(currentSceneName).renderScene();
-
 	}
+
+
+
 }
 
 namespace AssignmentOne
@@ -1333,7 +1411,6 @@ namespace AssignmentOne
 			{
 				UpdatePhysics(sphereOne.centerPos, sphereOnePhysics);
 
-				//To Do: Have it so it updates the sphere colors instead
 				if (collisionCheck(sphereOne, sphereTwo))
 				{
 					sphereOne.model.color = coolOrange;
@@ -1444,12 +1521,14 @@ namespace AssignmentOne
 			DebugTesting::TestSphereAngle3();
 		}
 
-		topDownCamera.pos = topDownCameraPos;
-		topDownCamera.right = worldRight;
-		topDownCamera.up = -worldForward;
+		//topDownCamera.pos = topDownCameraHeight;
+		//topDownCamera.right = worldRight;
+		//topDownCamera.up = -worldForward;
 
 		InitMeshes();
-		initPictureInPicture();
+		InitPictureInPicture();
+
+
 		ObjectMaker::MakeFloor();
 
 		Model model;
