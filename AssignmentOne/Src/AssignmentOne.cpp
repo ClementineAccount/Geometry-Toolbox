@@ -42,6 +42,7 @@ namespace AssignmentOne
 	static glm::vec3 defaultCubeColor = basicBlue;
 
 	static glm::vec3 collidedBackgroundColor = basicBlue;
+	static glm::vec3 prevBackGround;
 	static glm::vec3 neutralBackgroundColor = blackish;
 
 	static glm::vec3 backgroundColor = blackish;
@@ -1086,6 +1087,7 @@ namespace AssignmentOne
 	{
 		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
 
+		RenderDearImguiDefault();
 		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1098,7 +1100,7 @@ namespace AssignmentOne
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
-		RenderDearImguiDefault();
+
 
 		sceneMap.at(currentSceneName).renderScene();
 	}
@@ -1431,11 +1433,32 @@ namespace AssignmentOne
 				sphereTwo.model.color = greenscreenGreen;
 
 				currCamera.pos = glm::vec3(5.0f, 5.0f, 3.0f);
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Sphere vs Sphere Settings");
+
+				ImGui::Text("Sphere One");
+				ImGui::DragFloat3("pos 1", (float*)&sphereOne.centerPos, 0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat("radius 1", (float*)&sphereOne.radius, 0.01f, 0.1f, 10.0f);
+				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
+
+				ImGui::Text("Sphere Two");
+				ImGui::DragFloat3("pos 2", (float*)&sphereTwo.centerPos, 0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat("radius 2", (float*)&sphereTwo.radius, 0.01f, 0.1f, 10.0f);
+
+				ImGui::End();
 			}
 
 			
 			void Update()
 			{
+				RenderSettings();
+
 				UpdatePhysics(sphereOne.centerPos, sphereOnePhysics);
 
 				if (collisionCheck(sphereOne, sphereTwo))
@@ -1444,13 +1467,13 @@ namespace AssignmentOne
 					sphereTwo.model.color = coolPurpleColor;
 
 					backgroundColor = collidedBackgroundColor;
-
 				}
 				else
 				{
 					sphereTwo.model.color = greenscreenGreen;
 					sphereOne.model.color = basicBlue;
-					backgroundColor = neutralBackgroundColor;
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
 				}
 
 
@@ -1458,8 +1481,12 @@ namespace AssignmentOne
 				sphereTwo.UpdateModel();
 			}
 
+
+
 			void Render()
 			{
+
+
 				RenderAxis();
 				SubmitDraw(sphereOne.model, sphereOne.meshID, colorShader.shaderName);
 				SubmitDraw(sphereTwo.model, sphereTwo.meshID, colorShader.shaderName);
