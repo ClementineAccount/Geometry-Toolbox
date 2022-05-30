@@ -124,10 +124,12 @@ namespace AssignmentOne
     void UpdatePhysics(Model& model, Kinematics const& kinematics);
 
 
+    constexpr glm::vec3 defaultCameraPos = { 5.0f, 5.0f, 3.0f };
+
     //View matrix
     struct Camera
     {
-        glm::vec3 pos{ 1.0f, 1.0f, 1.0f };
+        glm::vec3 pos{ defaultCameraPos };
         glm::vec3 targetPos{ worldOrigin }; //looking at the origin as the default
         glm::vec3 up{ worldUp };
         glm::vec3 right{ worldRight };

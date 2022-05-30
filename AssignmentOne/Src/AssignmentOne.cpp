@@ -46,6 +46,8 @@ namespace AssignmentOne
 
 	static glm::vec3 backgroundColor = blackish;
 
+
+
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
 	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 1000.0f };
 
@@ -127,7 +129,7 @@ namespace AssignmentOne
 	ShaderContainer assignmentShaders;
 
 	//Default camera
-	constexpr Camera defaultLookAtCamera;
+	Camera defaultLookAtCamera;
 	Camera topDownCamera = defaultLookAtCamera;
 	Camera currCamera = defaultLookAtCamera;
 	//Camera firstPersonCamera;
@@ -805,8 +807,6 @@ namespace AssignmentOne
 	//Moves the camera while preserving the targetVector (and hence the target will be adjusted
 	void MoveCameraAligned(Camera& moveCamera, glm::vec3 trans)
 	{
-
-
 		//Don't normalize so as to preserve Near/Far plane relationship for frustrum
 		glm::vec3 targetVector = (moveCamera.targetPos - moveCamera.pos); 
 		
@@ -846,28 +846,45 @@ namespace AssignmentOne
 		ImGui::BulletText("Red: Right");
 		ImGui::BulletText("Yellow: Up");
 
+		ImGui::Button("Zoom In");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, (currCamera.targetPos - currCamera.pos) * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		ImGui::Button("Zoom Out");
+		if (ImGui::IsItemActive())
+		{
+			MoveCameraAligned(currCamera, -(currCamera.targetPos - currCamera.pos) * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		}
+
+		auto moveBothCam = [&](glm::vec3 moveDirection) {
+			MoveCameraAligned(topDownCamera, moveDirection * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+			MoveCameraAligned(currCamera, moveDirection * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+		};
+
 		ImGui::Button("Right");
 		if (ImGui::IsItemActive())
 		{
-			MoveCameraAligned(currCamera, worldRight * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+			moveBothCam(worldRight);
 		}
 
 		ImGui::Button("Left");
 		if (ImGui::IsItemActive())
 		{
-			MoveCameraAligned(currCamera, -worldRight * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+			moveBothCam(-worldRight);
 		}
 
 		ImGui::Button("Forward");
 		if (ImGui::IsItemActive())
 		{
-			MoveCameraAligned(currCamera, worldForward * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+			moveBothCam(worldForward);
 		}
 
 		ImGui::Button("Back");
 		if (ImGui::IsItemActive())
 		{
-			MoveCameraAligned(currCamera, -worldForward * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
+			moveBothCam(-worldForward);
 		}
 
 		ImGui::Button("Up");
@@ -980,7 +997,7 @@ namespace AssignmentOne
 	
 	void RenderPictureinPicture()
 	{
-		topDownCamera.targetPos = currCamera.targetPos;
+		//topDownCamera.targetPos = currCamera.targetPos;
 		topDownCamera.pos = topDownCamera.targetPos;
 		topDownCamera.pos.y = topDownCameraHeight;
 		topDownCamera.right = worldRight;
