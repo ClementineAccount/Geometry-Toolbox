@@ -832,7 +832,7 @@ namespace AssignmentOne
 		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
-		ImGui::DragFloat("Picture in Picture Zoom", (float*)&topDownCameraHeight, 0.05f, 0.0f, 40.0f);
+
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
 
@@ -845,6 +845,8 @@ namespace AssignmentOne
 		ImGui::BulletText("Blue: Forward");
 		ImGui::BulletText("Red: Right");
 		ImGui::BulletText("Yellow: Up");
+
+		ImGui::Columns(2, nullptr, false);
 
 		ImGui::Button("Zoom In");
 		if (ImGui::IsItemActive())
@@ -863,6 +865,8 @@ namespace AssignmentOne
 			MoveCameraAligned(currCamera, moveDirection * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
 		};
 
+
+
 		ImGui::Button("Right");
 		if (ImGui::IsItemActive())
 		{
@@ -874,6 +878,10 @@ namespace AssignmentOne
 		{
 			moveBothCam(-worldRight);
 		}
+		ImGui::Text("Picture in Picture Zoom");
+		ImGui::DragFloat("Zoom Level", (float*)&topDownCameraHeight, 0.05f, 0.0f, 40.0f);
+
+		ImGui::NextColumn();
 
 		ImGui::Button("Forward");
 		if (ImGui::IsItemActive())
@@ -898,6 +906,8 @@ namespace AssignmentOne
 		{
 			MoveCameraAligned(currCamera, -worldUp * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
 		}
+
+
 
 		ImGui::End();
 
