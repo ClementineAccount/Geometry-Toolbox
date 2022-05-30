@@ -226,6 +226,7 @@ namespace AssignmentOne
 
         static const char quadNormalForward[] = "quadFoward";
         static const char quadNormalUp[] = "quadUp";
+        static const char quadNormalRight[] = "quadRight";
         
         static const char cube[] = "cube";
         static const char ring[] = "ring";

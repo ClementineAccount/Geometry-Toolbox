@@ -106,6 +106,17 @@ namespace AssignmentOne
 		-1.0f, 0.0f, -1.0f  // 5
 	};
 
+	std::vector<GLfloat> quadNormalRightPos =
+	{
+		 0.0f, -1.0f, -1.0f,  // 0
+		 0.0f, 1.0f,  -1.0f,  // 1
+		 0.0f, -1.0f, 1.0f,  // 2
+		 0.0f, -1.0f, 1.0f,  // 3
+		 0.0f, 1.0f,  1.0f, // 4
+		 0.0f, 1.0f, -1.0f  // 5
+	};
+
+
 
 	std::map<std::string, AssignmentScene> sceneMap;
 
@@ -784,12 +795,14 @@ namespace AssignmentOne
 
 		meshMap.emplace(MeshNames::quadNormalForward, InitQuadMesh(quadPlanepos));
 		meshMap.emplace(MeshNames::quadNormalUp, InitQuadMesh(quadNormalUpPos));
+		meshMap.emplace(MeshNames::quadNormalRight, InitQuadMesh(quadNormalRightPos));
 
 		meshMap.emplace(MeshNames::axis, InitAxis());
 		meshMap.emplace(MeshNames::axisInverted, InitAxis(-worldRight, -worldUp, -worldForward));
 		meshMap.emplace(MeshNames::cube, initCubeMesh());
 
 		meshMap.emplace(MeshNames::rayUp, InitWorldLine(worldUp));
+		meshMap.emplace(MeshNames::rayRight, InitWorldLine(worldRight));
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 		meshMap.emplace(MeshNames::sphere, initSphereMesh());
 		meshMap.emplace(MeshNames::ring, initRingMesh());
@@ -1132,7 +1145,7 @@ namespace AssignmentOne
 		ImGui::Text(normalText.c_str());
 		ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
 		ImGui::Text("Might do the other rotations later if have time.");
-		ImGui::DragFloat(("Rotate about right basis (" + planeName + ")").c_str(), (float*)&plane.rotation.x, 0.1f, -360.0f, 360.0f);
+		ImGui::DragFloat(("Rotate (" + planeName + ")").c_str(), (float*)&plane.rotation.x, 0.1f, -360.0f, 360.0f);
 
 	}
 
@@ -1140,28 +1153,20 @@ namespace AssignmentOne
 	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
 	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
 	{
-		glm::vec3 normalVector = plane.outwardNormal;
+		glm::vec3 normalVector = worldForward;
 
+		normalVector.x = cosf(glm::radians(rotateRightDegrees));
+		normalVector.y = sinf(glm::radians(rotateRightDegrees));
+		normalVector.z = 0.0f;
 
-		//Rotate about the z-axis first
-		normalVector.x = cosf(glm::radians(rotateRightDegrees)) * normalVector.x;
-		normalVector.y = -sinf(glm::radians(rotateRightDegrees)) * normalVector.y;
-
-		
 		//normalVector.x = sinf(glm::radians(rotateForwardDegrees)) * normalVector.x;
 		//normalVector.z = cosf(glm::radians(rotateForwardDegrees)) * normalVector.z;
 
 
-		plane.model.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
+		plane.model.rotDegrees.z = rotateRightDegrees;
 
-		plane.normalModel.rotDegrees.y = rotateUpDegrees;
-		plane.rotation.y = rotateUpDegrees;
-
-		plane.normalModel.rotDegrees.x = rotateRightDegrees;
+		plane.normalModel.rotDegrees.z = rotateRightDegrees;
 		plane.rotation.x = rotateRightDegrees;
-
-		plane.normalModel.rotDegrees.z = rotateForwardDegrees;
-		plane.rotation.z = rotateForwardDegrees;
 
 		plane.outwardNormal = normalVector;
 
@@ -1173,7 +1178,7 @@ namespace AssignmentOne
 		plane.normalModel.pos = plane.pointOnPlane;
 
 		//Reset the rotation normal first before reapplying the rotation from this point
-		plane.outwardNormal = worldUp;
+		plane.outwardNormal = worldRight;
 		RotatePlane(plane, plane.rotation.x, 0.0f, 0.0f);
 	}
 
@@ -2128,39 +2133,74 @@ namespace AssignmentOne
 		namespace PointVsPlane
 		{
 			Plane plane;
-			glm::vec3 cameraStartPos = glm::vec3(16.916, 16.916, 10.149);
-			glm::vec3 cameraStartTarget = glm::vec3(11.916, 11.916, 7.149);
+			glm::vec3 cameraStartPos = defaultCameraPos;
 
+			Kinematics pointKinematics;
+
+			Model pointModel;
+			glm::vec3 pointCollision = glm::vec3(0.0f, 0.0f, 0.0f);
+
+			float pointStartSpeed = 1.0f;
+			glm::vec3 boxVelocityNorm = worldForward;
+
+			//For the physical representation. Does not influence collision
+			glm::vec3 pointModelScale = glm::vec3(0.1f, 0.1f, 0.1f);
 
 			void Init()
 			{
 				currCamera.pos = cameraStartPos;
-				currCamera.targetPos = cameraStartTarget;
 
 				backgroundColor = neutralBackgroundColor;
 				prevBackGround = backgroundColor;
 
-				//This is ALWAYS true. If you want to rotate the plane, you **must** use the rotate function
-				plane.outwardNormal = worldUp;
-				plane.model.scale = glm::vec3(10.0f, 1.0f, 10.0f);
+				plane.outwardNormal = worldRight;
+
+
+				plane.model.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
 				plane.normalModel.color = skyBlue;
 				plane.normalModel.scale = glm::vec3(100.0f, 100.0f, 100.0f);
 
-				RotatePlane(plane, 45.0f, 0.0f, 0.0f);
+
+				pointModel.pos = pointCollision;
+				pointModel.scale = pointModelScale;
+
 			}
 
 			void RenderSettings()
 			{
 				ImGui::Begin("Plane vs Point Settings");
 				RenderPlaneUI(plane, "Plane");
+				ImGui::DragFloat3("Point", (float*)&pointCollision, 0.01f, -100.0f, 100.0f);
+
 				ImGui::End();
 			}
 
 			void Update()
 			{
+				//UpdatePhysics(pointCollision, pointKinematics);
+
+
+				pointModel.pos = pointCollision;
+
 				RenderSettings();
 				UpdatePlane(plane);
+
+
+				if (checkPointOnPlane(pointCollision, plane))
+				{
+					collisionDetected = true;
+					plane.model.color = coolOrange;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					plane.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
+				}
+
 			}
 
 
@@ -2169,8 +2209,9 @@ namespace AssignmentOne
 			{
 				RenderAxis();
 
-				SubmitDraw(plane.model, MeshNames::quadNormalUp, colorShader.shaderName);
-				SubmitDraw(plane.normalModel, MeshNames::rayUp, colorShader.shaderName);
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
+				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
+				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();

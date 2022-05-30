@@ -117,11 +117,11 @@ namespace AssignmentOne
 
 		//Check distance from the plane is equal to zero.
 
-		float currDistanceFromPlane = distanceFromPlane(point, plane);
+		float nearestDistanceFromPlane = distanceFromPlane(point, plane);
 
 
 
-		return isCloseToZero(currDistanceFromPlane, 0.0f);
+		return isCloseToZero(nearestDistanceFromPlane, 0.0f);
 	}
 
 
