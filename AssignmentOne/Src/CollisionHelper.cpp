@@ -102,6 +102,28 @@ namespace AssignmentOne
 		return checkPointOnAABB(nearestPointOnSphere, aabb);
 	}
 
+	float distanceFromPlane(glm::vec3 const& point, Plane const& plane)
+	{
+		glm::vec3 vectorToPoint = point - plane.pointOnPlane;
+		return glm::dot(vectorToPoint, plane.outwardNormal);
+	}
+
+	bool checkPointOnPlane(glm::vec3 const& point, Plane const& plane, float eplsion)
+	{
+		auto isCloseToZero = [eplsion](float lhs, float rhs)
+		{
+			return fabs(lhs - rhs) <= eplsion;
+		};
+
+		//Check distance from the plane is equal to zero.
+
+		float currDistanceFromPlane = distanceFromPlane(point, plane);
+
+
+
+		return isCloseToZero(currDistanceFromPlane, 0.0f);
+	}
+
 
 	//Check if there is a collision between the lhs and rhs
 	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap)

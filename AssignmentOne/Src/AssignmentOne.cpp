@@ -1425,6 +1425,59 @@ namespace AssignmentOne
 			assert(!collisionCheck(aabb, aabb2));
 		}
 
+		void TestPointOnPlane()
+		{
+			Plane plane;
+			plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+			plane.outwardNormal = glm::vec3(0.0f, 1.0f, 0.0f); //This is the floor
+
+			//Should count
+			glm::vec3 pointOne = glm::vec3(100.0f, 0.0f, 0.0f);
+			glm::vec3 pointTwo = glm::vec3(100.0f, 0.0f, 100.0f);
+
+			assert(checkPointOnPlane(pointOne, plane));
+			assert(checkPointOnPlane(pointTwo, plane));
+
+			//Should reject
+			glm::vec3 pointThree = glm::vec3(100.0f, 1.0f, 0.0f);
+			assert(!checkPointOnPlane(pointThree, plane));
+
+		}
+
+		void TestPointOnPlane2()
+		{
+			Plane plane;
+			plane.pointOnPlane = glm::vec3(30.0f, 10.0f, 0.0f);
+			plane.outwardNormal = glm::vec3(1.0f, 1.0f, 1.0f); //Some diagional plane
+
+			//Should count
+			glm::vec3 pointOne = glm::vec3(30.0f, 10.0f, 0.0f);
+			assert(checkPointOnPlane(pointOne, plane));
+
+			glm::vec3 pointTwo = glm::vec3(10.0f, 50.0f, 100.0f);
+			assert(!checkPointOnPlane(pointTwo, plane));
+
+		}
+
+		void TestPointOnPlane3()
+		{
+			Plane plane;
+			plane.pointOnPlane = glm::vec3(0.0f, 10.0f, 0.0f);
+			plane.outwardNormal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+			//Should count
+			glm::vec3 pointOne = glm::vec3(0.0f, 10.0f, 0.0f);
+			assert(checkPointOnPlane(pointOne, plane));
+
+			//Should also count
+			glm::vec3 pointTwo = glm::vec3(0.0f, 50.0f, 0.0f);
+			assert(checkPointOnPlane(pointTwo, plane));
+
+			//Point is front of the plane now
+			glm::vec3 pointThree = glm::vec3(0.0f, 50.0f, 1.0f);
+			assert(!checkPointOnPlane(pointThree, plane));
+		}
+
 	}
 
 }
@@ -2146,11 +2199,18 @@ namespace AssignmentOne
 			DebugTesting::TestSphereAngle1();
 			DebugTesting::TestSphereAngle2();
 			DebugTesting::TestSphereAngle3();
+			
 			DebugTesting::TestPointAABB();
 			DebugTesting::TestPointAABB2();
+			
 			DebugTesting::TestSphereAABB();
+			
 			DebugTesting::TestAABBvsAABB();
 			DebugTesting::TestAABBvsAABB2();
+
+			DebugTesting::TestPointOnPlane();
+			DebugTesting::TestPointOnPlane2();
+			DebugTesting::TestPointOnPlane3();
 		}
 
 		//topDownCamera.pos = topDownCameraHeight;

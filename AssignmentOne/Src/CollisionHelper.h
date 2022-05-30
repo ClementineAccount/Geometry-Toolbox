@@ -55,6 +55,19 @@ namespace AssignmentOne
 		void UpdateModel();
 	};
 
+	struct Plane : public CollisionObject
+	{
+		// The normal from the inside plane to the outside plane. The collision checks might normalize this
+		glm::vec3 outwardNormal;
+
+		//Arbitary point on the plane
+		glm::vec3 pointOnPlane;
+	};
+
+	float distanceFromPlane(glm::vec3 const& point, Plane const& plane);
+
+	bool checkPointOnPlane(glm::vec3 const& point, Plane const& plane, float eplsion = std::numeric_limits<float>::epsilon());
+
 	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap = false);
 
 	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb);
