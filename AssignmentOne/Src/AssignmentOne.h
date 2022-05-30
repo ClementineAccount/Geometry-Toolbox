@@ -163,7 +163,7 @@ namespace AssignmentOne
 
     struct drawCall
     {
-        Model const& model;
+        Model model;
         Mesh const& mesh;
 
         GLuint shaderID = 0;

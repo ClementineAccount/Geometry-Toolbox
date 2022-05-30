@@ -32,7 +32,6 @@
 #include "GLApplication.h"
 #include "Scene.h"
 #include "shader.hpp"
-#include "Scenes/SimpleScene_Quad.h"
 
 #include "AssignmentOne.h"
 
@@ -118,7 +117,7 @@ int GeometryToolbox::GLApplication::updateApplication()
         glfwPollEvents();
         std::stringstream ss;
         ss << "FPS: ";
-        ss << std::fixed << std::setprecision(3) << gFrameRate;
+        ss << std::fixed << std::setprecision(6) << gFrameRate;
         
 
         std::string windowTitleFinal = windowTitle + ss.str();

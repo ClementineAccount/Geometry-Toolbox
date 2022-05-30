@@ -98,9 +98,6 @@
     <ClInclude Include="Src\GLApplication.h">
       <Filter>Source\GLApplication</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Scenes\SimpleScene_Quad.h">
-      <Filter>Source\Ignore\Scenes\Sample Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="Src\shader.hpp">
       <Filter>Source\Shader Class</Filter>
     </ClInclude>
@@ -144,9 +141,6 @@
     </ClCompile>
     <ClCompile Include="Src\main.cpp">
       <Filter>Source\Main</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp">
-      <Filter>Source\Ignore\Scenes\Sample Scenes</Filter>
     </ClCompile>
     <ClCompile Include="Src\shader.cpp">
       <Filter>Source\Shader Class</Filter>

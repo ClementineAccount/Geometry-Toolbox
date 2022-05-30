@@ -17,7 +17,7 @@
 //Settings
 namespace AssignmentOne
 {
-	const std::string shaderFolderPath = "../AssignmentOne/Shaders/";
+	const std::string shaderFolderPath = "Shaders/";
 
 	static std::string vertexShaderPath = shaderFolderPath + "VertexShader.vert";
 	static std::string fragShaderPath = shaderFolderPath + "FragShader.frag";
@@ -656,12 +656,12 @@ namespace AssignmentOne
 
 	void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
 	{
-		drawList.emplace_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName), assignmentShaders.getShaderID(shaderName) });
+		drawList.push_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName), assignmentShaders.getShaderID(shaderName) });
 	}
 
 	void SubmitDraw(Model model, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
 	{
-		drawList.emplace_back(drawCall{ model, meshMap.at(meshName), assignmentShaders.getShaderID(shaderName)});
+		drawList.push_back(drawCall{ model, meshMap.at(meshName), assignmentShaders.getShaderID(shaderName)});
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
@@ -1380,6 +1380,23 @@ namespace AssignmentOne
 
 			//Must be true
 			assert(collisionCheck(aabb, sphere));
+		}
+
+		void TestAABBvsAABB()
+		{
+			AABB aabb;
+			aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
+			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb.CalculatePoints();
+
+			AABB aabb2;
+			aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
+			aabb2.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb2.CalculatePoints();
+
+			assert(collisionCheck(aabb, aabb));
 		}
 
 	}

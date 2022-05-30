@@ -166,7 +166,6 @@
     <ClInclude Include="Src\GLApplication.h" />
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
-    <ClInclude Include="Src\Scenes\SimpleScene_Quad.h" />
     <ClInclude Include="Src\shader.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -184,7 +183,6 @@
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Scene.cpp" />
     <ClCompile Include="Src\SceneManager.cpp" />
-    <ClCompile Include="Src\Scenes\SimpleScene_Quad.cpp" />
     <ClCompile Include="Src\shader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
