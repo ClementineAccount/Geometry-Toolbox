@@ -13,6 +13,8 @@
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
 
+#include <glm/gtx/rotate_vector.hpp>
+
 
 //Settings
 namespace AssignmentOne
@@ -1144,33 +1146,30 @@ namespace AssignmentOne
 		static std::string normalText = planeName + "'s normal";
 		ImGui::Text(normalText.c_str());
 		ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
-		ImGui::Text("Might do the other rotations later if have time.");
+		ImGui::DragFloat3(("rotation x (" + planeName + ")").c_str(), (float*)&plane.rotation, 0.01f, 360.0f, 30.0f);
+
+
+	/*	ImGui::Text("Might do the other rotations later if have time.");
 
 		ImGui::ArrowButton(("Rotate (" + planeName + ")").c_str(), 0);
 		if (ImGui::IsItemActivated())
-			plane.rotation.x += 90.0f;
+			plane.rotation.x += 90.0f;*/
 	}
 
 
 	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
 	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
 	{
-		glm::vec3 normalVector = worldForward;
+		glm::vec3 normalVector = worldRight;
 
-		normalVector.x = cosf(glm::radians(rotateRightDegrees));
-		normalVector.y = sinf(glm::radians(rotateRightDegrees));
-		normalVector.z = 0.0f;
-
-		//normalVector.x = sinf(glm::radians(rotateForwardDegrees)) * normalVector.x;
-		//normalVector.z = cosf(glm::radians(rotateForwardDegrees)) * normalVector.z;
-
-
-		plane.model.rotDegrees.z = rotateRightDegrees;
-
-		plane.normalModel.rotDegrees.z = rotateRightDegrees;
-		plane.rotation.x = rotateRightDegrees;
+		normalVector = glm::rotateX(normalVector, glm::radians(rotateForwardDegrees));
+		normalVector = glm::rotateY(normalVector, glm::radians(rotateRightDegrees));
+		normalVector = glm::rotateZ(normalVector, glm::radians(rotateUpDegrees));
 
 		plane.outwardNormal = normalVector;
+		//y-axis visual representation a little off and I don't know why 
+		plane.model.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
+		plane.normalModel.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
 
 	}
 
@@ -1181,7 +1180,7 @@ namespace AssignmentOne
 
 		//Reset the rotation normal first before reapplying the rotation from this point
 		plane.outwardNormal = worldRight;
-		RotatePlane(plane, plane.rotation.x, 0.0f, 0.0f);
+		RotatePlane(plane, plane.rotation.x, plane.rotation.y, plane.rotation.z);
 	}
 
 }
