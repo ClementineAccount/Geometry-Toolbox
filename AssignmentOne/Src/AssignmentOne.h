@@ -168,6 +168,7 @@ namespace AssignmentOne
 
         GLuint shaderID = 0;
 
+        unsigned int drawOrder = 0;
         bool isRendering = true; //idk if we should have this
     };
 
@@ -187,7 +188,7 @@ namespace AssignmentOne
     //void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName);
 
     //Draws all 
-    void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera);
+    void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera);
 
     Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
@@ -222,10 +223,17 @@ namespace AssignmentOne
         static const char axisInverted[] = "axisInverted";
         static const char point[] = "point";
         static const char worldLine[] = "worldLine";
-        static const char quadForward[] = "quadFoward";
+
+        static const char quadNormalForward[] = "quadFoward";
+        static const char quadNormalUp[] = "quadUp";
+        
         static const char cube[] = "cube";
         static const char ring[] = "ring";
         static const char sphere[] = "sphere";
+
+        static const char rayForward[] = "rayForward";
+        static const char rayUp[] = "rayUp";
+        static const char rayRight[] = "rayRight";
     }
  
 }

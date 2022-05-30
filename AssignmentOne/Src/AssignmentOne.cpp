@@ -80,9 +80,6 @@ namespace AssignmentOne
 
 
 
-
-
-
 	//To Do: Can allow dynamic model names here too, of course
 	namespace ModelNames
 	{
@@ -99,8 +96,7 @@ namespace AssignmentOne
 
 namespace AssignmentOne
 {
-	
-	std::vector<GLfloat> upQuadPositions =
+	std::vector<GLfloat> quadNormalUpPos =
 	{
 		-1.0f, 0.0f,  1.0f,  // 0
 		 1.0f, 0.0f,  1.0f,  // 1
@@ -109,6 +105,7 @@ namespace AssignmentOne
 		-1.0f, 0.0f,  1.0f, // 4
 		-1.0f, 0.0f, -1.0f  // 5
 	};
+
 
 	std::map<std::string, AssignmentScene> sceneMap;
 
@@ -616,8 +613,6 @@ namespace AssignmentOne
 
 	Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
-
-
 		//Allows me to set quad positions normalized to 1 unit while applying the 0.5 scale afterwards
 		for (GLfloat& i : quadPositions)
 			i *= quadScale;
@@ -640,20 +635,23 @@ namespace AssignmentOne
 		return quadMesh;
 	}
 
-	void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
+	void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName, unsigned int drawOrder = 0)
 	{
 		drawList.push_back(drawCall{ modelMap.at(modelName), meshMap.at(meshName), assignmentShaders.getShaderID(shaderName) });
+
+
 	}
 
-	void SubmitDraw(Model model, std::string const meshName, std::string const shaderName = defaultShader.shaderName)
+	void SubmitDraw(Model model, std::string const meshName, std::string const shaderName = defaultShader.shaderName, unsigned int drawOrder = 0)
 	{
 		drawList.push_back(drawCall{ model, meshMap.at(meshName), assignmentShaders.getShaderID(shaderName)});
+
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
 	void FillScreen(glm::vec3 colorFill = glm::vec3(1.0f, 1.0f, 1.0f))
 	{
-		Mesh quadMesh = meshMap.at(MeshNames::quadForward);
+		Mesh quadMesh = meshMap.at(MeshNames::quadNormalForward);
 
 		glm::mat4 modelMat = glm::mat4(1.0f);
 		modelMat = glm::scale(modelMat, glm::vec3(1000.0f, 1000.0f, 1000.0f));
@@ -673,7 +671,7 @@ namespace AssignmentOne
 	}
 
 
-	void DrawAll(std::vector<drawCall> const& drawList, Camera const& drawCamera)
+	void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera)
 	{
 		auto makePivotVector = [](Model const& model)
 		{
@@ -683,6 +681,12 @@ namespace AssignmentOne
 				model.pivotPercent.z * model.scale.z);
 		};
 
+		//auto sortDraw = [](drawCall const& lhs, drawCall const& rhs) {
+		//	return lhs.drawOrder < rhs.drawOrder;
+		//};
+
+		//std::sort(drawList.begin(), drawList.end(), [](drawCall lhs, drawCall rhs) {
+		//	return lhs.drawOrder < rhs.drawOrder; });
 		
 
 		for (drawCall const& currDraw : drawList)
@@ -769,7 +773,6 @@ namespace AssignmentOne
 
 		std::vector<GLfloat> quadPlanepos = makeQuadFromPointBottomLeft(pt, relativeRight, relativeUp);
 
-
 		meshMap.emplace(MeshNames::quad, InitQuadMesh(quadPlanepos));
 
 		pt = glm::vec3(-1.0f, -1.0f, 0.0f);
@@ -779,12 +782,14 @@ namespace AssignmentOne
 
 		quadPlanepos = makeQuadFromPointBottomLeft(pt, relativeRight, relativeUp);
 
-		meshMap.emplace(MeshNames::quadForward, InitQuadMesh(quadPlanepos));
+		meshMap.emplace(MeshNames::quadNormalForward, InitQuadMesh(quadPlanepos));
+		meshMap.emplace(MeshNames::quadNormalUp, InitQuadMesh(quadNormalUpPos));
 
 		meshMap.emplace(MeshNames::axis, InitAxis());
 		meshMap.emplace(MeshNames::axisInverted, InitAxis(-worldRight, -worldUp, -worldForward));
 		meshMap.emplace(MeshNames::cube, initCubeMesh());
 
+		meshMap.emplace(MeshNames::rayUp, InitWorldLine(worldUp));
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 		meshMap.emplace(MeshNames::sphere, initSphereMesh());
 		meshMap.emplace(MeshNames::ring, initRingMesh());
@@ -1105,8 +1110,6 @@ namespace AssignmentOne
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
-
-
 		sceneMap.at(currentSceneName).renderScene();
 	}
 
@@ -1122,6 +1125,57 @@ namespace AssignmentOne
 		ImGui::DragFloat3(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
 	}
 
+	void RenderPlaneUI(Plane& plane, std::string const& planeName)
+	{
+		ImGui::DragFloat3(("point (" + planeName + ")").c_str(), (float*)&plane.pointOnPlane, 0.01f, -10.0f, 10.0f);
+		static std::string normalText = planeName + "'s normal";
+		ImGui::Text(normalText.c_str());
+		ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
+		ImGui::Text("Might do the other rotations later if have time.");
+		ImGui::DragFloat(("Rotate about right basis (" + planeName + ")").c_str(), (float*)&plane.rotation.x, 0.1f, -360.0f, 360.0f);
+
+	}
+
+
+	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
+	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
+	{
+		glm::vec3 normalVector = plane.outwardNormal;
+
+
+		//Rotate about the z-axis first
+		normalVector.x = cosf(glm::radians(rotateRightDegrees)) * normalVector.x;
+		normalVector.y = -sinf(glm::radians(rotateRightDegrees)) * normalVector.y;
+
+		
+		//normalVector.x = sinf(glm::radians(rotateForwardDegrees)) * normalVector.x;
+		//normalVector.z = cosf(glm::radians(rotateForwardDegrees)) * normalVector.z;
+
+
+		plane.model.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
+
+		plane.normalModel.rotDegrees.y = rotateUpDegrees;
+		plane.rotation.y = rotateUpDegrees;
+
+		plane.normalModel.rotDegrees.x = rotateRightDegrees;
+		plane.rotation.x = rotateRightDegrees;
+
+		plane.normalModel.rotDegrees.z = rotateForwardDegrees;
+		plane.rotation.z = rotateForwardDegrees;
+
+		plane.outwardNormal = normalVector;
+
+	}
+
+	void UpdatePlane(Plane& plane)
+	{
+		plane.model.pos = plane.pointOnPlane;
+		plane.normalModel.pos = plane.pointOnPlane;
+
+		//Reset the rotation normal first before reapplying the rotation from this point
+		plane.outwardNormal = worldUp;
+		RotatePlane(plane, plane.rotation.x, 0.0f, 0.0f);
+	}
 
 }
 
@@ -2070,6 +2124,60 @@ namespace AssignmentOne
 
 			};
 		}
+
+		namespace PointVsPlane
+		{
+			Plane plane;
+			glm::vec3 cameraStartPos = glm::vec3(16.916, 16.916, 10.149);
+			glm::vec3 cameraStartTarget = glm::vec3(11.916, 11.916, 7.149);
+
+
+			void Init()
+			{
+				currCamera.pos = cameraStartPos;
+				currCamera.targetPos = cameraStartTarget;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				//This is ALWAYS true. If you want to rotate the plane, you **must** use the rotate function
+				plane.outwardNormal = worldUp;
+				plane.model.scale = glm::vec3(10.0f, 1.0f, 10.0f);
+				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+				plane.normalModel.color = skyBlue;
+				plane.normalModel.scale = glm::vec3(100.0f, 100.0f, 100.0f);
+
+				RotatePlane(plane, 45.0f, 0.0f, 0.0f);
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Plane vs Point Settings");
+				RenderPlaneUI(plane, "Plane");
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				RenderSettings();
+				UpdatePlane(plane);
+			}
+
+
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(plane.model, MeshNames::quadNormalUp, colorShader.shaderName);
+				SubmitDraw(plane.normalModel, MeshNames::rayUp, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+		}
 	}
 }
 
@@ -2109,6 +2217,7 @@ namespace AssignmentOne
 		const char AABBVsAABB[] = "(4) AABB vs AABB";
 		const char PointVsSphere[] = "(5) Point vs Sphere";
 		const char PointVsAABB[] = "(6) Point vs AABB";
+		const char PointVsPlane[] = "(7) Point vs Plane";
 
 	}
 
@@ -2173,6 +2282,12 @@ namespace AssignmentOne
 		PointVsSphere.renderScene = AssignmentScenes::PointVsSphere::Render;
 		PointVsSphere.updateScene = AssignmentScenes::PointVsSphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsSphere, AssignmentScene(PointVsSphere)));
+
+		AssignmentScene PointVsPlane;
+		PointVsPlane.initScene = AssignmentScenes::PointVsPlane::Init;
+		PointVsPlane.renderScene = AssignmentScenes::PointVsPlane::Render;
+		PointVsPlane.updateScene = AssignmentScenes::PointVsPlane::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsPlane, AssignmentScene(PointVsPlane)));
 
 
 		//Init every scene one by one 

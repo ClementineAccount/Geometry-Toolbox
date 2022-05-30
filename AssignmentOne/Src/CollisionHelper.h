@@ -62,6 +62,12 @@ namespace AssignmentOne
 
 		//Arbitary point on the plane
 		glm::vec3 pointOnPlane;
+
+		//For rendering and interaction. Not used in collision checks
+		glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+		//Render the normal as well as a ray
+		Model normalModel;
 	};
 
 	float distanceFromPlane(glm::vec3 const& point, Plane const& plane);
