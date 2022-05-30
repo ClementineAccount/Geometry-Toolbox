@@ -1112,6 +1112,12 @@ namespace AssignmentOne
 		ImGui::DragFloat(("radius (" + sphereName + ")").c_str(), (float*)&sphere.radius, 0.01f, -10.0f, 10.0f);
 	}
 
+	void RenderAABBUI(AABB& aabb, std::string const& aabbName)
+	{
+		ImGui::DragFloat3(("centerPos (" + aabbName + ")").c_str(), (float*)&aabb.centerPos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
+	}
+
 
 
 }
@@ -1337,6 +1343,36 @@ namespace AssignmentOne
 				checkPair));
 		}
 
+		void TestPointAABB()
+		{
+			glm::vec3 point = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			AABB aabb;
+			aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb.CalculatePoints();
+
+			assert(checkPointOnAABB(point, aabb));
+		}
+
+		void TestSphereAABB()
+		{
+			SphereCollider sphere;
+			sphere.centerPos = glm::vec3(1.0f, 1.0f, 1.0f);
+			sphere.radius = 1.0f;
+
+			//Should collide
+			AABB aabb;
+			aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
+			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb.CalculatePoints();
+
+			//Must be true
+			assert(collisionCheck(aabb, sphere));
+		}
+
 	}
 
 }
@@ -1442,13 +1478,49 @@ namespace AssignmentOne
 				
 				boxKinematics.speed = boxStartSpeed;
 				boxKinematics.normVector = worldForward;
+
+				sphere.centerPos = worldOrigin;
+				sphere.radius = 0.25f;
+				sphere.model.color = coolOrange;
+
+			}
+
+
+			void RenderSettings()
+			{
+				ImGui::Begin("AABB vs Sphere Settings");
+
+				RenderAABBUI(box, "AABB");
+				ImGui::DragFloat("AABB Speed: ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+
+				RenderSphereUI(sphere, "Sphere");
+				ImGui::End();
 			}
 
 			void Update()
 			{
+				RenderSettings();
+
 				UpdatePhysics(box.centerPos, boxKinematics);
 				box.CalculatePoints();
 				box.UpdateModel();
+
+				sphere.UpdateModel();
+
+				if (collisionCheck(box, sphere))
+				{
+					box.model.color = maroonColor;
+					sphere.model.color = greenscreenGreen;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					box.model.color = greenscreenGreen;
+					sphere.model.color = coolOrange;
+
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
+				}
 			};
 
 			void Render()
@@ -1456,6 +1528,7 @@ namespace AssignmentOne
 				RenderAxis();
 
 				SubmitDraw(box.model, box.meshID, colorShader.shaderName);
+				SubmitDraw(sphere.model, sphere.meshID, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
@@ -1501,17 +1574,9 @@ namespace AssignmentOne
 				ImGui::Begin("Sphere vs Sphere Settings");
 
 				RenderSphereUI(sphereOne, "Sphere One");
-				//ImGui::DragFloat3("centerPos 1", (float*)&sphereOne.centerPos, 0.01f, -10.0f, 10.0f);
-				//ImGui::DragFloat("radius 1", (float*)&sphereOne.radius, 0.01f, -10.0f, 10.0f);
-
 				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
 
 				RenderSphereUI(sphereTwo, "Sphere Two");
-
-				//ImGui::DragFloat3("centerPos 2", (float*)&sphereTwo.centerPos, 0.01f, -10.0f, 10.0f);
-				//ImGui::DragFloat("radius 2", (float*)&sphereTwo.radius, 0.01f, -10.0f, 10.0f);
-
-				//RenderSphereUI(sphereTwo, "Sphere Two");
 				ImGui::End();
 			}
 
@@ -1637,6 +1702,8 @@ namespace AssignmentOne
 			DebugTesting::TestSphereAngle1();
 			DebugTesting::TestSphereAngle2();
 			DebugTesting::TestSphereAngle3();
+			DebugTesting::TestPointAABB();
+			DebugTesting::TestSphereAABB();
 		}
 
 		//topDownCamera.pos = topDownCameraHeight;

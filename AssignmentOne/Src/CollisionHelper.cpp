@@ -58,17 +58,62 @@ namespace AssignmentOne
 		return glm::distance(lhs.centerPos, rhs.centerPos) < (lhs.radius + rhs.radius);
 	}
 
+	bool checkPointOnSphere(glm::vec3 const& point, SphereCollider const& sphere)
+	{
+		float radiusSquared = sphere.radius * sphere.radius;
+		float distanceSquared = glm::dot((point - sphere.centerPos), (point - sphere.centerPos));
+
+		return radiusSquared < distanceSquared;
+	}
+
+	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb)
+	{
+		//Six boolean checks
+
+		//Check the max and min half extents
+		return ((point.x <= aabb.maxPoint.x && point.x >= aabb.minPoint.x) &&
+			(point.y <= aabb.maxPoint.y && point.y >= aabb.minPoint.y) &&
+			(point.z <= aabb.maxPoint.z && point.z >= aabb.minPoint.z));
+	}
+
+	bool checkAABBOnSphere(AABB const& aabb, SphereCollider const& sphere)
+	{
+		//Trivial acceptance test if both are at origin
+		//if (aabb.centerPos == sphere.centerPos)
+		//	return true;
+
+		//Get the point on the sphere closest to the AABB
+		glm::vec3 dir_to_center_AABB = glm::normalize(aabb.centerPos - sphere.centerPos);
+		glm::vec3 nearestPointOnSphere = sphere.centerPos + (sphere.radius * dir_to_center_AABB);
+
+		return checkPointOnAABB(nearestPointOnSphere, aabb);
+	}
+
+
 	//Check if there is a collision between the lhs and rhs
-	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs)
+	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap)
 	{
 		//Identify the type of collider lhs is
+
+		if (lhs.colliderType == Collider::AABB)
+		{
+			if (rhs.colliderType == Collider::SPHERE)
+				if (checkAABBOnSphere(static_cast<AABB const&>(lhs), static_cast<SphereCollider const&>(rhs)))
+					return true;
+		}
 
 		//Is there a better way to check this?
 		if (lhs.colliderType == Collider::SPHERE)
 		{
 			if (rhs.colliderType == Collider::SPHERE)
-				return checkSphereOnSphere(static_cast<SphereCollider const&>(lhs), static_cast<SphereCollider const&>(rhs));
+				if (checkSphereOnSphere(static_cast<SphereCollider const&>(lhs), static_cast<SphereCollider const&>(rhs)))
+					return true;
 		}
+
+		//Check one more time with a swap if false (to do: analyze the time complexity of this approach)
+		if (!isSwap)
+			collisionCheck(rhs, lhs, true);
+
 		return false;
 	}
 

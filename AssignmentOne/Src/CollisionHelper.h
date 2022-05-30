@@ -55,7 +55,9 @@ namespace AssignmentOne
 		void UpdateModel();
 	};
 
-	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs);
+	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap = false);
+
+	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb);
 
 
 	class CollisionHelper
