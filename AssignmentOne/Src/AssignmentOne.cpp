@@ -47,7 +47,10 @@ namespace AssignmentOne
 
 	static glm::vec3 backgroundColor = blackish;
 
+	static bool wireFramePictureInPicture = false;
 
+
+	static bool collisionDetected = false;
 
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
 	glm::vec3 floorPlaneScale = { 1000.0f, 1.0f, 1000.0f };
@@ -77,24 +80,7 @@ namespace AssignmentOne
 
 
 
-	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
-	namespace SceneNames
-	{
-		const char defaultScene[] = "Default (Blank)";
 
-		//Just the axis and cube
-		const char TestSceneCube[] = "Cube Primitive Example";
-
-		//Just the axis and sphere
-		const char TestSceneSphere[] = "Sphere Primitive Example";
-
-		const char SphereVsSphere[] = "(1) Sphere Vs Sphere";
-		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
-		const char SphereVsAABB[] = "(3) Sphere vs AABB";
-	}
-
-
-	std::string currentSceneName;
 
 
 	//To Do: Can allow dynamic model names here too, of course
@@ -135,6 +121,8 @@ namespace AssignmentOne
 	Camera defaultLookAtCamera;
 	Camera topDownCamera = defaultLookAtCamera;
 	Camera currCamera = defaultLookAtCamera;
+
+	std::string currentSceneName;
 	//Camera firstPersonCamera;
 
 
@@ -424,10 +412,10 @@ namespace AssignmentOne
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
 	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
 	{
-		float PI = 3.14f;
+		
 
-		float sliceStep = 2 * PI / numSlices;
-		float stackStep = PI / numStacks;
+		float sliceStep = 2 * glm::pi<float>() / numSlices;
+		float stackStep = glm::pi<float>() / numStacks;
 		float sliceAngle, stackAngle;
 
 		float x, y, z, stack_xy;
@@ -436,7 +424,7 @@ namespace AssignmentOne
 		for (size_t currStack = 0; currStack <= numStacks; ++currStack)
 		{
 			//starting from the bottom stack (so we rotate ccw by 270 and then add onto that)
-			stackAngle = PI / 2 - currStack * stackStep;
+			stackAngle = glm::pi<float>() / 2 - currStack * stackStep;
 
 			stack_xy = sphereRadius * cosf(stackAngle);
 			z = sphereRadius * sinf((stackAngle));
@@ -573,8 +561,6 @@ namespace AssignmentOne
 		return ringMesh;
 	}
 	
-
-
 	Mesh initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
 	{
 		glm::vec3 relativeUp;
@@ -833,6 +819,8 @@ namespace AssignmentOne
 	{
 		ImGui::Begin("Settings");
 
+		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
+
 		ImGui::DragFloat3("Camera Position", (float*) &currCamera.pos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
@@ -846,6 +834,7 @@ namespace AssignmentOne
 			collidedBackgroundColor = basicBlue;
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
+		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
 
 		ImGui::End();
 
@@ -1024,11 +1013,9 @@ namespace AssignmentOne
 		topDownCamera.right = worldRight;
 		topDownCamera.up = -worldForward;
 
-
-		//I have it so PictureInPicture doesn't have wireframe
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 		//Treat the viewports like transformations.
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
 		FillScreen();
@@ -1037,6 +1024,12 @@ namespace AssignmentOne
 		glViewport(topRightViewport.bottomLeft.x, topRightViewport.bottomLeft.y, topRightViewport.viewportScale.x, topRightViewport.viewportScale.y);
 		
 		FillScreen(backgroundColor);
+
+
+		if (wireFramePictureInPicture)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
 
 		DrawAll(drawList, topDownCamera);
 	}
@@ -1088,6 +1081,7 @@ namespace AssignmentOne
 
 	void UpdateAssignment()
 	{
+		collisionDetected = false;
 		sceneMap.at(currentSceneName).updateScene();
 	}
 
@@ -1124,7 +1118,7 @@ namespace AssignmentOne
 	void RenderAABBUI(AABB& aabb, std::string const& aabbName)
 	{
 		ImGui::DragFloat3(("centerPos (" + aabbName + ")").c_str(), (float*)&aabb.centerPos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
 	}
 
 
@@ -1365,6 +1359,20 @@ namespace AssignmentOne
 			assert(checkPointOnAABB(point, aabb));
 		}
 
+
+		void TestPointAABB2()
+		{
+			glm::vec3 point = glm::vec3(1.0f, 1000.0f, 0.0f);
+
+			AABB aabb;
+			aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb.CalculatePoints();
+
+			assert(!checkPointOnAABB(point, aabb));
+		}
+
 		void TestSphereAABB()
 		{
 			SphereCollider sphere;
@@ -1382,6 +1390,7 @@ namespace AssignmentOne
 			assert(collisionCheck(aabb, sphere));
 		}
 
+
 		void TestAABBvsAABB()
 		{
 			AABB aabb;
@@ -1396,7 +1405,24 @@ namespace AssignmentOne
 
 			aabb2.CalculatePoints();
 
-			assert(collisionCheck(aabb, aabb));
+			assert(collisionCheck(aabb, aabb2));
+		}
+
+		void TestAABBvsAABB2()
+		{
+			AABB aabb;
+			aabb.centerPos = glm::vec3(1.0f, 100.0f, 1.0f);
+			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+			aabb.CalculatePoints();
+
+			AABB aabb2;
+			aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
+			aabb2.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
+			aabb2.CalculatePoints();
+
+			assert(!collisionCheck(aabb, aabb2));
 		}
 
 	}
@@ -1535,12 +1561,15 @@ namespace AssignmentOne
 
 				if (collisionCheck(box, sphere))
 				{
+					collisionDetected = true;
 					box.model.color = maroonColor;
 					sphere.model.color = greenscreenGreen;
 					backgroundColor = collidedBackgroundColor;
+					collisionDetected = true;
 				}
 				else
 				{
+					collisionDetected = false;
 					box.model.color = greenscreenGreen;
 					sphere.model.color = coolOrange;
 
@@ -1623,12 +1652,14 @@ namespace AssignmentOne
 
 				if (collisionCheck(box, sphere))
 				{
+					collisionDetected = true;
 					box.model.color = maroonColor;
 					sphere.model.color = greenscreenGreen;
 					backgroundColor = collidedBackgroundColor;
 				}
 				else
 				{
+
 					box.model.color = greenscreenGreen;
 					sphere.model.color = coolOrange;
 
@@ -1702,6 +1733,7 @@ namespace AssignmentOne
 
 				if (collisionCheck(sphereOne, sphereTwo))
 				{
+					collisionDetected = true;
 					sphereOne.model.color = coolOrange;
 					sphereTwo.model.color = coolPurpleColor;
 
@@ -1733,6 +1765,94 @@ namespace AssignmentOne
 			}
 
 		}
+
+		namespace AABBvsAABB
+		{
+			AABB box;
+			AABB boxTwo;
+			Kinematics boxKinematics;
+
+			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -15.0f);
+			glm::vec3 boxTwoStartPos = glm::vec3(0.0f, 1.0f, 0.0f);
+			glm::vec3 boxStartScale = glm::vec3(5.0f, 5.0f, 5.0f); 
+			glm::vec3 boxTwoStartScale = glm::vec3(10.0f, 1.0f, 1.0f); //a little thin
+			float boxStartSpeed = 2.0f;
+			glm::vec3 boxVelocityNorm = worldForward;
+
+			void Init()
+			{
+				currCamera.pos = defaultCameraPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				box.model.color = greenscreenGreen;
+				box.centerPos = boxStartPos;
+				box.scale = boxStartScale;
+
+				boxKinematics.speed = boxStartSpeed;
+				boxKinematics.normVector = worldForward;
+
+				boxTwo.centerPos = boxTwoStartPos;
+				boxTwo.scale = boxTwoStartScale;
+
+			}
+
+
+			void RenderSettings()
+			{
+				ImGui::Begin("AABB vs AABB Settings");
+
+				RenderAABBUI(box, "AABB One");
+				ImGui::DragFloat("AABB Speed: ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+
+				RenderAABBUI(boxTwo, "AABB Two");
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				RenderSettings();
+
+				UpdatePhysics(box.centerPos, boxKinematics);
+				box.CalculatePoints();
+				box.UpdateModel();
+
+				boxTwo.CalculatePoints();
+				boxTwo.UpdateModel();
+
+				if (collisionCheck(box, boxTwo))
+				{
+					collisionDetected = true;
+					box.model.color = coolPurpleColor;
+					boxTwo.model.color = skyBlue;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					box.model.color = greenscreenGreen;
+					boxTwo.model.color = coolOrange;
+
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
+				}
+			};
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(box.model, box.meshID, colorShader.shaderName);
+				SubmitDraw(boxTwo.model, box.meshID, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+
+			};
+		}
+
+
 	}
 }
 
@@ -1754,6 +1874,24 @@ namespace AssignmentOne
 
 		modelMap.emplace(ModelNames::floorPlane, planeModel);
 	}
+
+	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
+	namespace SceneNames
+	{
+		const char defaultScene[] = "Default (Blank)";
+
+		//Just the axis and cube
+		const char TestSceneCube[] = "Cube Primitive Example";
+
+		//Just the axis and sphere
+		const char TestSceneSphere[] = "Sphere Primitive Example";
+
+		const char SphereVsSphere[] = "(1) Sphere Vs Sphere";
+		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
+		const char SphereVsAABB[] = "(3) Sphere vs AABB";
+		const char AABBVsAABB[] = "(4) AABB vs AABB";
+	}
+
 
 	void InitScenes()
 	{
@@ -1800,6 +1938,13 @@ namespace AssignmentOne
 
 
 
+		AssignmentScene AABBVsAABB;
+		AABBVsAABB.initScene = AssignmentScenes::AABBvsAABB::Init;
+		AABBVsAABB.renderScene = AssignmentScenes::AABBvsAABB::Render;
+		AABBVsAABB.updateScene = AssignmentScenes::AABBvsAABB::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsAABB, AssignmentScene(AABBVsAABB)));
+
+
 		//Init every scene one by one 
 		//std::map<std::string, AssignmentScene>::iterator it;
 		//for (it = sceneMap.begin(); it != sceneMap.end(); it++)
@@ -1825,7 +1970,10 @@ namespace AssignmentOne
 			DebugTesting::TestSphereAngle2();
 			DebugTesting::TestSphereAngle3();
 			DebugTesting::TestPointAABB();
+			DebugTesting::TestPointAABB2();
 			DebugTesting::TestSphereAABB();
+			DebugTesting::TestAABBvsAABB();
+			DebugTesting::TestAABBvsAABB2();
 		}
 
 		//topDownCamera.pos = topDownCameraHeight;
@@ -1843,7 +1991,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::SphereVsSphere;
+		currentSceneName = SceneNames::AABBVsAABB;
 		SetScene(currentSceneName);
 
 		return 0;

@@ -93,7 +93,7 @@ int GeometryToolbox::GLApplication::updateApplication()
         //Update the universal deltaTime between frames
         double currFrameTime = glfwGetTime();
         gDeltaTime = currFrameTime - gLastFrameTime;
-        gFrameRate = (currFrameTime - gLastFrameTime) * 1000.0f;
+        gFrameRate = 1.0f / (currFrameTime - gLastFrameTime);
         gLastFrameTime = currFrameTime;
 
         //miliseconds to seconds
@@ -117,7 +117,7 @@ int GeometryToolbox::GLApplication::updateApplication()
         glfwPollEvents();
         std::stringstream ss;
         ss << "FPS: ";
-        ss << std::fixed << std::setprecision(6) << gFrameRate;
+        ss << std::fixed << std::setprecision(3) << gFrameRate;
         
 
         std::string windowTitleFinal = windowTitle + ss.str();

@@ -70,10 +70,23 @@ namespace AssignmentOne
 	{
 		//Six boolean checks
 
-		//Check the max and min half extents
-		return ((point.x <= aabb.maxPoint.x && point.x >= aabb.minPoint.x) &&
-			(point.y <= aabb.maxPoint.y && point.y >= aabb.minPoint.y) &&
-			(point.z <= aabb.maxPoint.z && point.z >= aabb.minPoint.z));
+		//Early rejection
+		if ((point.x > aabb.maxPoint.x || point.x < aabb.minPoint.x) || 
+			(point.y > aabb.maxPoint.y || point.y < aabb.minPoint.y) ||
+			(point.z > aabb.maxPoint.z || point.z < aabb.minPoint.z))
+			return false;
+
+		return true;
+	}
+
+	bool checkAABBonAABB(AABB const& lhs, AABB const& rhs)
+	{
+		if (lhs.maxPoint.x < rhs.minPoint.x || rhs.maxPoint.x < lhs.minPoint.x ||
+			lhs.maxPoint.y < rhs.minPoint.y || rhs.maxPoint.y < lhs.minPoint.y ||
+			lhs.maxPoint.z < rhs.minPoint.z || rhs.maxPoint.z < lhs.minPoint.z)
+			return false;
+
+		return true;
 	}
 
 	bool checkAABBOnSphere(AABB const& aabb, SphereCollider const& sphere)
@@ -97,6 +110,11 @@ namespace AssignmentOne
 
 		if (lhs.colliderType == Collider::AABB)
 		{
+			if (rhs.colliderType == Collider::AABB)
+				if (checkAABBonAABB(static_cast<AABB const&>(lhs), static_cast<AABB const&>(rhs)))
+					return true;
+
+
 			if (rhs.colliderType == Collider::SPHERE)
 				if (checkAABBOnSphere(static_cast<AABB const&>(lhs), static_cast<SphereCollider const&>(rhs)))
 					return true;
