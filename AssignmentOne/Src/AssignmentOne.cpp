@@ -5,7 +5,7 @@
 
 #include <functional>
 #include <iostream>
-
+#include <string>
 #include <map>
 
 // Include Dear Imgui
@@ -90,6 +90,7 @@ namespace AssignmentOne
 
 		const char SphereVsSphere[] = "(1) Sphere Vs Sphere";
 		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
+		const char SphereVsAABB[] = "(3) Sphere vs AABB";
 	}
 
 
@@ -818,6 +819,8 @@ namespace AssignmentOne
 
 	void SetScene(std::string setScene)
 	{
+		drawList.clear();
+
 		//That way there is a default background for every scene
 		backgroundColor = neutralBackgroundColor;
 
@@ -835,6 +838,12 @@ namespace AssignmentOne
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
+		static bool changeBackGroundOnCollision = true;
+		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
+		if (!changeBackGroundOnCollision)
+			collidedBackgroundColor = backgroundColor;
+		else
+			collidedBackgroundColor = basicBlue;
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
 
@@ -1537,6 +1546,94 @@ namespace AssignmentOne
 			};
 		}
 
+		namespace SphereVsAABB
+		{
+			//Same but I make the Sphere move instead I guess
+			SphereCollider sphere;
+			AABB box;
+			Kinematics sphereKinematics;
+
+			glm::vec3 boxStartPos = worldOrigin;
+			glm::vec3 boxStartScale = glm::vec3(2.0f, 2.0f, 2.0f);
+
+			glm::vec3 sphereStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
+
+			float sphereStartSpeed = 3.0f;
+			glm::vec3 sphereVelocityNorm = worldForward;
+
+			void Init()
+			{
+				currCamera.pos = defaultCameraPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				box.model.color = greenscreenGreen;
+				box.centerPos = boxStartPos;
+				box.scale = boxStartScale;
+
+				sphereKinematics.speed = sphereStartSpeed;
+				sphereKinematics.normVector = worldForward;
+
+				sphere.centerPos = sphereStartPos;
+				sphere.radius = 0.25f;
+				sphere.model.color = coolOrange;
+
+			}
+
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Sphere vs AABB Settings");
+
+				RenderSphereUI(sphere, "Sphere");
+				ImGui::DragFloat("Sphere Speed ", (float*)&sphereKinematics.speed, 0.01f, -10.0f, 10.0f);
+
+				RenderAABBUI(box, "AABB");
+
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				RenderSettings();
+
+				UpdatePhysics(sphere.centerPos, sphereKinematics);
+				box.CalculatePoints();
+				box.UpdateModel();
+
+				sphere.UpdateModel();
+
+				if (collisionCheck(box, sphere))
+				{
+					box.model.color = maroonColor;
+					sphere.model.color = greenscreenGreen;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					box.model.color = greenscreenGreen;
+					sphere.model.color = coolOrange;
+
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
+				}
+			};
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(box.model, box.meshID, colorShader.shaderName);
+				SubmitDraw(sphere.model, sphere.meshID, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+
+			};
+		}
+
 		namespace SphereVsSphere 
 		{
 			//GameObject sphereObject;
@@ -1678,12 +1775,20 @@ namespace AssignmentOne
 		AABB_vs_Sphere.updateScene = AssignmentScenes::AABBVsSphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsSphere, AssignmentScene(AABB_vs_Sphere)));
 
+		AssignmentScene SphereVsAABB;
+		SphereVsAABB.initScene = AssignmentScenes::SphereVsAABB::Init;
+		SphereVsAABB.renderScene = AssignmentScenes::SphereVsAABB::Render;
+		SphereVsAABB.updateScene = AssignmentScenes::SphereVsAABB::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsAABB, AssignmentScene(SphereVsAABB)));
+
+
+
 		//Init every scene one by one 
-		std::map<std::string, AssignmentScene>::iterator it;
-		for (it = sceneMap.begin(); it != sceneMap.end(); it++)
-		{
-			it->second.initScene();
-		}
+		//std::map<std::string, AssignmentScene>::iterator it;
+		//for (it = sceneMap.begin(); it != sceneMap.end(); it++)
+		//{
+		//	it->second.initScene();
+		//}
 	}
 
 	int InitAssignment()
@@ -1722,6 +1827,7 @@ namespace AssignmentOne
 
 		InitScenes();
 		currentSceneName = SceneNames::SphereVsSphere;
+		SetScene(currentSceneName);
 
 		return 0;
 	}

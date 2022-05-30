@@ -8,6 +8,9 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
+#include <string>
+#include <sstream>
 
 // Include GLEW
 #include <GL/glew.h>
@@ -37,6 +40,8 @@
 constexpr unsigned int startWindowWidth = 1280;
 constexpr unsigned int startWindowHeight = 800;
 
+std::string windowTitle = "Clementine Shamaney | Assignment 1 | ";
+
 double GeometryToolbox::GLApplication::getDeltaTime()
 {
     return gDeltaTime;
@@ -58,6 +63,11 @@ float GeometryToolbox::GLApplication::getAspectRatio()
         gAspectRatio = static_cast<float>(gWindowWidth) / static_cast<float>(gWindowHeight);
 
     return gAspectRatio;
+}
+
+float GeometryToolbox::GLApplication::getFrameRate()
+{
+    return gFrameRate;
 }
 
 int GeometryToolbox::GLApplication::shutdownApplication()
@@ -84,7 +94,11 @@ int GeometryToolbox::GLApplication::updateApplication()
         //Update the universal deltaTime between frames
         double currFrameTime = glfwGetTime();
         gDeltaTime = currFrameTime - gLastFrameTime;
+        gFrameRate = (currFrameTime - gLastFrameTime) * 1000.0f;
         gLastFrameTime = currFrameTime;
+
+        //miliseconds to seconds
+
 
         //Need to have sceneManager update here
         //Scenes::SceneFunctions::LoopFunctions(scenePtr.get()->runtimeFunctions, scenePtr.get()->sceneDataContainer, 0.0f);
@@ -102,6 +116,13 @@ int GeometryToolbox::GLApplication::updateApplication()
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
+        std::stringstream ss;
+        ss << "FPS: ";
+        ss << std::fixed << std::setprecision(3) << gFrameRate;
+        
+
+        std::string windowTitleFinal = windowTitle + ss.str();
+        glfwSetWindowTitle(window, windowTitleFinal.c_str());
     }
     return 0;
 }
@@ -129,7 +150,7 @@ int GeometryToolbox::GLApplication::initApplication()
 
     // Open a window and create its OpenGL context
     window = glfwCreateWindow(gWindowWidth, gWindowHeight, // window dimensions
-        "Clementine Shamaney: Assignment 1", // window title
+        windowTitle.c_str(), // window title
         nullptr, // which monitor (if full-screen mode)
         nullptr); // if sharing context with another window
     if (window == nullptr)

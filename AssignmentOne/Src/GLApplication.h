@@ -39,6 +39,8 @@ namespace GeometryToolbox
 			double gDeltaTime;
 			double gLastFrameTime;
 
+			float gFrameRate;
+
 			//16:9 aspect ratio for testing (To Do: encapsulate this to ensure resizing is working properly
 			int gWindowWidth;
 			int gWindowHeight;
@@ -76,6 +78,8 @@ namespace GeometryToolbox
 			* a value copy of gDeltaTime
 			*/
 			double getDeltaTime();
+
+			float getFrameRate();
 
 			/**
 			 * Returns a value of current window height.
