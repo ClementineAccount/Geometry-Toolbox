@@ -1145,8 +1145,10 @@ namespace AssignmentOne
 		ImGui::Text(normalText.c_str());
 		ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
 		ImGui::Text("Might do the other rotations later if have time.");
-		ImGui::DragFloat(("Rotate (" + planeName + ")").c_str(), (float*)&plane.rotation.x, 0.1f, -360.0f, 360.0f);
 
+		ImGui::ArrowButton(("Rotate (" + planeName + ")").c_str(), 0);
+		if (ImGui::IsItemActivated())
+			plane.rotation.x += 90.0f;
 	}
 
 
@@ -2138,7 +2140,9 @@ namespace AssignmentOne
 			Kinematics pointKinematics;
 
 			Model pointModel;
-			glm::vec3 pointCollision = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 pointCollision = glm::vec3(0.0f, 0.1f, 0.0f);
+
+			float rotateSpeed = 10.0f;
 
 			float pointStartSpeed = 1.0f;
 			glm::vec3 boxVelocityNorm = worldForward;
@@ -2154,6 +2158,7 @@ namespace AssignmentOne
 				prevBackGround = backgroundColor;
 
 				plane.outwardNormal = worldRight;
+				pointModel.color = coolOrange;
 
 
 				plane.model.scale = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -2171,6 +2176,7 @@ namespace AssignmentOne
 			{
 				ImGui::Begin("Plane vs Point Settings");
 				RenderPlaneUI(plane, "Plane");
+				//ImGui::DragFloat("Plane Rotation Speed", (float*)&rotateSpeed, 90.0f, 0.0f, 360.0f);
 				ImGui::DragFloat3("Point", (float*)&pointCollision, 0.01f, -100.0f, 100.0f);
 
 				ImGui::End();
@@ -2182,6 +2188,7 @@ namespace AssignmentOne
 
 
 				pointModel.pos = pointCollision;
+
 
 				RenderSettings();
 				UpdatePlane(plane);
@@ -2209,9 +2216,10 @@ namespace AssignmentOne
 			{
 				RenderAxis();
 
-				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
 				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
 				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
