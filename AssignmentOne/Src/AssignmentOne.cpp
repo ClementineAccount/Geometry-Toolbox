@@ -1105,6 +1105,12 @@ namespace AssignmentOne
 		sceneMap.at(currentSceneName).renderScene();
 	}
 
+	void RenderSphereUI(SphereCollider &sphere, std::string const& sphereName)
+	{
+		ImGui::DragFloat3(("centerPos (" + sphereName + ")").c_str(), (float*)&sphere.centerPos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat(("radius (" + sphereName + ")").c_str(), (float*)&sphere.radius, 0.01f, -10.0f, 10.0f);
+	}
+
 
 
 }
@@ -1442,15 +1448,18 @@ namespace AssignmentOne
 			{
 				ImGui::Begin("Sphere vs Sphere Settings");
 
-				ImGui::Text("Sphere One");
-				ImGui::DragFloat3("pos 1", (float*)&sphereOne.centerPos, 0.01f, -10.0f, 10.0f);
-				ImGui::DragFloat("radius 1", (float*)&sphereOne.radius, 0.01f, 0.1f, 10.0f);
+				RenderSphereUI(sphereOne, "Sphere One");
+				//ImGui::DragFloat3("centerPos 1", (float*)&sphereOne.centerPos, 0.01f, -10.0f, 10.0f);
+				//ImGui::DragFloat("radius 1", (float*)&sphereOne.radius, 0.01f, -10.0f, 10.0f);
+
 				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
 
-				ImGui::Text("Sphere Two");
-				ImGui::DragFloat3("pos 2", (float*)&sphereTwo.centerPos, 0.01f, -10.0f, 10.0f);
-				ImGui::DragFloat("radius 2", (float*)&sphereTwo.radius, 0.01f, 0.1f, 10.0f);
+				RenderSphereUI(sphereTwo, "Sphere Two");
 
+				//ImGui::DragFloat3("centerPos 2", (float*)&sphereTwo.centerPos, 0.01f, -10.0f, 10.0f);
+				//ImGui::DragFloat("radius 2", (float*)&sphereTwo.radius, 0.01f, -10.0f, 10.0f);
+
+				//RenderSphereUI(sphereTwo, "Sphere Two");
 				ImGui::End();
 			}
 
