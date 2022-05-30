@@ -18,6 +18,37 @@ namespace AssignmentOne
 		model.pos = centerPos;
 	}
 
+	AABB::AABB(glm::vec3 setPos, glm::vec3 setScale)
+	{
+		centerPos = setPos;
+		scale = setScale;
+
+		colliderType = Collider::AABB;
+		meshID = MeshNames::cube; //use a 1x1x1 cube as the primitive for rendering
+		CalculatePoints();
+	}
+
+	void AABB::CalculatePoints()
+	{
+		maxPoint = centerPos;
+
+		maxPoint.x += scale.x * 0.5f;
+		maxPoint.y += scale.y * 0.5f;
+		maxPoint.z += scale.z * 0.5f;
+
+		minPoint = centerPos;
+
+		minPoint.x -= scale.x * 0.5f;
+		minPoint.y -= scale.y * 0.5f;
+		minPoint.z -= scale.z * 0.5f;
+	}
+
+	void AABB::UpdateModel()
+	{
+		model.scale = scale;
+		model.pos = centerPos;
+	}
+
 
 	bool checkSphereOnSphere(SphereCollider const& lhs, SphereCollider const& rhs)
 	{

@@ -80,15 +80,16 @@ namespace AssignmentOne
 	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
 	namespace SceneNames
 	{
-		const char defaultScene[] = "defaultScene";
+		const char defaultScene[] = "Default (Blank)";
 
 		//Just the axis and cube
-		const char TestSceneCube[] = "Cube Example";
+		const char TestSceneCube[] = "Cube Primitive Example";
 
 		//Just the axis and sphere
-		const char TestSceneSphere[] = "Sphere Example";
+		const char TestSceneSphere[] = "Sphere Primitive Example";
 
-		const char SphereOnSphere[] = "Sphere on Sphere";
+		const char SphereVsSphere[] = "(1) Sphere Vs Sphere";
+		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
 	}
 
 
@@ -1416,29 +1417,80 @@ namespace AssignmentOne
 
 		}
 
-		namespace SphereCollision 
+		namespace AABBVsSphere
+		{
+			SphereCollider sphere;
+			AABB box;
+			Kinematics boxKinematics;
+
+			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
+			glm::vec3 boxStartScale = glm::vec3(2.0f, 2.0f, 2.0f);
+
+			float boxStartSpeed = 3.0f;
+			glm::vec3 boxVelocityNorm = worldForward;
+
+			void Init()
+			{
+				currCamera.pos = defaultCameraPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				box.model.color = greenscreenGreen;
+				box.centerPos = boxStartPos;
+				box.scale = boxStartScale;
+				
+				boxKinematics.speed = boxStartSpeed;
+				boxKinematics.normVector = worldForward;
+			}
+
+			void Update()
+			{
+				UpdatePhysics(box.centerPos, boxKinematics);
+				box.CalculatePoints();
+				box.UpdateModel();
+			};
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(box.model, box.meshID, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+
+			};
+		}
+
+		namespace SphereVsSphere 
 		{
 			//GameObject sphereObject;
 				
 			SphereCollider sphereOne;
 			SphereCollider sphereTwo;
 			Kinematics sphereOnePhysics;
+			
+			glm::vec3 sphereOneStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
+			float sphereOneStartSpeed = 2.0f;
+			glm::vec3 sphereOneVelocityDir = worldForward;
 
 			//SphereCollider sphereTwo;
 
 			void Init()
 			{
 				sphereOne.radius = 0.25f;
-				sphereOne.centerPos = glm::vec3(0.0f, 1.0f, -10.0f);
-				sphereOnePhysics.speed = 2.0f;
-				sphereOnePhysics.normVector = worldForward;
+				sphereOne.centerPos = sphereOneStartPos;
+				sphereOnePhysics.speed = sphereOneStartSpeed;
+				sphereOnePhysics.normVector = sphereOneVelocityDir;
 				sphereOne.model.color = basicBlue;
 
 				sphereTwo.radius = 1.0f;
 				sphereTwo.centerPos = glm::vec3(0.0f, 1.0f, 0.0f);
 				sphereTwo.model.color = greenscreenGreen;
 
-				currCamera.pos = glm::vec3(5.0f, 5.0f, 3.0f);
+				currCamera.pos = defaultCameraPos;
 
 				backgroundColor = neutralBackgroundColor;
 				prevBackGround = backgroundColor;
@@ -1463,7 +1515,6 @@ namespace AssignmentOne
 				ImGui::End();
 			}
 
-			
 			void Update()
 			{
 				RenderSettings();
@@ -1489,8 +1540,6 @@ namespace AssignmentOne
 				sphereOne.UpdateModel();
 				sphereTwo.UpdateModel();
 			}
-
-
 
 			void Render()
 			{
@@ -1553,10 +1602,16 @@ namespace AssignmentOne
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
 
 		AssignmentScene sphereSceneTwo;
-		sphereSceneTwo.initScene = AssignmentScenes::SphereCollision::Init;
-		sphereSceneTwo.renderScene = AssignmentScenes::SphereCollision::Render;
-		sphereSceneTwo.updateScene = AssignmentScenes::SphereCollision::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereOnSphere, AssignmentScene(sphereSceneTwo)));
+		sphereSceneTwo.initScene = AssignmentScenes::SphereVsSphere::Init;
+		sphereSceneTwo.renderScene = AssignmentScenes::SphereVsSphere::Render;
+		sphereSceneTwo.updateScene = AssignmentScenes::SphereVsSphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsSphere, AssignmentScene(sphereSceneTwo)));
+
+		AssignmentScene AABB_vs_Sphere;
+		AABB_vs_Sphere.initScene = AssignmentScenes::AABBVsSphere::Init;
+		AABB_vs_Sphere.renderScene = AssignmentScenes::AABBVsSphere::Render;
+		AABB_vs_Sphere.updateScene = AssignmentScenes::AABBVsSphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsSphere, AssignmentScene(AABB_vs_Sphere)));
 
 		//Init every scene one by one 
 		std::map<std::string, AssignmentScene>::iterator it;
@@ -1599,7 +1654,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::SphereOnSphere;
+		currentSceneName = SceneNames::SphereVsSphere;
 
 		return 0;
 	}

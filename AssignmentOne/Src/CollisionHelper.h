@@ -24,9 +24,25 @@ namespace AssignmentOne
 		bool isActive = true;
 	};
 
+
+	constexpr glm::vec3 defaultPosAABB = worldOrigin;
+	constexpr glm::vec3 defaultScaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
+
+
+	//Naive implementation using min and max first (update to use half extents if have time)
 	struct AABB : public CollisionObject
 	{
-		AABB() { colliderType = Collider::AABB; };
+		AABB(glm::vec3 setPos = defaultPosAABB, glm::vec3 setScale = defaultScaleAABB);
+
+		glm::vec3 centerPos;
+		glm::vec3 scale; //Allows calculation of half extents
+
+		//Updates the collision points and the model
+		void CalculatePoints();
+		void UpdateModel();
+
+		glm::vec3 minPoint;
+		glm::vec3 maxPoint;
 	};
 
 	//Boudding Sphere for collision
