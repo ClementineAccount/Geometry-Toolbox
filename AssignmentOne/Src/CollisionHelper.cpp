@@ -63,7 +63,7 @@ namespace AssignmentOne
 		float radiusSquared = sphere.radius * sphere.radius;
 		float distanceSquared = glm::dot((point - sphere.centerPos), (point - sphere.centerPos));
 
-		return radiusSquared < distanceSquared;
+		return radiusSquared > distanceSquared;
 	}
 
 	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb)

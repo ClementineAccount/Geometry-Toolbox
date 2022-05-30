@@ -59,6 +59,8 @@ namespace AssignmentOne
 
 	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb);
 
+	bool checkPointOnSphere(glm::vec3 const& point, SphereCollider const& sphere);
+
 
 	class CollisionHelper
 	{

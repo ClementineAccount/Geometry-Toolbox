@@ -827,6 +827,7 @@ namespace AssignmentOne
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
 		static bool changeBackGroundOnCollision = true;
+
 		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
 		if (!changeBackGroundOnCollision)
 			collidedBackgroundColor = backgroundColor;
@@ -1120,7 +1121,6 @@ namespace AssignmentOne
 		ImGui::DragFloat3(("centerPos (" + aabbName + ")").c_str(), (float*)&aabb.centerPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
 	}
-
 
 
 }
@@ -1798,7 +1798,6 @@ namespace AssignmentOne
 
 			}
 
-
 			void RenderSettings()
 			{
 				ImGui::Begin("AABB vs AABB Settings");
@@ -1852,7 +1851,172 @@ namespace AssignmentOne
 			};
 		}
 
+		namespace PointVsSphere
+		{
+			//GameObject sphereObject;
 
+			SphereCollider sphereOne;
+			Kinematics sphereOnePhysics;
+
+			glm::vec3 sphereOneStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
+			float sphereOneStartSpeed = 2.0f;
+			glm::vec3 sphereOneVelocityDir = worldForward;
+
+			Model pointModel;
+			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			//For the physical representation. Does not influence collision
+			glm::vec3 pointModelScale = glm::vec3(0.05f, 0.05f, 0.05f);
+
+			void Init()
+			{
+
+				pointModel.pos = pointCollision;
+				pointModel.scale = pointModelScale;
+
+				sphereOne.radius = 0.25f;
+				sphereOne.centerPos = sphereOneStartPos;
+				sphereOnePhysics.speed = sphereOneStartSpeed;
+				sphereOnePhysics.normVector = sphereOneVelocityDir;
+				sphereOne.model.color = basicBlue;
+
+				currCamera.pos = defaultCameraPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Point vs Sphere Settings");
+
+				RenderSphereUI(sphereOne, "Sphere");
+				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Point Pos ", (float*)&pointCollision, 0.01f, -20.0f, 20.0f);
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				RenderSettings();
+
+				UpdatePhysics(sphereOne.centerPos, sphereOnePhysics);
+
+				if (checkPointOnSphere(pointCollision, sphereOne))
+				{
+					collisionDetected = true;
+					sphereOne.model.color = coolOrange;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					sphereOne.model.color = basicBlue;
+					backgroundColor = neutralBackgroundColor;
+				}
+
+				pointModel.pos = pointCollision;
+				sphereOne.UpdateModel();
+			}
+
+			void Render()
+			{
+
+
+				RenderAxis();
+				SubmitDraw(sphereOne.model, sphereOne.meshID, colorShader.shaderName);
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+		}
+
+		namespace PointVsAABB
+		{
+			AABB box;
+			Kinematics boxKinematics;
+
+			//Can use a sphere to represent it
+			Model pointModel;
+			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -5.0f);
+			glm::vec3 boxStartScale = glm::vec3(1.0f, 1.0f, 1.0f);
+
+			float boxStartSpeed = 2.0f;
+			glm::vec3 boxVelocityNorm = worldForward;
+
+			//For the physical representation. Does not influence collision
+			glm::vec3 pointModelScale = glm::vec3(0.05f, 0.05f, 0.05f);
+
+			void Init()
+			{
+				currCamera.pos = defaultCameraPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				box.model.color = greenscreenGreen;
+				box.centerPos = boxStartPos;
+				box.scale = boxStartScale;
+
+				boxKinematics.speed = boxStartSpeed;
+				boxKinematics.normVector = worldForward;
+
+				pointModel.pos = pointCollision;
+				pointModel.scale = pointModelScale;
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Point vs AABB Settings");
+
+				RenderAABBUI(box, "AABB");
+				ImGui::DragFloat("AABB Speed ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+
+				ImGui::DragFloat3("Point Pos ", (float*)&pointCollision, 0.01f, -20.0f, 20.0f);
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				RenderSettings();
+
+				UpdatePhysics(box.centerPos, boxKinematics);
+				box.CalculatePoints();
+				box.UpdateModel();
+
+				pointModel.pos = pointCollision;
+
+				if (checkPointOnAABB(pointCollision, box))
+				{
+					collisionDetected = true;
+					box.model.color = skyBlue;
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					box.model.color = greenscreenGreen;
+
+					if (backgroundColor == collidedBackgroundColor)
+						backgroundColor = neutralBackgroundColor;
+				}
+			};
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(box.model, box.meshID, colorShader.shaderName);
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+
+			};
+		}
 	}
 }
 
@@ -1890,6 +2054,9 @@ namespace AssignmentOne
 		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
 		const char SphereVsAABB[] = "(3) Sphere vs AABB";
 		const char AABBVsAABB[] = "(4) AABB vs AABB";
+		const char PointVsSphere[] = "(5) Point vs Sphere";
+		const char PointVsAABB[] = "(6) Point vs AABB";
+
 	}
 
 
@@ -1936,13 +2103,23 @@ namespace AssignmentOne
 		SphereVsAABB.updateScene = AssignmentScenes::SphereVsAABB::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsAABB, AssignmentScene(SphereVsAABB)));
 
-
-
 		AssignmentScene AABBVsAABB;
 		AABBVsAABB.initScene = AssignmentScenes::AABBvsAABB::Init;
 		AABBVsAABB.renderScene = AssignmentScenes::AABBvsAABB::Render;
 		AABBVsAABB.updateScene = AssignmentScenes::AABBvsAABB::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsAABB, AssignmentScene(AABBVsAABB)));
+
+		AssignmentScene PointVsAABB;
+		PointVsAABB.initScene = AssignmentScenes::PointVsAABB::Init;
+		PointVsAABB.renderScene = AssignmentScenes::PointVsAABB::Render;
+		PointVsAABB.updateScene = AssignmentScenes::PointVsAABB::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsAABB, AssignmentScene(PointVsAABB)));
+
+		AssignmentScene PointVsSphere;
+		PointVsSphere.initScene = AssignmentScenes::PointVsSphere::Init;
+		PointVsSphere.renderScene = AssignmentScenes::PointVsSphere::Render;
+		PointVsSphere.updateScene = AssignmentScenes::PointVsSphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsSphere, AssignmentScene(PointVsSphere)));
 
 
 		//Init every scene one by one 
