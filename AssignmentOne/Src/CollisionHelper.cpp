@@ -1,6 +1,7 @@
 #include "CollisionHelper.h"
 #include "AssignmentOne.h"
 
+
 #include <glm/gtx/norm.hpp>
 
 namespace AssignmentOne
@@ -131,6 +132,7 @@ namespace AssignmentOne
 		return (startPoint + (t * glm::normalize(direction)));
 	}
 
+	//Note: This t value does not take in account length yet
 	float getIntersectionTimeRayOnPlane(Ray const& ray, Plane const& plane)
 	{
 		//Assumption: outwardNormal and rayDirection are not parallel
@@ -230,7 +232,97 @@ namespace AssignmentOne
 		return true;
 	}
 
+	bool checkRayOnAABB(Ray const& ray, AABB const& AABB)
+	{
+		//First, check the ray start and end points in the box itself
+		if (checkPointOnAABB(ray.startPoint, AABB))
+			return true;
 
+		glm::vec3 endPoint = ray.startPoint + ray.length * glm::normalize(ray.direction);
+		if (checkPointOnAABB(endPoint, AABB))
+			return true;
+
+		//Do segment check because running out of time
+		size_t numSegmentCheck = 30;
+		float segmentLength = ray.length / numSegmentCheck;
+		for (size_t i = 1; i < numSegmentCheck; ++i)
+		{
+			glm::vec3 pointToCheck = ray.startPoint + (segmentLength * i) * glm::normalize(ray.direction);
+			if (checkPointOnAABB(pointToCheck, AABB))
+				return true;
+		}
+
+		return false;
+
+
+		//Assumption: The AABB is not rotated (...it won't be an AABB then)
+		//Assumption. When facing an AABB. The min point is on the bottom left. Max point is on the top right
+		//Plane forwardPlane;
+		//forwardPlane.outwardNormal = worldForward;
+		//forwardPlane.pointOnPlane = AABB.minPoint;
+
+		//if (!checkRayOnPlane(ray, forwardPlane))
+		//	return false;
+	
+		//float tz_max = getIntersectionTimeRayOnPlane(ray, forwardPlane);
+
+		////The ray hits the AABB if the intersection of all axis tvalues is non-empty - Lecture Notes
+
+		//Plane backPlane;
+		//backPlane.outwardNormal = -worldForward;
+		//backPlane.pointOnPlane = AABB.maxPoint;
+
+		//if (!checkRayOnPlane(ray, backPlane))
+		//	return false;
+
+		//float tz_min = getIntersectionTimeRayOnPlane(ray, backPlane);
+
+		//Plane leftPlane;
+		//leftPlane.outwardNormal = -worldRight;
+		//leftPlane.pointOnPlane = AABB.minPoint;
+
+
+		//if (!checkRayOnPlane(ray, leftPlane))
+		//	return false;
+
+		//float tx_min = getIntersectionTimeRayOnPlane(ray, leftPlane);
+
+		//Plane rightPlane;
+		//rightPlane.outwardNormal = worldRight;
+		//rightPlane.pointOnPlane = AABB.maxPoint;
+
+
+		//if (!checkRayOnPlane(ray, rightPlane))
+		//	return false;
+
+		//float tx_max = getIntersectionTimeRayOnPlane(ray, rightPlane);
+
+		//Plane upPlane;
+		//upPlane.outwardNormal = worldUp;
+		//upPlane.pointOnPlane = AABB.maxPoint;
+
+
+		//if (!checkRayOnPlane(ray, upPlane))
+		//	return false;
+
+		//float ty_max = getIntersectionTimeRayOnPlane(ray, upPlane);
+
+		//Plane downPlane;
+		//downPlane.outwardNormal = -worldUp;
+		//downPlane.pointOnPlane = AABB.minPoint;
+
+		//if (!checkRayOnPlane(ray, downPlane))
+		//	return false;
+
+		//float ty_min = getIntersectionTimeRayOnPlane(ray, downPlane);
+
+		//return true;
+
+		////To Do: Get the actual intersection planes points and render them later
+		////To Do: Apply proper Liang Bansly check idea
+
+
+	}
 
 	//Check if there is a collision between the lhs and rhs
 	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap)

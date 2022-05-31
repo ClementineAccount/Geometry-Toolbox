@@ -105,7 +105,7 @@ namespace AssignmentOne
 	void getIntersectionTimesRayOnSphere(Ray const& ray, Plane const& plane, float& intersectionTimeOne, 
 		float& intersectionTimeTwo);
 
-
+	bool checkRayOnAABB(Ray const& ray, AABB const& AABB);
 
 	bool checkRayOnPlaneGoingOutwards(Ray const& ray, Plane const& plane);
 

@@ -2711,6 +2711,86 @@ namespace AssignmentOne
 			}
 		}
 
+		namespace RayVsAABB 
+		{
+			Ray ray;
+			AABB box;
+
+			Kinematics rayRotations;
+			Kinematics boxKinematics;
+
+			void Init()
+			{
+				initFresh();
+				currCamera.pos = glm::vec3(5.0f, 5.0f, 5.0f);
+
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+				ray.startPoint = glm::vec3(5.0f, 0.0f, 0.0f);
+				ray.length = 10.0f;
+				ray.model.color = glm::vec3(0.0f, 1.0f, 1.0f);
+
+				//Rotations are based on right vector transformations
+				ray.meshID = MeshNames::rayRight;
+
+				//rotate around y-axis
+				rayRotations.normVector = glm::vec3(0.0f, 1.0f, 0.0f);
+				rayRotations.speed = 25.0f;
+
+				box.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+				box.scale = glm::vec3(2.0f, 2.0f, 2.0f);
+			}
+
+			void RenderSettings()
+			{
+				RenderRayUI(ray, "Ray");
+				RenderAABBUI(box, "Box");
+				RenderKinematics(rayRotations, "Ray Rotations");
+				RenderKinematics(boxKinematics, "Box Speed");
+
+			}
+
+			void Update()
+			{
+				RenderSettings();
+				UpdatePhysics(ray.model.rotDegrees, rayRotations);
+				UpdateRay(ray);
+
+				box.CalculatePoints();
+				box.UpdateModel();
+
+
+				if (checkRayOnAABB(ray, box))
+				{
+					//intersectionTimeString = ("intersection time at:" + std::to_string((getIntersectionTimeRayOnPlane(ray, plane))));
+
+					box.model.color = greenscreenGreen;
+					ray.model.color = glm::vec3(1.0f, 0.0f, 0.0f);
+				}
+				else
+				{
+					box.model.color = basicBlue;
+					ray.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				}
+			}
+
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(ray.model, MeshNames::rayRight, colorShader.shaderName);
+				SubmitDraw(box.model, MeshNames::cube, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+		}
+
 		/**
 		namespace PlaneVsAABB
 		{
@@ -2876,6 +2956,7 @@ namespace AssignmentOne
 		const char PlaneVsSphere[] = "(08) Plane vs Sphere";
 		const char RayVsPlane[] = "(09) Ray vs Plane";
 		const char RayVsSphere[] = "(10) Ray Vs Sphere";
+		const char RayVsAABB[] = "(11) Ray Vs AABB";
 	}
 
 
@@ -2963,6 +3044,12 @@ namespace AssignmentOne
 		RayVsSphere.renderScene = AssignmentScenes::RayVsSphere::Render;
 		RayVsSphere.updateScene = AssignmentScenes::RayVsSphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsSphere, AssignmentScene(RayVsSphere)));
+
+		AssignmentScene RayVsAABB;
+		RayVsAABB.initScene = AssignmentScenes::RayVsAABB::Init;
+		RayVsAABB.renderScene = AssignmentScenes::RayVsAABB::Render;
+		RayVsAABB.updateScene = AssignmentScenes::RayVsAABB::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsAABB, AssignmentScene(RayVsAABB)));
 	}
 
 	int InitAssignment()
@@ -2992,7 +3079,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::RayVsSphere;
+		currentSceneName = SceneNames::RayVsAABB;
 		SetScene(currentSceneName);
 
 		return 0;
