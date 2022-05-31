@@ -84,7 +84,29 @@ namespace AssignmentOne
 	//	glm::vec3& getDirection() { return direction; };
 	};
 
+	//Special object that has a plane parent. Uses barycentric coordinates for the collision detection
+	//
+	//     0
+	//   1   2
+	struct Triangle
+	{
+		Plane triangleParentPlane;
 
+		//Techincally the points must be aligned in the same plane
+		//due to the 2D rotation rendering but the logic applies in 3D too? Not sure
+
+		glm::vec3 pt0;
+		glm::vec3 pt1;
+		glm::vec3 pt2;
+
+		//All rays will rotate counter clockwise to match the pt orientation
+		Model rayA; //pt1 to pt2
+		Model rayB; //pt1 to pt0
+		Model rayC; //pt0 to pt2
+	};
+
+	bool checkRayOnTriangle(Triangle const& triagle, Ray const& ray);
+	bool checkPointOnTriangle(Triangle const& triangle, glm::vec3 const& point);
 
 	float distanceFromPlane(glm::vec3 const& point, Plane const& plane);
 

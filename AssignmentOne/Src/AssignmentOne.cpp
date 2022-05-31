@@ -1206,6 +1206,62 @@ namespace AssignmentOne
 		}
 	}
 
+	void RenderTriangleUI(Triangle& triangle, std::string const& triangleName)
+	{
+		if (ImGui::CollapsingHeader(("Settings for " + triangleName).c_str()))
+		{
+
+			ImGui::DragFloat(("pt0 x (" + triangleName + ")").c_str(), (float*)&triangle.pt0.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("pt0 y (" + triangleName + ")").c_str(), (float*)&triangle.pt0.y, 0.01f, -10.0f, 10.0f);
+
+
+			ImGui::DragFloat(("pt1 x (" + triangleName + ")").c_str(), (float*)&triangle.pt1.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("pt1 y (" + triangleName + ")").c_str(), (float*)&triangle.pt1.y, 0.01f, -10.0f, 10.0f);
+
+			ImGui::DragFloat(("pt2 x (" + triangleName + ")").c_str(), (float*)&triangle.pt2.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("pt2 y (" + triangleName + ")").c_str(), (float*)&triangle.pt2.y, 0.01f, -10.0f, 10.0f);
+		}
+	}
+
+	
+	//The three models for the triangle to match the rotation
+	void RotateTriangleLines(Triangle& triangle)
+	{
+		//Also ensures the scale is correctly
+		//Rotations are based off the right axis
+		triangle.rayA.pos = triangle.pt1;
+		triangle.rayB.pos = triangle.pt1;
+		triangle.rayC.pos = triangle.pt2;
+
+		//angle from right vector to the vector (to do: cache this when you rotate)
+		glm::vec3 edgeA = (triangle.pt0 - triangle.pt1);
+
+		//Note this is in radians --> since we are projecting onto the x-axis, we can skip dot product calculation
+		float angleBetween = acosf(edgeA.x / glm::length(edgeA));
+
+		triangle.rayA.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayA.scale.x = glm::length(edgeA);
+
+		glm::vec3 edgeB = (triangle.pt2 - triangle.pt1);
+
+		angleBetween = acosf(edgeB.x / glm::length(edgeB));
+
+		triangle.rayB.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayB.scale.x = glm::length(edgeB);
+
+		glm::vec3 edgeC = (triangle.pt0 - triangle.pt2);
+
+		angleBetween = acosf(edgeC.x / glm::length(edgeC));
+
+		triangle.rayC.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayC.scale.x = glm::length(edgeC);
+	}
+
+	void UpdateTriangle(Triangle& triangle)
+	{
+		RotateTriangleLines(triangle);
+	}
+
 
 	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
 	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
@@ -1663,6 +1719,23 @@ namespace AssignmentOne
 
 		}
 
+		void TestPointOnTriangle()
+		{
+			glm::vec3 pt = glm::vec3(0.0f, 0.0f, 0.0f);
+			
+			Triangle triangle;
+			//Surrounds the origin
+			triangle.pt0 = glm::vec3(0.0f, 1.0f, 0.0f);
+			triangle.pt1 = glm::vec3(-1.0f, 0.0f, 0.0f);
+			triangle.pt2 = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			assert(checkPointOnTriangle(triangle, pt));
+
+			//Definitely not on the triangle
+			pt = glm::vec3(0.0f, 10.0f, 0.0f);
+			assert(!checkPointOnTriangle(triangle, pt));
+		}
+
 		void RunAllTests()
 		{
 
@@ -1686,6 +1759,8 @@ namespace AssignmentOne
 			DebugTesting::TestPointOnPlane2();
 			DebugTesting::TestPointOnPlane3();
 			DebugTesting::TestRayOnSphere();
+
+			DebugTesting::TestPointOnTriangle();
 		}
 	}
 
@@ -2309,6 +2384,8 @@ namespace AssignmentOne
 			Kinematics pointKinematics;
 
 			Model pointModel;
+			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
+
 			glm::vec3 pointCollision = glm::vec3(0.0f, 0.1f, 0.0f);
 
 			float rotateSpeed = 10.0f;
@@ -2319,7 +2396,7 @@ namespace AssignmentOne
 			glm::vec3 boxVelocityNorm = worldForward;
 
 			//For the physical representation. Does not influence collision
-			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
+
 
 			void Init()
 			{
@@ -2905,6 +2982,101 @@ namespace AssignmentOne
 
 		}
 
+		namespace PointVsTriangle
+		{
+			Triangle triangle;
+			glm::vec3 point;
+			Ray ray;
+
+			Model pointModel;
+			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
+
+			Kinematics pointPhysics;
+			Kinematics rayRotations;
+
+			void Init()
+			{
+				initFresh();
+				showAxis = false;
+				currCamera.pos = glm::vec3(1.0f, 1.0f, 1.0f);
+
+				triangle.pt0 = glm::vec3(0.0f, 1.0f, 0.0f);
+				triangle.pt1 = glm::vec3(-1.0f, 0.0f, 0.0f);
+				triangle.pt2 = glm::vec3(1.0f, 0.0f, 0.0f);
+
+				ray.startPoint = glm::vec3(0.0, 0.0f, 3.0f);
+				ray.model.color = glm::vec3(0.0f, 1.0f, 1.0f);
+
+				//Rotations are based on right vector transformations
+				ray.meshID = MeshNames::rayRight;
+
+				//rotate around y-axis
+				rayRotations.normVector = glm::vec3(0.0f, 1.0f, 0.0f);
+				rayRotations.speed = 25.0f;
+
+				ray.length = 5.0f;
+
+				point = glm::vec3(-8.0f, 0.5f, 0.0f);
+				pointPhysics.speed = 1.0f;
+				pointPhysics.normVector = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			}
+
+			void RenderUI()
+			{
+
+				ImGui::DragFloat3("Point", (float*)&point, 0.1f, -10.0f, 10.0f);
+				RenderKinematics(pointPhysics, "point speed");
+
+				RenderKinematics(rayRotations, "ray rotations");
+				RenderRayUI(ray, "Ray");
+
+				RenderTriangleUI(triangle, "triangle settings");
+			}
+
+			void Update()
+			{
+				pointModel.scale = glm::vec3(0.1f, 0.1f, 0.1f);
+				pointModel.pos = point;
+
+				UpdatePhysics(ray.model.rotDegrees, rayRotations);
+				UpdatePhysics(point, pointPhysics);
+				UpdateRay(ray);
+
+				triangle.rayA.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				triangle.rayB.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				triangle.rayC.color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+				if (checkPointOnTriangle(triangle, point) || checkRayOnTriangle(triangle, ray))
+				{
+					collisionDetected = true;
+					triangle.rayA.color = glm::vec3(1.0f, 0.0f, 0.0f);
+					triangle.rayB.color = glm::vec3(1.0f, 0.0f, 0.0f);
+					triangle.rayC.color = glm::vec3(1.0f, 0.0f, 0.0f);
+				}
+
+				RenderUI();
+				UpdateTriangle(triangle);
+			}
+
+			void Render()
+			{
+				RenderAxis();
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
+				SubmitDraw(triangle.rayA, MeshNames::rayRight, colorShader.shaderName);
+				SubmitDraw(triangle.rayB, MeshNames::rayRight, colorShader.shaderName);
+				SubmitDraw(triangle.rayC, MeshNames::rayRight, colorShader.shaderName);
+				SubmitDraw(ray.model, MeshNames::rayForward, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+
+
+		}
+
 		/**
 		namespace PlaneVsAABB
 		{
@@ -3072,7 +3244,7 @@ namespace AssignmentOne
 		const char RayVsSphere[] = "(11) Ray Vs Sphere";
 		const char PlaneVsAABB[] = "(12) Plane vs AABB";
 		const char PlaneVsSphere[] = "(13) Plane vs Sphere";
-	
+		const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
 	}
 
 
@@ -3173,6 +3345,12 @@ namespace AssignmentOne
 		PlaneVsAABB.renderScene = AssignmentScenes::PlaneVsAABB::Render;
 		PlaneVsAABB.updateScene = AssignmentScenes::PlaneVsAABB::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsAABB, AssignmentScene(PlaneVsAABB)));
+
+		AssignmentScene PointVsTriangle;
+		PointVsTriangle.initScene = AssignmentScenes::PointVsTriangle::Init;
+		PointVsTriangle.renderScene = AssignmentScenes::PointVsTriangle::Render;
+		PointVsTriangle.updateScene = AssignmentScenes::PointVsTriangle::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsTriangle, AssignmentScene(PointVsTriangle)));
 	}
 
 	int InitAssignment()
@@ -3202,7 +3380,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::PlaneVsAABB;
+		currentSceneName = SceneNames::SphereVsSphere;
 		SetScene(currentSceneName);
 
 		return 0;

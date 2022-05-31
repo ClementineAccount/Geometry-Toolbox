@@ -125,6 +125,84 @@ namespace AssignmentOne
 		return false;
 	}
 
+	bool checkPointOnTriangle(Triangle const& triangle, glm::vec3 const& point)
+	{
+		//Check based off edge detection
+		//If the point is inside the triangle, the dot product of the point to all  edge triangle points
+		//would be positive because the angle betweeen that edge and the vector to that point is acute and
+		//so there is positive magnitude of the shadow and...
+
+
+		// (The orientation matching the notes)
+		// B      C
+		//    A
+		//
+		glm::vec3 pt1_to_point = point - triangle.pt1;
+		glm::vec3 edgeB = glm::normalize(triangle.pt0 - triangle.pt1); //Careful, ensure that the direction starts from the same pt to be checked
+		float projectionLength = glm::dot(pt1_to_point, edgeB);
+
+		if (projectionLength <= 0.0f)
+			return false;
+
+		if (projectionLength > glm::length(triangle.pt0 - triangle.pt1))
+			return false;
+
+
+		glm::vec3 pt0_to_point = point - triangle.pt0;
+		glm::vec3 edgeA = glm::normalize(triangle.pt2 - triangle.pt0);
+		
+		projectionLength = glm::dot(pt0_to_point, edgeA);
+
+		if (projectionLength <= 0.0f)
+			return false;
+
+		if (projectionLength > glm::length(triangle.pt2 - triangle.pt0))
+			return false;
+
+		glm::vec3 pt2_to_point = point - triangle.pt2;
+		glm::vec3 edgeC = glm::normalize(triangle.pt0 - triangle.pt2);
+
+		projectionLength = glm::dot(pt2_to_point, edgeC);
+
+		if (projectionLength <= 0.0f)
+			return false;
+
+		if (projectionLength > glm::length(triangle.pt0 - triangle.pt2))
+			return false;
+
+		//Either positive or one of them's the very edge
+		return true;
+	}
+
+	bool checkRayOnTriangle(Triangle const& triangle, Ray const& ray)
+	{
+		//get normal to any point on the plane the triangle is on
+		glm::vec3 edgeB = triangle.pt1 - triangle.pt0;
+		glm::vec3 edgeA = triangle.pt2 - triangle.pt0;
+
+		glm::vec3 normal = glm::cross(edgeA, edgeB);
+		Plane trianglePlane;
+		trianglePlane.outwardNormal = normal;
+		trianglePlane.pointOnPlane = triangle.pt0;
+		if (checkRayOnPlane(ray, trianglePlane))
+		{
+			//Get the intersection point
+			glm::vec3 pt = getRayOnPlaneIntersectionPoint(ray, trianglePlane);
+			return checkPointOnTriangle(triangle, pt);
+		}
+		//Check if the normal is flipped
+
+		trianglePlane.outwardNormal = -normal;
+		if (checkRayOnPlane(ray, trianglePlane))
+		{
+			//Get the intersection point
+			glm::vec3 pt = getRayOnPlaneIntersectionPoint(ray, trianglePlane);
+			return checkPointOnTriangle(triangle, pt);
+		}
+
+		return false;
+	}
+
 
 
 	bool checkPointOnPlane(glm::vec3 const& point, Plane const& plane, float eplsion)
