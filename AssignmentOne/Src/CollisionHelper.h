@@ -68,6 +68,8 @@ namespace AssignmentOne
 
 		//Render the normal as well as a ray
 		Model normalModel;
+
+		bool showPlaneNormal = true;
 	};
 
 	struct Ray : public CollisionObject
@@ -75,6 +77,8 @@ namespace AssignmentOne
 		glm::vec3 startPoint;
 		float length; //When t = 1 in parametric
 		glm::vec3 direction;
+
+		glm::vec3 getPointAtHere(float const t) const;
 	//private:
 
 	//	glm::vec3& getDirection() { return direction; };
@@ -94,6 +98,13 @@ namespace AssignmentOne
 
 	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere);
 
+	bool checkRayOnPlane(Ray const& ray, Plane const& plane);
+
+	bool checkRayOnPlaneGoingOutwards(Ray const& ray, Plane const& plane);
+
+	float getIntersectionTimeRayOnPlane(Ray const& ray, Plane const& plane);
+
+	glm::vec3 getRayOnPlaneIntersectionPoint(Ray const& ray, Plane const& plane);
 
 	class CollisionHelper
 	{

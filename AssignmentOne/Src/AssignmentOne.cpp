@@ -1177,6 +1177,7 @@ namespace AssignmentOne
 			ImGui::Text(normalText.c_str());
 			ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
 			ImGui::DragFloat3(("rotation (" + planeName + ")").c_str(), (float*)&plane.rotation, 1.0f, 360.0f, 30.0f);
+			ImGui::Checkbox(("show normal (" + planeName + ")").c_str(), &plane.showPlaneNormal);
 		}
 	}
 
@@ -1200,7 +1201,7 @@ namespace AssignmentOne
 		if (ImGui::CollapsingHeader(("Physics for " + kinematicsName).c_str()))
 		{
 			ImGui::Text("Direction is normalized every physics update");
-			ImGui::DragFloat3(("direction (" + kinematicsName + ")").c_str(), (float*)&kinematics.normVector, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat3(("direction (" + kinematicsName + ")").c_str(), (float*)&kinematics.normVector, 0.01f, -1.0f, 1.0f);
 			ImGui::DragFloat(("speed (" + kinematicsName + ")").c_str(), (float*)&kinematics.speed, 0.01f, -10.0f, 10.0f);
 		}
 	}
@@ -2074,7 +2075,7 @@ namespace AssignmentOne
 			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			//For the physical representation. Does not influence collision
-			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
+			glm::vec3 pointModelScale = glm::vec3(0.05f, 0.05f, 0.05f);
 
 			void Init()
 			{
@@ -2325,7 +2326,9 @@ namespace AssignmentOne
 				RenderAxis();
 
 				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
-				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+
+				if (plane.showPlaneNormal)
+					SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
 
 				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
 
@@ -2444,7 +2447,8 @@ namespace AssignmentOne
 				RenderAxis();
 
 				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
-				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+				if (plane.showPlaneNormal)
+					SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
 
 				SubmitDraw(sphereOne.model, MeshNames::sphere, colorShader.shaderName);
 
@@ -2457,6 +2461,11 @@ namespace AssignmentOne
 		namespace RayVsPlane
 		{
 			Ray ray;
+			Plane plane;
+
+			Kinematics rayRotations;
+
+			std::string intersectionTimeString = "no intersection";
 
 			void Init()
 			{
@@ -2467,7 +2476,7 @@ namespace AssignmentOne
 				showAxis = false;
 				wireFrameMode = false;
 
-				ray.startPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+				ray.startPoint = glm::vec3(0.0f, 0.1f, 0.0f);
 				ray.length = 1.0f;
 				
 				//RotateRay(ray, 0.0f, 0.0f, 0.0f);
@@ -2475,21 +2484,57 @@ namespace AssignmentOne
 				//Don't set this directly. Rotate to get to the norm (easier for the mvp)
 				//ray.direction = glm::vec3(1.0f, 1.0f, 1.0f);
 				
-				ray.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				ray.model.color = glm::vec3(0.0f, 1.0f, 1.0f);
 
 				//Rotations are based on right vector transformations
 				ray.meshID = MeshNames::rayRight;
+
+				//The plane is behind the start point of the ray by default at first.
+				plane.pointOnPlane = glm::vec3(-0.5f, 0.0f, 0.0f);
+				plane.outwardNormal = worldRight;
+				plane.rotation = glm::vec3(0.0f, 0.0f, 45.0f);
+				plane.model.color = greenscreenGreen;
+				plane.normalModel.color = coolPurpleColor;
+				plane.model.scale = glm::vec3(1.0f, 1.4f, 1.4f);
+
+				//rotate around y-axis
+				rayRotations.normVector = glm::vec3(0.0f, 1.0f, 0.0f);
+				rayRotations.speed = 25.0f;
+
 			}
 
 			void RenderSettings()
 			{
+				ImGui::Begin("Ray vs Plane Settings");
+
+				ImGui::Text(intersectionTimeString.c_str());
+				RenderPlaneUI(plane, "plane");
 				RenderRayUI(ray, "ray");
+				RenderKinematics(rayRotations, "ray rotation kinematics");
+
+				ImGui::End();
 			}
 
 			void Update()
 			{
 				RenderSettings();
+				UpdatePhysics(ray.model.rotDegrees, rayRotations);
 				UpdateRay(ray);
+				UpdatePlane(plane);
+
+				if (checkRayOnPlane(ray, plane))
+				{
+					intersectionTimeString = ("intersection time at:" + std::to_string((getIntersectionTimeRayOnPlane(ray, plane))));
+
+					plane.normalModel.color = basicBlue;
+					plane.model.color = glm::vec3(1.0f, 0.0f, 0.0f);
+				}
+				else
+				{
+					intersectionTimeString = "no intersection";
+					plane.model.color = greenscreenGreen;
+					plane.normalModel.color = coolPurpleColor;
+				}
 			}
 
 			void Render()
@@ -2497,6 +2542,11 @@ namespace AssignmentOne
 				RenderAxis();
 
 				SubmitDraw(ray.model, MeshNames::rayRight, colorShader.shaderName);
+
+				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
+
+				if (plane.showPlaneNormal)
+					SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();

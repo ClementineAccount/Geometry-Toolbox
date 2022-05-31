@@ -122,11 +122,74 @@ namespace AssignmentOne
 		return isCloseToZero(nearestDistanceFromPlane, 0.0f);
 	}
 
+
+	glm::vec3 Ray::getPointAtHere(float const t) const
+	{
+		//Normalize the direction if haven't already done so.
+		return (startPoint + (t * glm::normalize(direction)));
+	}
+
+	float getIntersectionTimeRayOnPlane(Ray const& ray, Plane const& plane)
+	{
+		//Assumption: outwardNormal and rayDirection are not parallel
+		if (glm::dot(plane.outwardNormal, ray.direction) == 0)
+			return 0.0f; //It intersects at the start point and it also intersects anywhere as the plane is parallel
+
+		//Solve for t intersection : Ray(t) = point on plane --> ray(t) = startPt + t(DirectionVector)
+		glm::vec3 anyVectorToRay = ray.startPoint - plane.pointOnPlane;
+	
+		//Note: this result can return negative values if so desired.
+		float t_before_length = glm::dot(-plane.outwardNormal, anyVectorToRay) / glm::dot(plane.outwardNormal, ray.direction);
+
+		return glm::dot(-plane.outwardNormal, anyVectorToRay) / glm::dot(plane.outwardNormal, ray.direction);
+	}
+
+
+	bool checkRayOnPlaneGoingOutwards(Ray const& ray, Plane const& plane)
+	{
+		//Create a similar plane that has an inverted normal
+		Plane flippedPlane;
+		flippedPlane.pointOnPlane = plane.pointOnPlane;
+		flippedPlane.outwardNormal = -plane.outwardNormal; 
+
+		return checkRayOnPlane(ray, flippedPlane);
+	}
+
+	//Note, currently only supports outward intersecting to inwards plane. 
+	bool checkRayOnPlane(Ray const& ray, Plane const& plane)
+	{
+		//Trivial rejection test: ray is facing away from plane (facing towards plane normal)
+		float dotNormalDir = glm::dot(ray.direction, plane.outwardNormal);
+		if (dotNormalDir > 0.0f)
+		{
+			//Ray is either approaching away from plane
+			return false;
+		}
+
+		//Plane is parallel to ray. We can check if ray is on the plane via the start point
+		if (dotNormalDir == 0.0f)
+		{
+			//Check if the start point is on the plane already if parallel.
+			return (checkPointOnPlane(ray.startPoint, plane));
+		}
+
+
+		//Reject if the ray is too short. Clamp the t relative to the length
+		return ((getIntersectionTimeRayOnPlane(ray, plane) / ray.length) <= 1.0f);
+	}
+
+	glm::vec3 getRayOnPlaneIntersectionPoint(Ray const& ray, Plane const& plane)
+	{
+		assert(checkRayOnPlane(ray, plane) && "Only get intersection point if you already check that they do intersect");
+		return ray.getPointAtHere(getIntersectionTimeRayOnPlane(ray, plane));
+	}
+
 	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere)
 	{
 		float nearestDistanceToPlane = distanceFromPlane(sphere.centerPos, plane);
 		return fabs(nearestDistanceToPlane) < sphere.radius;
 	}
+
 
 
 	//Check if there is a collision between the lhs and rhs
