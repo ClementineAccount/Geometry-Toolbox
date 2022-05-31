@@ -74,10 +74,10 @@ namespace AssignmentOne
 	{
 		glm::vec3 startPoint;
 		float length; //When t = 1 in parametric
-		glm::vec3 normDir;
+		glm::vec3 direction;
 	//private:
 
-	//	glm::vec3& getDirection() { return normDir; };
+	//	glm::vec3& getDirection() { return direction; };
 	};
 
 

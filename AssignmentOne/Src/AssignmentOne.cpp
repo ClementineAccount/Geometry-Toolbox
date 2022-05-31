@@ -1173,10 +1173,25 @@ namespace AssignmentOne
 		if (ImGui::CollapsingHeader(("Settings for " + planeName).c_str()))
 		{
 			ImGui::DragFloat3(("point (" + planeName + ")").c_str(), (float*)&plane.pointOnPlane, 0.01f, -10.0f, 10.0f);
-				static std::string normalText = planeName + "'s normal";
-				ImGui::Text(normalText.c_str());
-				ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
-				ImGui::DragFloat3(("rotation x (" + planeName + ")").c_str(), (float*)&plane.rotation, 1.0f, 360.0f, 30.0f);
+			static std::string normalText = planeName + "'s normal";
+			ImGui::Text(normalText.c_str());
+			ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
+			ImGui::DragFloat3(("rotation (" + planeName + ")").c_str(), (float*)&plane.rotation, 1.0f, 360.0f, 30.0f);
+		}
+	}
+
+	void RenderRayUI(Ray& ray, std::string const& rayName)
+	{
+		if (ImGui::CollapsingHeader(("Settings for " + rayName).c_str()))
+		{
+			ImGui::DragFloat3(("Color (" + rayName + ")").c_str(), (float*)&ray.model.color, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat3(("Point (" + rayName + ")").c_str(), (float*)&ray.startPoint, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("Length (" + rayName + ")").c_str(), (float*)&ray.length, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat3(("Rotation (" + rayName + ")").c_str(), (float*)&ray.model.rotDegrees, 1.0f, 360.0f, 30.0f);
+
+			static std::string dirText = rayName + "'s direction vector";
+			ImGui::Text(dirText.c_str());
+			ImGui::Text("%f, %f, %f", ray.direction.x, ray.direction.y, ray.direction.z);
 		}
 	}
 
@@ -1227,20 +1242,21 @@ namespace AssignmentOne
 		newDirection = glm::rotateY(newDirection, glm::radians(upDegrees));
 		newDirection = glm::rotateZ(newDirection, glm::radians(forwardDegrees));
 
-		ray.normDir = newDirection;
+		ray.direction = newDirection;
 
 		ray.model.rotDegrees = glm::vec3(rightDegrees, upDegrees, forwardDegrees);
 	}
 
 	void UpdateRay(Ray& ray)
 	{
-
 		//Rotation in mvp for ray should be from the leftmost point of the VBO
 		ray.model.pivotPercent = glm::vec3(0.0f, 0.0f, 0.0f);
 		ray.model.pos = ray.startPoint;
 
 		//Based off right vector
 		ray.model.scale.x = ray.length;
+
+		RotateRay(ray, ray.model.rotDegrees.x, ray.model.rotDegrees.y, ray.model.rotDegrees.z);
 	}
 
 }
@@ -2445,26 +2461,34 @@ namespace AssignmentOne
 			void Init()
 			{
 				initFresh();
+				currCamera.pos = glm::vec3(1.0f, 1.0f, 1.0f);
 
 				changeBackGroundOnCollision = false;
 				showAxis = false;
 				wireFrameMode = false;
 
-				ray.startPoint = glm::vec3(0.0f, 1.0f, 0.0f);
+				ray.startPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+				ray.length = 1.0f;
 				
-				RotateRay(ray, 0.0f, 0.0f, 45.0f);
+				//RotateRay(ray, 0.0f, 0.0f, 0.0f);
 
 				//Don't set this directly. Rotate to get to the norm (easier for the mvp)
-				//ray.normDir = glm::vec3(1.0f, 1.0f, 1.0f);
+				//ray.direction = glm::vec3(1.0f, 1.0f, 1.0f);
 				
-				ray.model.color = coolPurpleColor;
+				ray.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 				//Rotations are based on right vector transformations
 				ray.meshID = MeshNames::rayRight;
 			}
 
+			void RenderSettings()
+			{
+				RenderRayUI(ray, "ray");
+			}
+
 			void Update()
 			{
+				RenderSettings();
 				UpdateRay(ray);
 			}
 
@@ -2472,7 +2496,7 @@ namespace AssignmentOne
 			{
 				RenderAxis();
 
-				SubmitDraw(ray.model, MeshNames::rayForward, colorShader.shaderName);
+				SubmitDraw(ray.model, MeshNames::rayRight, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
@@ -2772,7 +2796,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::PlaneVsSphere;
+		currentSceneName = SceneNames::RayVsPlane;
 		SetScene(currentSceneName);
 
 		return 0;
