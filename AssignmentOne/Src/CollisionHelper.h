@@ -98,6 +98,8 @@ namespace AssignmentOne
 
 	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere);
 
+	bool checkPlaneOnAABB(Plane const& plane, AABB const& aabb);
+
 	bool checkRayOnPlane(Ray const& ray, Plane const& plane);
 
 	bool checkRayOnSphere(Ray const& ray, SphereCollider const& sphere);

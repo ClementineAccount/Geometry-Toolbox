@@ -111,6 +111,22 @@ namespace AssignmentOne
 		return glm::dot(vectorToPoint, plane.outwardNormal);
 	}
 
+	bool checkPlaneOnAABB(Plane const& plane, AABB const& aabb)
+	{
+		//Check if the dot products have opposite signs, and hence the plane is in the middle of the box somewhere
+		float minPointDistance = distanceFromPlane(aabb.minPoint, plane);
+		float maxPointDistance = distanceFromPlane(aabb.maxPoint, plane);
+
+		if (minPointDistance > 0.0f && maxPointDistance < 0.0f)
+			return true;
+		if (minPointDistance < 0.0f && maxPointDistance > 0.0f)
+			return true;
+
+		return false;
+	}
+
+
+
 	bool checkPointOnPlane(glm::vec3 const& point, Plane const& plane, float eplsion)
 	{
 		auto isCloseToZero = [eplsion](float lhs, float rhs)

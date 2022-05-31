@@ -2417,7 +2417,6 @@ namespace AssignmentOne
 			SphereCollider sphereOne;
 
 			Kinematics sphereOnePhysics;
-			
 			Kinematics planePhysics;
 
 
@@ -2523,6 +2522,121 @@ namespace AssignmentOne
 					SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
 
 				SubmitDraw(sphereOne.model, MeshNames::sphere, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+		}
+
+		namespace PlaneVsAABB
+		{
+			Plane plane;
+			AABB box;
+
+			Kinematics boxPhysics;
+			Kinematics planePhysics;
+
+			glm::vec3 boxStartPos = glm::vec3(5.0f, 0.0f, 0.0f);
+			float boxSpeed = 1.0f;
+			glm::vec3 boxVelocityDir = -worldRight;
+
+			float currDistanceFromPlane = -1.11f;
+
+			void Init()
+			{
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				//Default for this scene is a little different 
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+
+				currCamera.pos = glm::vec3(4.0f, 4.0f, 4.0f);
+				topDownCameraHeight = 5.0f;
+
+				plane.outwardNormal = worldRight;
+				plane.model.scale = glm::vec3(1.0f, 3.0f, 3.0f);
+				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+				plane.normalModel.color = skyBlue;
+				plane.normalModel.scale = glm::vec3(1.0f, 1.0f, 10.0f);
+				plane.rotation = glm::vec3(0.0f, 0.0f, 45.0f);
+
+				planePhysics.normVector = glm::vec3(0.0f, 0.0f, 1.0f);
+				planePhysics.speed = 0.0f;
+
+				box.centerPos = boxStartPos;
+				box.scale = glm::vec3(0.75f, 0.75f, 0.75f);
+				boxPhysics.speed = boxSpeed;
+				boxPhysics.normVector = boxVelocityDir;
+			
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Plane vs AABB Settings");
+				ImGui::Spacing();
+
+				ImGui::Text(("Point nearest distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
+				ImGui::Spacing();
+
+				RenderPlaneUI(plane, "Plane");
+				RenderKinematics(planePhysics, "Plane Rotations");
+
+
+				RenderAABBUI(box, "AABB");
+				RenderKinematics(boxPhysics, "Sphere");
+
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				currDistanceFromPlane = distanceFromPlane(box.centerPos, plane);
+
+				box.CalculatePoints();
+
+				RenderSettings();
+
+				UpdatePhysics(plane.rotation, planePhysics);
+				UpdatePlane(plane);
+
+				UpdatePhysics(box.centerPos, boxPhysics);
+				box.UpdateModel();
+
+
+				//Just check both the min and max points
+
+				if (checkPlaneOnAABB(plane, box))
+				{
+					collisionDetected = true;
+					box.model.color = greenscreenGreen;
+
+					plane.model.color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					collisionDetected = false;
+					plane.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+					box.model.color = coolPurpleColor;
+				}
+
+
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
+				if (plane.showPlaneNormal)
+					SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+
+				SubmitDraw(box.model, MeshNames::cube, colorShader.shaderName);
 
 				DrawAll(drawList, currCamera);
 				RenderPictureinPicture();
@@ -2952,11 +3066,13 @@ namespace AssignmentOne
 		const char AABBVsAABB[] = "(04) AABB vs AABB";
 		const char PointVsSphere[] = "(05) Point vs Sphere";
 		const char PointVsAABB[] = "(06) Point vs AABB";
-		const char PointVsPlane[] = "(07) Point vs Plane";
-		const char PlaneVsSphere[] = "(08) Plane vs Sphere";
+		const char PointVsPlane[] = "(08) Point vs Plane";
 		const char RayVsPlane[] = "(09) Ray vs Plane";
-		const char RayVsSphere[] = "(10) Ray Vs Sphere";
-		const char RayVsAABB[] = "(11) Ray Vs AABB";
+		const char RayVsAABB[] = "(10) Ray Vs AABB";
+		const char RayVsSphere[] = "(11) Ray Vs Sphere";
+		const char PlaneVsAABB[] = "(12) Plane vs AABB";
+		const char PlaneVsSphere[] = "(13) Plane vs Sphere";
+	
 	}
 
 
@@ -3050,6 +3166,13 @@ namespace AssignmentOne
 		RayVsAABB.renderScene = AssignmentScenes::RayVsAABB::Render;
 		RayVsAABB.updateScene = AssignmentScenes::RayVsAABB::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsAABB, AssignmentScene(RayVsAABB)));
+
+
+		AssignmentScene PlaneVsAABB;
+		PlaneVsAABB.initScene = AssignmentScenes::PlaneVsAABB::Init;
+		PlaneVsAABB.renderScene = AssignmentScenes::PlaneVsAABB::Render;
+		PlaneVsAABB.updateScene = AssignmentScenes::PlaneVsAABB::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsAABB, AssignmentScene(PlaneVsAABB)));
 	}
 
 	int InitAssignment()
@@ -3079,7 +3202,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::RayVsAABB;
+		currentSceneName = SceneNames::PlaneVsAABB;
 		SetScene(currentSceneName);
 
 		return 0;
