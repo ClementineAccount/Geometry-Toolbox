@@ -1262,10 +1262,13 @@ namespace AssignmentOne
 
 }
 
+//Debug Testing
 namespace AssignmentOne
 {
 	namespace DebugTesting
 	{
+
+
 		//Test the function 'makeQuadFromVertices'
 		void TestQuadVertices1()
 		{
@@ -1615,6 +1618,75 @@ namespace AssignmentOne
 			assert(!checkPointOnPlane(pointThree, plane));
 		}
 
+
+		void TestRayOnSphere()
+		{
+			//Test for trivial acceptance
+			SphereCollider sphere;
+			Ray ray;
+
+
+			//Ray is definitely inside (start is inside)
+			sphere.radius = 1.0f;
+			sphere.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+			ray.startPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+			ray.length = 1.0f;
+			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			assert(checkRayOnSphere(ray, sphere));
+			
+			///Ray is inside (end is inside)
+			ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
+			ray.length = 2.1f; //Ray ends at origin
+			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			assert(checkRayOnSphere(ray, sphere));
+
+			//Test for trivial rejection away
+			ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
+			ray.direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+			assert(!checkRayOnSphere(ray, sphere));
+
+			//Test for skimmed past
+			ray.startPoint = glm::vec3(-2.0f, -20.0f, 0.0f);
+			ray.length = 100.0f; //Ray ends at origin
+			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+			assert(!checkRayOnSphere(ray, sphere));
+
+			//Test for intersection true
+			ray.startPoint = glm::vec3(-20.0f, 0.0f, 0.0f);
+			ray.length = 100.0f; //Ray ends at origin
+			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+			assert(checkRayOnSphere(ray, sphere));
+
+
+		}
+
+		void RunAllTests()
+		{
+
+			DebugTesting::TestQuadVertices1();
+			DebugTesting::TestQuadVertices2();
+			DebugTesting::TestQuadVertices3();
+			DebugTesting::TestQuadVertices4();
+			DebugTesting::TestSphereAngle1();
+			DebugTesting::TestSphereAngle2();
+			DebugTesting::TestSphereAngle3();
+
+			DebugTesting::TestPointAABB();
+			DebugTesting::TestPointAABB2();
+
+			DebugTesting::TestSphereAABB();
+
+			DebugTesting::TestAABBvsAABB();
+			DebugTesting::TestAABBvsAABB2();
+
+			DebugTesting::TestPointOnPlane();
+			DebugTesting::TestPointOnPlane2();
+			DebugTesting::TestPointOnPlane3();
+			DebugTesting::TestRayOnSphere();
+		}
 	}
 
 }
@@ -2554,6 +2626,91 @@ namespace AssignmentOne
 			}
 		}
 
+		namespace RayVsSphere
+		{
+			Ray ray;
+			SphereCollider sphere;
+
+			Kinematics rayRotations;
+			Kinematics sphereKinematics;
+
+			//std::string intersectionTimeString = "no intersection";
+
+			void Init()
+			{
+				initFresh();
+				currCamera.pos = glm::vec3(5.0f, 5.0f, 5.0f);
+
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+				ray.startPoint = glm::vec3(5.0f, 0.0f, 0.0f);
+				ray.length = 10.0f;
+				ray.model.color = glm::vec3(0.0f, 1.0f, 1.0f);
+
+				//Rotations are based on right vector transformations
+				ray.meshID = MeshNames::rayRight;
+
+				//rotate around y-axis
+				rayRotations.normVector = glm::vec3(0.0f, 1.0f, 0.0f);
+				rayRotations.speed = 25.0f;
+
+				sphere.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+				sphere.radius = 2.0f;
+				
+				sphere.model.color = basicBlue;
+
+				sphereKinematics.speed = 0.0f;
+				sphereKinematics.normVector = worldForward;
+			}
+
+			void RenderSettings()
+			{
+				RenderRayUI(ray, "Ray");
+				RenderSphereUI(sphere, "Sphere");
+				RenderKinematics(rayRotations, "Ray Rotations");
+				RenderKinematics(sphereKinematics, "Sphere Speed");
+
+			}
+
+			void Update()
+			{
+				RenderSettings();
+				UpdatePhysics(ray.model.rotDegrees, rayRotations);
+				UpdateRay(ray);
+
+				sphere.UpdateModel();
+				
+
+				if (checkRayOnSphere(ray, sphere))
+				{
+					//intersectionTimeString = ("intersection time at:" + std::to_string((getIntersectionTimeRayOnPlane(ray, plane))));
+
+					sphere.model.color = greenscreenGreen;
+					ray.model.color = glm::vec3(1.0f, 0.0f, 0.0f);
+				}
+				else
+				{
+					sphere.model.color = basicBlue;
+					ray.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				}
+			}
+
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(ray.model, MeshNames::rayRight, colorShader.shaderName);
+				SubmitDraw(sphere.model, MeshNames::sphere, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+		}
+
 		/**
 		namespace PlaneVsAABB
 		{
@@ -2709,15 +2866,16 @@ namespace AssignmentOne
 		//Just the axis and sphere
 		const char TestSceneSphere[] = "Sphere Primitive Example";
 
-		const char SphereVsSphere[] = "(1) Sphere Vs Sphere";
-		const char AABBVsSphere[] = "(2) AABB Vs Sphere";
-		const char SphereVsAABB[] = "(3) Sphere vs AABB";
-		const char AABBVsAABB[] = "(4) AABB vs AABB";
-		const char PointVsSphere[] = "(5) Point vs Sphere";
-		const char PointVsAABB[] = "(6) Point vs AABB";
-		const char PointVsPlane[] = "(7) Point vs Plane";
-		const char PlaneVsSphere[] = "(8) Plane vs Sphere";
-		const char RayVsPlane[] = "(9) Ray vs Plane";
+		const char SphereVsSphere[] = "(01) Sphere Vs Sphere";
+		const char AABBVsSphere[] = "(02) AABB Vs Sphere";
+		const char SphereVsAABB[] = "(03) Sphere vs AABB";
+		const char AABBVsAABB[] = "(04) AABB vs AABB";
+		const char PointVsSphere[] = "(05) Point vs Sphere";
+		const char PointVsAABB[] = "(06) Point vs AABB";
+		const char PointVsPlane[] = "(07) Point vs Plane";
+		const char PlaneVsSphere[] = "(08) Plane vs Sphere";
+		const char RayVsPlane[] = "(09) Ray vs Plane";
+		const char RayVsSphere[] = "(10) Ray Vs Sphere";
 	}
 
 
@@ -2799,6 +2957,12 @@ namespace AssignmentOne
 		RayVsPlane.renderScene = AssignmentScenes::RayVsPlane::Render;
 		RayVsPlane.updateScene = AssignmentScenes::RayVsPlane::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsPlane, AssignmentScene(RayVsPlane)));
+
+		AssignmentScene RayVsSphere;
+		RayVsSphere.initScene = AssignmentScenes::RayVsSphere::Init;
+		RayVsSphere.renderScene = AssignmentScenes::RayVsSphere::Render;
+		RayVsSphere.updateScene = AssignmentScenes::RayVsSphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsSphere, AssignmentScene(RayVsSphere)));
 	}
 
 	int InitAssignment()
@@ -2810,25 +2974,7 @@ namespace AssignmentOne
 
 		if (runDebugTests)
 		{
-			DebugTesting::TestQuadVertices1();
-			DebugTesting::TestQuadVertices2();
-			DebugTesting::TestQuadVertices3();
-			DebugTesting::TestQuadVertices4();
-			DebugTesting::TestSphereAngle1();
-			DebugTesting::TestSphereAngle2();
-			DebugTesting::TestSphereAngle3();
-			
-			DebugTesting::TestPointAABB();
-			DebugTesting::TestPointAABB2();
-			
-			DebugTesting::TestSphereAABB();
-			
-			DebugTesting::TestAABBvsAABB();
-			DebugTesting::TestAABBvsAABB2();
-
-			DebugTesting::TestPointOnPlane();
-			DebugTesting::TestPointOnPlane2();
-			DebugTesting::TestPointOnPlane3();
+			DebugTesting::RunAllTests();
 		}
 
 		//topDownCamera.pos = topDownCameraHeight;
@@ -2846,7 +2992,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::RayVsPlane;
+		currentSceneName = SceneNames::RayVsSphere;
 		SetScene(currentSceneName);
 
 		return 0;

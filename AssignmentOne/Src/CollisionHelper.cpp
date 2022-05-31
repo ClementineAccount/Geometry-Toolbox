@@ -1,6 +1,8 @@
 #include "CollisionHelper.h"
 #include "AssignmentOne.h"
 
+#include <glm/gtx/norm.hpp>
+
 namespace AssignmentOne
 {
 
@@ -188,6 +190,44 @@ namespace AssignmentOne
 	{
 		float nearestDistanceToPlane = distanceFromPlane(sphere.centerPos, plane);
 		return fabs(nearestDistanceToPlane) < sphere.radius;
+	}
+
+	bool checkRayOnSphere(Ray const& ray, SphereCollider const& sphere)
+	{
+		//In case the caller doesn't have it normalized.
+		glm::vec3 rayNormalized = glm::normalize(ray.direction);
+
+		glm::vec3 endPoint = ray.startPoint + ray.length * rayNormalized;
+
+		//Early acceptance check if start or end points are inside
+		if (checkPointOnSphere(ray.startPoint, sphere) || checkPointOnSphere(endPoint, sphere))
+			return true;
+		
+		//Vector from start point to sphere center. This is Ew --> Cw in the lecture notes
+		glm::vec3 v = sphere.centerPos - ray.startPoint;
+
+		//magnitude of the projection of v onto the ray. Using 'm' from lecture slides
+		float length_m = glm::dot(v, ray.direction);
+
+		//Early rejection test if ray is moving away
+		if (length_m < 0.0f)
+			return false;
+
+		//Also reject if m is shorter than the length
+		if (ray.length < length_m)
+			return false;
+
+		//Check if intersects the sphere. The lecture notes does not call square root for v at this point
+		float normalSquared = glm::length2(v) - (length_m * length_m);
+
+		//Reject if the normalSquared is more than the radius squared
+		if (normalSquared > (sphere.radius * sphere.radius))
+			return false;
+
+		//There is an intersection. Another function can find the interseciton point.
+		//V will have to be calculated again but it is a trivial calculation so its fine.
+
+		return true;
 	}
 
 

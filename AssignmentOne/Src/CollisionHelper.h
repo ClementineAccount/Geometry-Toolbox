@@ -100,7 +100,15 @@ namespace AssignmentOne
 
 	bool checkRayOnPlane(Ray const& ray, Plane const& plane);
 
+	bool checkRayOnSphere(Ray const& ray, SphereCollider const& sphere);
+
+	void getIntersectionTimesRayOnSphere(Ray const& ray, Plane const& plane, float& intersectionTimeOne, 
+		float& intersectionTimeTwo);
+
+
+
 	bool checkRayOnPlaneGoingOutwards(Ray const& ray, Plane const& plane);
+
 
 	float getIntersectionTimeRayOnPlane(Ray const& ray, Plane const& plane);
 
