@@ -80,6 +80,8 @@ namespace AssignmentOne
 
 	bool checkPointOnSphere(glm::vec3 const& point, SphereCollider const& sphere);
 
+	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere);
+
 
 	class CollisionHelper
 	{

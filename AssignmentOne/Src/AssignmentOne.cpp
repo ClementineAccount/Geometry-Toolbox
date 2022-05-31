@@ -49,10 +49,12 @@ namespace AssignmentOne
 
 	static glm::vec3 backgroundColor = blackish;
 
+	static bool changeBackGroundOnCollision = true;
+
 	static bool wireFramePictureInPicture = false;
 	static bool showAxis = true;
 
-
+	static bool enableDepthTest = true;
 	static bool collisionDetected = false;
 
 	constexpr glm::vec3 planeScale = { 1.0f, 1.0f, 1.0f };
@@ -775,9 +777,6 @@ namespace AssignmentOne
 		}
 	}
 
-
-
-
 	void InitMeshes()
 	{
 		glm::vec3 pt(-1.0f, 0.0f, 1.0f);
@@ -847,7 +846,7 @@ namespace AssignmentOne
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
-		static bool changeBackGroundOnCollision = true;
+
 
 		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
 		if (!changeBackGroundOnCollision)
@@ -855,9 +854,11 @@ namespace AssignmentOne
 		else
 			collidedBackgroundColor = basicBlue;
 
+
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
 		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
 		ImGui::Checkbox("Show Axis", &showAxis);
+		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
 
 		ImGui::End();
 
@@ -1003,6 +1004,8 @@ namespace AssignmentOne
 
 	void InitPictureInPicture()
 	{
+	
+
 		topDownCamera.targetPos = currCamera.targetPos;
 		topDownCamera.pos = topDownCamera.targetPos;
 		topDownCamera.pos.y = topDownCameraHeight;
@@ -1039,7 +1042,7 @@ namespace AssignmentOne
 		//Treat the viewports like transformations.
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+		glDisable(GL_DEPTH_TEST);
 		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
 		FillScreen();
 
@@ -1054,6 +1057,7 @@ namespace AssignmentOne
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
+		glEnable(GL_DEPTH_TEST);
 		DrawAll(drawList, topDownCamera);
 	}
 
@@ -1068,8 +1072,13 @@ namespace AssignmentOne
 
 	void UpdatePhysics(glm::vec3& pos, Kinematics const& kinematics)
 	{
+
+		if (glm::length(kinematics.normVector) - 0.0f <= std::numeric_limits<float>::epsilon())
+			return;
+
 		//Currently assumes constant acceleration (also instanaous velocity anyways)
-		pos +=  static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * kinematics.normVector);
+
+		pos +=  static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * glm::normalize(kinematics.normVector));
 	}
 
 	void RenderAssignmentTesting()
@@ -1111,7 +1120,6 @@ namespace AssignmentOne
 	}
 
 
-
 	void RenderAssignment()
 	{
 		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
@@ -1120,8 +1128,16 @@ namespace AssignmentOne
 		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glDisable(GL_CULL_FACE);
+		if (enableDepthTest)
+		{
+			glEnable(GL_DEPTH_TEST);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
+
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (wireFrameMode)
@@ -1134,30 +1150,42 @@ namespace AssignmentOne
 
 	void RenderSphereUI(SphereCollider &sphere, std::string const& sphereName)
 	{
-		ImGui::DragFloat3(("centerPos (" + sphereName + ")").c_str(), (float*)&sphere.centerPos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat(("radius (" + sphereName + ")").c_str(), (float*)&sphere.radius, 0.01f, -10.0f, 10.0f);
+		if (ImGui::CollapsingHeader(("Settings for " + sphereName).c_str()))
+		{
+			ImGui::DragFloat3(("centerPos (" + sphereName + ")").c_str(), (float*)&sphere.centerPos, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("radius (" + sphereName + ")").c_str(), (float*)&sphere.radius, 0.01f, -10.0f, 10.0f);
+		}
 	}
 
 	void RenderAABBUI(AABB& aabb, std::string const& aabbName)
 	{
-		ImGui::DragFloat3(("centerPos (" + aabbName + ")").c_str(), (float*)&aabb.centerPos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
+		if (ImGui::CollapsingHeader(("Settings for " + aabbName).c_str()))
+		{
+			ImGui::DragFloat3(("centerPos (" + aabbName + ")").c_str(), (float*)&aabb.centerPos, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat3(("scale (" + aabbName + ")").c_str(), (float*)&aabb.scale, 0.01f, -10.0f, 10.0f);
+		}
 	}
 
 	void RenderPlaneUI(Plane& plane, std::string const& planeName)
 	{
-		ImGui::DragFloat3(("point (" + planeName + ")").c_str(), (float*)&plane.pointOnPlane, 0.01f, -10.0f, 10.0f);
-		static std::string normalText = planeName + "'s normal";
-		ImGui::Text(normalText.c_str());
-		ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
-		ImGui::DragFloat3(("rotation x (" + planeName + ")").c_str(), (float*)&plane.rotation, 0.01f, 360.0f, 30.0f);
+		if (ImGui::CollapsingHeader(("Settings for " + planeName).c_str()))
+		{
+			ImGui::DragFloat3(("point (" + planeName + ")").c_str(), (float*)&plane.pointOnPlane, 0.01f, -10.0f, 10.0f);
+				static std::string normalText = planeName + "'s normal";
+				ImGui::Text(normalText.c_str());
+				ImGui::Text("%f, %f, %f", plane.outwardNormal.x, plane.outwardNormal.y, plane.outwardNormal.z);
+				ImGui::DragFloat3(("rotation x (" + planeName + ")").c_str(), (float*)&plane.rotation, 1.0f, 360.0f, 30.0f);
+		}
+	}
 
-
-	/*	ImGui::Text("Might do the other rotations later if have time.");
-
-		ImGui::ArrowButton(("Rotate (" + planeName + ")").c_str(), 0);
-		if (ImGui::IsItemActivated())
-			plane.rotation.x += 90.0f;*/
+	void RenderKinematics(Kinematics& kinematics, std::string const& kinematicsName)
+	{
+		if (ImGui::CollapsingHeader(("Physics for " + kinematicsName).c_str()))
+		{
+			ImGui::Text("Direction is normalized every physics update");
+			ImGui::DragFloat3(("direction (" + kinematicsName + ")").c_str(), (float*)&kinematics.normVector, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat(("speed (" + kinematicsName + ")").c_str(), (float*)&kinematics.speed, 0.01f, -10.0f, 10.0f);
+		}
 	}
 
 
@@ -1546,8 +1574,6 @@ namespace AssignmentOne
 
 }
 
-
-
 //Scenes
 namespace AssignmentOne
 {
@@ -1660,7 +1686,7 @@ namespace AssignmentOne
 				ImGui::Begin("AABB vs Sphere Settings");
 
 				RenderAABBUI(box, "AABB");
-				ImGui::DragFloat("AABB Speed: ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(boxKinematics, "AABB Speed");
 
 				RenderSphereUI(sphere, "Sphere");
 				ImGui::End();
@@ -1750,7 +1776,7 @@ namespace AssignmentOne
 				ImGui::Begin("Sphere vs AABB Settings");
 
 				RenderSphereUI(sphere, "Sphere");
-				ImGui::DragFloat("Sphere Speed ", (float*)&sphereKinematics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(sphereKinematics, "Sphere Speed");
 
 				RenderAABBUI(box, "AABB");
 
@@ -1836,7 +1862,7 @@ namespace AssignmentOne
 				ImGui::Begin("Sphere vs Sphere Settings");
 
 				RenderSphereUI(sphereOne, "Sphere One");
-				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(sphereOnePhysics, "Sphere One Speed");
 
 				RenderSphereUI(sphereTwo, "Sphere Two");
 				ImGui::End();
@@ -1920,7 +1946,7 @@ namespace AssignmentOne
 				ImGui::Begin("AABB vs AABB Settings");
 
 				RenderAABBUI(box, "AABB One");
-				ImGui::DragFloat("AABB Speed: ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(boxKinematics, "AABB One Speed");
 
 				RenderAABBUI(boxTwo, "AABB Two");
 				ImGui::End();
@@ -1983,10 +2009,11 @@ namespace AssignmentOne
 			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			//For the physical representation. Does not influence collision
-			glm::vec3 pointModelScale = glm::vec3(0.05f, 0.05f, 0.05f);
+			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
 
 			void Init()
 			{
+
 
 				pointModel.pos = pointCollision;
 				pointModel.scale = pointModelScale;
@@ -2008,7 +2035,8 @@ namespace AssignmentOne
 				ImGui::Begin("Point vs Sphere Settings");
 
 				RenderSphereUI(sphereOne, "Sphere");
-				ImGui::DragFloat("Sphere One Speed: ", (float*)&sphereOnePhysics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(sphereOnePhysics, "Sphere Speed");
+
 				ImGui::DragFloat3("Point Pos ", (float*)&pointCollision, 0.01f, -20.0f, 20.0f);
 				ImGui::End();
 			}
@@ -2090,9 +2118,9 @@ namespace AssignmentOne
 				ImGui::Begin("Point vs AABB Settings");
 
 				RenderAABBUI(box, "AABB");
-				ImGui::DragFloat("AABB Speed ", (float*)&boxKinematics.speed, 0.01f, -10.0f, 10.0f);
+				RenderKinematics(boxKinematics, "AABB Speed");
 
-				ImGui::DragFloat3("Point Pos ", (float*)&pointCollision, 0.01f, -20.0f, 20.0f);
+				ImGui::DragFloat3("Point", (float*)&pointCollision, 0.01f, -20.0f, 20.0f);
 				ImGui::End();
 			}
 
@@ -2138,7 +2166,7 @@ namespace AssignmentOne
 		namespace PointVsPlane
 		{
 			Plane plane;
-			glm::vec3 cameraStartPos = defaultCameraPos;
+			glm::vec3 cameraStartPos = glm::vec3(1.0f, 1.0f, 1.0f);
 
 			Kinematics pointKinematics;
 
@@ -2153,10 +2181,18 @@ namespace AssignmentOne
 			glm::vec3 boxVelocityNorm = worldForward;
 
 			//For the physical representation. Does not influence collision
-			glm::vec3 pointModelScale = glm::vec3(0.1f, 0.1f, 0.1f);
+			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
 
 			void Init()
 			{
+				//Default for this scene is a little different 
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+				//Closer for this scene
+				topDownCameraHeight = 1.0f;
+				
 				currCamera.pos = cameraStartPos;
 
 				backgroundColor = neutralBackgroundColor;
@@ -2172,6 +2208,7 @@ namespace AssignmentOne
 				plane.normalModel.scale = glm::vec3(1.0f, 1.0f, 10.0f);
 
 
+
 				pointModel.pos = pointCollision;
 				pointModel.scale = pointModelScale;
 
@@ -2182,7 +2219,239 @@ namespace AssignmentOne
 				ImGui::Begin("Plane vs Point Settings");
 				ImGui::Spacing();
 
-				ImGui::Text(("Point distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
+				ImGui::Text(("Point nearest distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
+				ImGui::Spacing();
+
+				RenderPlaneUI(plane, "Plane");
+				//ImGui::DragFloat("Plane Rotation Speed", (float*)&rotateSpeed, 90.0f, 0.0f, 360.0f);
+				ImGui::DragFloat3("Point", (float*)&pointCollision, 0.01f, -100.0f, 100.0f);
+
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				//UpdatePhysics(pointCollision, pointKinematics);
+
+				pointModel.pos = pointCollision;
+				currDistanceFromPlane = distanceFromPlane(pointCollision, plane);
+
+				RenderSettings();
+				UpdatePlane(plane);
+				
+				if (checkPointOnPlane(pointCollision, plane))
+				{
+					collisionDetected = true;
+					plane.model.color = glm::vec3(1.0f, 0.0f, 0.0f); //Red
+					//backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					plane.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+					//if (backgroundColor == collidedBackgroundColor)
+					//	//backgroundColor = neutralBackgroundColor;
+				}
+
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
+				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+
+				SubmitDraw(pointModel, MeshNames::sphere, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+		}
+
+		namespace PlaneVsSphere
+		{
+			Plane plane;
+			SphereCollider sphereOne;
+
+			Kinematics sphereOnePhysics;
+			
+			Kinematics planePhysics;
+
+
+			glm::vec3 sphereOneStartPos = glm::vec3(5.0f, 1.0f, 0.0f);
+			float sphereOneStartSpeed = 1.0f;
+			glm::vec3 sphereOneVelocityDir = -worldRight;
+
+			float currDistanceFromPlane = -1.11f;
+
+			void Init()
+			{
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				//Default for this scene is a little different 
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+
+				currCamera.pos = glm::vec3(4.0f, 4.0f, 4.0f);
+				topDownCameraHeight = 5.0f;
+
+				plane.outwardNormal = worldRight;
+				plane.model.scale = glm::vec3(1.0f, 3.0f, 3.0f);
+				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+				plane.normalModel.color = skyBlue;
+				plane.normalModel.scale = glm::vec3(1.0f, 1.0f, 10.0f);
+				plane.rotation = glm::vec3(0.0f, 0.0f, 45.0f);
+
+				planePhysics.normVector = glm::vec3(0.0f, 0.0f, 1.0f);
+				planePhysics.speed = -55.0f;
+
+
+				sphereOne.centerPos = sphereOneStartPos;
+				sphereOne.radius = 0.25f;
+				sphereOne.centerPos = sphereOneStartPos;
+				sphereOnePhysics.speed = sphereOneStartSpeed;
+				sphereOnePhysics.normVector = sphereOneVelocityDir;
+				sphereOne.model.color = basicBlue;
+
+
+
+				
+
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Plane vs Sphere Settings");
+				ImGui::Spacing();
+
+				ImGui::Text(("Point nearest distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
+				ImGui::Spacing();
+
+				RenderPlaneUI(plane, "Plane");
+				RenderKinematics(planePhysics, "Plane Rotations");
+
+
+				RenderSphereUI(sphereOne, "Sphere");
+				RenderKinematics(sphereOnePhysics, "Sphere");
+
+				ImGui::End();
+			}
+
+			void Update()
+			{
+				currDistanceFromPlane = distanceFromPlane(sphereOne.centerPos, plane);
+
+				RenderSettings();
+
+				UpdatePhysics(plane.rotation, planePhysics);
+				UpdatePlane(plane);
+
+				UpdatePhysics(sphereOne.centerPos, sphereOnePhysics);
+
+
+				if (checkPlaneOnSphere(plane, sphereOne))
+				{
+					collisionDetected = true;
+					sphereOne.model.color = greenscreenGreen;
+
+					collisionDetected = true;
+					plane.model.color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+					backgroundColor = collidedBackgroundColor;
+				}
+				else
+				{
+					plane.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
+					sphereOne.model.color = coolPurpleColor;
+				}
+
+				sphereOne.UpdateModel();
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(plane.model, MeshNames::quadNormalRight, colorShader.shaderName);
+				SubmitDraw(plane.normalModel, MeshNames::rayRight, colorShader.shaderName);
+
+				SubmitDraw(sphereOne.model, MeshNames::sphere, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+		}
+
+		/**
+		namespace PlaneVsAABB
+		{
+			Plane plane;
+			glm::vec3 cameraStartPos = glm::vec3(1.0f, 1.0f, 1.0f);
+			float rotateSpeed = 10.0f;
+
+			float currDistanceFromPlane = -1.11f;
+
+			AABB box;
+			Kinematics boxKinematics;
+
+			//Can use a sphere to represent it
+			Model pointModel;
+			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -5.0f);
+			glm::vec3 boxStartScale = glm::vec3(1.0f, 1.0f, 1.0f);
+			float boxStartSpeed = 2.0f;
+			glm::vec3 boxVelocityNorm = worldForward;
+
+
+
+			//For the physical representation. Does not influence collision
+			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
+
+			void Init()
+			{
+				//Default for this scene is a little different 
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = true;
+
+				//Closer for this scene
+				topDownCameraHeight = 1.0f;
+
+				box.model.color = greenscreenGreen;
+				box.centerPos = boxStartPos;
+				box.scale = boxStartScale;
+
+				boxKinematics.speed = boxStartSpeed;
+				boxKinematics.normVector = worldForward;
+
+				currCamera.pos = cameraStartPos;
+
+				backgroundColor = neutralBackgroundColor;
+				prevBackGround = backgroundColor;
+
+				plane.outwardNormal = worldRight;
+
+				plane.model.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+				plane.normalModel.color = skyBlue;
+				plane.normalModel.scale = glm::vec3(1.0f, 1.0f, 10.0f);
+
+			}
+
+			void RenderSettings()
+			{
+				ImGui::Begin("Plane vs AABB Settings");
+				ImGui::Spacing();
+
+				ImGui::Text(("Point nearest distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
 				ImGui::Spacing();
 
 				RenderPlaneUI(plane, "Plane");
@@ -2205,20 +2474,22 @@ namespace AssignmentOne
 
 				RenderSettings();
 				UpdatePlane(plane);
-				
+
 
 				if (checkPointOnPlane(pointCollision, plane))
 				{
+
+
 					collisionDetected = true;
-					plane.model.color = coolOrange;
-					backgroundColor = collidedBackgroundColor;
+					plane.model.color = glm::vec3(1.0f, 0.0f, 0.0f); //Red
+					//backgroundColor = collidedBackgroundColor;
 				}
 				else
 				{
 					plane.model.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-					if (backgroundColor == collidedBackgroundColor)
-						backgroundColor = neutralBackgroundColor;
+					//if (backgroundColor == collidedBackgroundColor)
+					//	//backgroundColor = neutralBackgroundColor;
 				}
 
 			}
@@ -2238,8 +2509,8 @@ namespace AssignmentOne
 				RenderPictureinPicture();
 				drawList.clear();
 			}
-
 		}
+		  */
 	}
 }
 
@@ -2280,6 +2551,7 @@ namespace AssignmentOne
 		const char PointVsSphere[] = "(5) Point vs Sphere";
 		const char PointVsAABB[] = "(6) Point vs AABB";
 		const char PointVsPlane[] = "(7) Point vs Plane";
+		const char PlaneVsSphere[] = "(8) Plane vs Sphere";
 
 	}
 
@@ -2351,6 +2623,11 @@ namespace AssignmentOne
 		PointVsPlane.updateScene = AssignmentScenes::PointVsPlane::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsPlane, AssignmentScene(PointVsPlane)));
 
+		AssignmentScene PlaneVsSphere;
+		PlaneVsSphere.initScene = AssignmentScenes::PlaneVsSphere::Init;
+		PlaneVsSphere.renderScene = AssignmentScenes::PlaneVsSphere::Render;
+		PlaneVsSphere.updateScene = AssignmentScenes::PlaneVsSphere::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsSphere, AssignmentScene(PlaneVsSphere)));
 
 		//Init every scene one by one 
 		//std::map<std::string, AssignmentScene>::iterator it;
@@ -2405,7 +2682,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::AABBVsAABB;
+		currentSceneName = SceneNames::PlaneVsSphere;
 		SetScene(currentSceneName);
 
 		return 0;

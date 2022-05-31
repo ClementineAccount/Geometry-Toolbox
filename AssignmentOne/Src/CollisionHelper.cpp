@@ -119,9 +119,13 @@ namespace AssignmentOne
 
 		float nearestDistanceFromPlane = distanceFromPlane(point, plane);
 
-
-
 		return isCloseToZero(nearestDistanceFromPlane, 0.0f);
+	}
+
+	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere)
+	{
+		float nearestDistanceToPlane = distanceFromPlane(sphere.centerPos, plane);
+		return fabs(nearestDistanceToPlane) < sphere.radius;
 	}
 
 
