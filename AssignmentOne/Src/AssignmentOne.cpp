@@ -50,6 +50,7 @@ namespace AssignmentOne
 	static glm::vec3 backgroundColor = blackish;
 
 	static bool wireFramePictureInPicture = false;
+	static bool showAxis = true;
 
 
 	static bool collisionDetected = false;
@@ -856,6 +857,7 @@ namespace AssignmentOne
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
 		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
+		ImGui::Checkbox("Show Axis", &showAxis);
 
 		ImGui::End();
 
@@ -1057,9 +1059,11 @@ namespace AssignmentOne
 
 	void RenderAxis()
 	{
-		SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
-		SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
-
+		if (showAxis)
+		{
+			SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
+			SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
+		}
 	}
 
 	void UpdatePhysics(glm::vec3& pos, Kinematics const& kinematics)
@@ -1162,9 +1166,9 @@ namespace AssignmentOne
 	{
 		glm::vec3 normalVector = worldRight;
 
-		normalVector = glm::rotateX(normalVector, glm::radians(rotateForwardDegrees));
-		normalVector = glm::rotateY(normalVector, glm::radians(rotateRightDegrees));
-		normalVector = glm::rotateZ(normalVector, glm::radians(rotateUpDegrees));
+		normalVector = glm::rotateX(normalVector, glm::radians(rotateRightDegrees));
+		normalVector = glm::rotateY(normalVector, glm::radians(rotateUpDegrees));
+		normalVector = glm::rotateZ(normalVector, glm::radians(rotateForwardDegrees));
 
 		plane.outwardNormal = normalVector;
 		//y-axis visual representation a little off and I don't know why 
@@ -2143,6 +2147,8 @@ namespace AssignmentOne
 
 			float rotateSpeed = 10.0f;
 
+			float currDistanceFromPlane = -1.11f;
+
 			float pointStartSpeed = 1.0f;
 			glm::vec3 boxVelocityNorm = worldForward;
 
@@ -2163,7 +2169,7 @@ namespace AssignmentOne
 				plane.model.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
 				plane.normalModel.color = skyBlue;
-				plane.normalModel.scale = glm::vec3(100.0f, 100.0f, 100.0f);
+				plane.normalModel.scale = glm::vec3(1.0f, 1.0f, 10.0f);
 
 
 				pointModel.pos = pointCollision;
@@ -2174,9 +2180,15 @@ namespace AssignmentOne
 			void RenderSettings()
 			{
 				ImGui::Begin("Plane vs Point Settings");
+				ImGui::Spacing();
+
+				ImGui::Text(("Point distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
+				ImGui::Spacing();
+
 				RenderPlaneUI(plane, "Plane");
 				//ImGui::DragFloat("Plane Rotation Speed", (float*)&rotateSpeed, 90.0f, 0.0f, 360.0f);
 				ImGui::DragFloat3("Point", (float*)&pointCollision, 0.01f, -100.0f, 100.0f);
+
 
 				ImGui::End();
 			}
@@ -2189,9 +2201,11 @@ namespace AssignmentOne
 				pointModel.pos = pointCollision;
 
 
+				currDistanceFromPlane = distanceFromPlane(pointCollision, plane);
+
 				RenderSettings();
 				UpdatePlane(plane);
-
+				
 
 				if (checkPointOnPlane(pointCollision, plane))
 				{
