@@ -805,6 +805,8 @@ namespace AssignmentOne
 
 		meshMap.emplace(MeshNames::rayUp, InitWorldLine(worldUp));
 		meshMap.emplace(MeshNames::rayRight, InitWorldLine(worldRight));
+		meshMap.emplace(MeshNames::rayForward, InitWorldLine(worldForward));
+
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 		meshMap.emplace(MeshNames::sphere, initSphereMesh());
 		meshMap.emplace(MeshNames::ring, initRingMesh());
@@ -1215,6 +1217,32 @@ namespace AssignmentOne
 		RotatePlane(plane, plane.rotation.x, plane.rotation.y, plane.rotation.z);
 	}
 
+	void RotateRay(Ray& ray, float rightDegrees, float upDegrees, float forwardDegrees)
+	{
+		//Reset to the right (ensure the ray model matches)
+		ray.meshID = MeshNames::rayRight; 
+		glm::vec3 newDirection = worldRight;
+
+		newDirection = glm::rotateX(newDirection, glm::radians(rightDegrees));
+		newDirection = glm::rotateY(newDirection, glm::radians(upDegrees));
+		newDirection = glm::rotateZ(newDirection, glm::radians(forwardDegrees));
+
+		ray.normDir = newDirection;
+
+		ray.model.rotDegrees = glm::vec3(rightDegrees, upDegrees, forwardDegrees);
+	}
+
+	void UpdateRay(Ray& ray)
+	{
+
+		//Rotation in mvp for ray should be from the leftmost point of the VBO
+		ray.model.pivotPercent = glm::vec3(0.0f, 0.0f, 0.0f);
+		ray.model.pos = ray.startPoint;
+
+		//Based off right vector
+		ray.model.scale.x = ray.length;
+	}
+
 }
 
 namespace AssignmentOne
@@ -1579,6 +1607,27 @@ namespace AssignmentOne
 {
 	namespace AssignmentScenes
 	{
+		//Default init for a camera
+		void initCamera()
+		{
+
+			currCamera.pos = defaultCameraPos;
+		}
+
+		void initBackground()
+		{
+
+			backgroundColor = neutralBackgroundColor;
+			prevBackGround = backgroundColor;
+		}
+
+		//So I don't have to keep typing the same three lines for every scene
+		void initFresh()
+		{
+			initCamera();
+			initBackground();
+		}
+
 		//AssignmentScenes that does nothing
 		namespace Default
 		{
@@ -2389,6 +2438,48 @@ namespace AssignmentOne
 			}
 		}
 
+		namespace RayVsPlane
+		{
+			Ray ray;
+
+			void Init()
+			{
+				initFresh();
+
+				changeBackGroundOnCollision = false;
+				showAxis = false;
+				wireFrameMode = false;
+
+				ray.startPoint = glm::vec3(0.0f, 1.0f, 0.0f);
+				
+				RotateRay(ray, 0.0f, 0.0f, 45.0f);
+
+				//Don't set this directly. Rotate to get to the norm (easier for the mvp)
+				//ray.normDir = glm::vec3(1.0f, 1.0f, 1.0f);
+				
+				ray.model.color = coolPurpleColor;
+
+				//Rotations are based on right vector transformations
+				ray.meshID = MeshNames::rayRight;
+			}
+
+			void Update()
+			{
+				UpdateRay(ray);
+			}
+
+			void Render()
+			{
+				RenderAxis();
+
+				SubmitDraw(ray.model, MeshNames::rayForward, colorShader.shaderName);
+
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+		}
+
 		/**
 		namespace PlaneVsAABB
 		{
@@ -2552,7 +2643,7 @@ namespace AssignmentOne
 		const char PointVsAABB[] = "(6) Point vs AABB";
 		const char PointVsPlane[] = "(7) Point vs Plane";
 		const char PlaneVsSphere[] = "(8) Plane vs Sphere";
-
+		const char RayVsPlane[] = "(9) Ray vs Plane";
 	}
 
 
@@ -2629,12 +2720,11 @@ namespace AssignmentOne
 		PlaneVsSphere.updateScene = AssignmentScenes::PlaneVsSphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsSphere, AssignmentScene(PlaneVsSphere)));
 
-		//Init every scene one by one 
-		//std::map<std::string, AssignmentScene>::iterator it;
-		//for (it = sceneMap.begin(); it != sceneMap.end(); it++)
-		//{
-		//	it->second.initScene();
-		//}
+		AssignmentScene RayVsPlane;
+		RayVsPlane.initScene = AssignmentScenes::RayVsPlane::Init;
+		RayVsPlane.renderScene = AssignmentScenes::RayVsPlane::Render;
+		RayVsPlane.updateScene = AssignmentScenes::RayVsPlane::Update;
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsPlane, AssignmentScene(RayVsPlane)));
 	}
 
 	int InitAssignment()

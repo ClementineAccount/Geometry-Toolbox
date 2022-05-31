@@ -70,6 +70,18 @@ namespace AssignmentOne
 		Model normalModel;
 	};
 
+	struct Ray : public CollisionObject
+	{
+		glm::vec3 startPoint;
+		float length; //When t = 1 in parametric
+		glm::vec3 normDir;
+	//private:
+
+	//	glm::vec3& getDirection() { return normDir; };
+	};
+
+
+
 	float distanceFromPlane(glm::vec3 const& point, Plane const& plane);
 
 	bool checkPointOnPlane(glm::vec3 const& point, Plane const& plane, float eplsion = std::numeric_limits<float>::epsilon());
