@@ -1,7 +1,7 @@
-//#include "AssignmentOne.h"
+//#include "Assignment.h"
 //#include <string>
 //
-//namespace AssignmentOne
+//namespace Assignment
 //{
 //	struct Settings
 //	{

@@ -24,6 +24,7 @@
     <ProjectGuid>{7a3fb7f3-7dee-4706-b07a-beab1d27d135}</ProjectGuid>
     <RootNamespace>AssignmentOne</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>AssignmentTwo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -161,6 +162,7 @@
     <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="Src\AssignmentOne.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />
@@ -181,6 +183,7 @@
     <ClCompile Include="Src\CollisionHelper.cpp" />
     <ClCompile Include="Src\GLApplication.cpp" />
     <ClCompile Include="Src\main.cpp" />
+    <ClCompile Include="Src\mesh.cpp" />
     <ClCompile Include="Src\Scene.cpp" />
     <ClCompile Include="Src\SceneManager.cpp" />
     <ClCompile Include="Src\shader.cpp" />

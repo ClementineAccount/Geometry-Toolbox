@@ -16,7 +16,7 @@
 //Forward declare
 class CollisionObject;
 
-namespace AssignmentOne
+namespace Assignment
 {
     constexpr GLuint defaultShaderID = 0;
 

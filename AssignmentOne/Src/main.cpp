@@ -8,12 +8,11 @@ int mainAssignmentOne()
     GeometryToolbox::GLApplication app;
     app.initApplication();
 
-    AssignmentOne::setApplicationPtr(app);
+    Assignment::setApplicationPtr(app);
+    Assignment::InitAssignment();
 
-    AssignmentOne::InitAssignment();
-
-    app.updateFunctions.emplace_back(AssignmentOne::UpdateAssignment);
-    app.updateFunctions.emplace_back(AssignmentOne::RenderAssignment);
+    app.updateFunctions.emplace_back(Assignment::UpdateAssignment);
+    app.updateFunctions.emplace_back(Assignment::RenderAssignment);
 
 
     app.updateApplication(); //has an update loop

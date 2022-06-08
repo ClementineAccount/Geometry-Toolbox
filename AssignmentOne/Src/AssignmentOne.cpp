@@ -17,7 +17,7 @@
 
 
 //Settings
-namespace AssignmentOne
+namespace Assignment
 {
 	const std::string shaderFolderPath = "Shaders/";
 
@@ -99,7 +99,7 @@ namespace AssignmentOne
 
 
 
-namespace AssignmentOne
+namespace Assignment
 {
 	std::vector<GLfloat> quadNormalUpPos =
 	{
@@ -1319,7 +1319,7 @@ namespace AssignmentOne
 }
 
 //Debug Testing
-namespace AssignmentOne
+namespace Assignment
 {
 	namespace DebugTesting
 	{
@@ -1767,7 +1767,7 @@ namespace AssignmentOne
 }
 
 //Scenes
-namespace AssignmentOne
+namespace Assignment
 {
 	namespace AssignmentScenes
 	{
@@ -3077,6 +3077,69 @@ namespace AssignmentOne
 
 		}
 
+		//Apply some simple polymorphism in order to create helper function for adding scenes to the map
+		class Scene
+		{
+		public:
+			virtual void Init() = 0;
+			virtual void Update() = 0;
+			virtual void Render() = 0;
+		};
+
+		class TestScene : Scene
+		{
+		public:
+			void Init() override { std::cout << "Init()\n"; };
+			void Update() override { std::cout << "Update()\n"; };
+			void Render() override { std::cout << "Render()\n"; };
+		};
+
+		class CubeScene : Scene
+		{
+		public:
+			Model cubeModel;
+
+			void Init() override {
+				cubeModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+			}
+
+			void Update() override {
+				cubeModel.rotDegrees.y += applicationPtr->getDeltaTime() * 200.0f;
+			}
+
+			void Render() override {
+				RenderAxis();
+
+				SubmitDraw(cubeModel, MeshNames::cube);
+				DrawAll(drawList, currCamera);
+				RenderPictureinPicture();
+				drawList.clear();
+			}
+
+
+		};
+
+		//Convert the specified scene into functions and adds it to sceneMap
+		template <typename T>
+		void ScenetoFunction(std::string const& sceneName)
+		{
+			static std::unique_ptr<T> scenePtr = std::make_unique<T>();
+
+			AssignmentScene curr;
+			curr.initScene = std::bind(&T::Init, scenePtr.get());
+			curr.updateScene = std::bind(&T::Update, scenePtr.get());
+			curr.renderScene = std::bind(&T::Render, scenePtr.get());
+
+
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
+		}
+
+		namespace LoadOBJ
+		{
+
+
+		}
+
 		/**
 		namespace PlaneVsAABB
 		{
@@ -3204,7 +3267,7 @@ namespace AssignmentOne
 
 
 //For the object maker
-namespace AssignmentOne
+namespace Assignment
 {
 	void ObjectMaker::MakeFloor()
 	{
@@ -3253,24 +3316,24 @@ namespace AssignmentOne
 		currentSceneName = SceneNames::defaultScene;
 
 		//AssignmentScene defaultScene;
-		//defaultScene.initScene = AssignmentOne::AssignmentScenes::Default::Init;
-		//defaultScene.renderScene = AssignmentOne::AssignmentScenes::Default::Render;
-		//defaultScene.updateScene = AssignmentOne::AssignmentScenes::Default::Update;
+		//defaultScene.initScene = Assignment::AssignmentScenes::Default::Init;
+		//defaultScene.renderScene = Assignment::AssignmentScenes::Default::Render;
+		//defaultScene.updateScene = Assignment::AssignmentScenes::Default::Update;
 
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
-			AssignmentScene{ AssignmentOne::AssignmentScenes::Default::Init,
-			AssignmentOne::AssignmentScenes::Default::Render,  AssignmentOne::AssignmentScenes::Default::Update }));
+			AssignmentScene{ Assignment::AssignmentScenes::Default::Init,
+			Assignment::AssignmentScenes::Default::Render,  Assignment::AssignmentScenes::Default::Update }));
 
-		AssignmentScene cubeScene;
-		cubeScene.initScene = AssignmentOne::AssignmentScenes::Cube::Init;
-		cubeScene.renderScene = AssignmentOne::AssignmentScenes::Cube::Render;
-		cubeScene.updateScene = AssignmentOne::AssignmentScenes::Cube::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
+		//AssignmentScene cubeScene;
+		//cubeScene.initScene = Assignment::AssignmentScenes::Cube::Init;
+		//cubeScene.renderScene = Assignment::AssignmentScenes::Cube::Render;
+		//cubeScene.updateScene = Assignment::AssignmentScenes::Cube::Update;
+		//sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
 
 		AssignmentScene sphereScene;
-		sphereScene.initScene = AssignmentOne::AssignmentScenes::Sphere::Init;
-		sphereScene.renderScene = AssignmentOne::AssignmentScenes::Sphere::Render;
-		sphereScene.updateScene = AssignmentOne::AssignmentScenes::Sphere::Update;
+		sphereScene.initScene = Assignment::AssignmentScenes::Sphere::Init;
+		sphereScene.renderScene = Assignment::AssignmentScenes::Sphere::Render;
+		sphereScene.updateScene = Assignment::AssignmentScenes::Sphere::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
 
 		AssignmentScene sphereSceneTwo;
@@ -3351,6 +3414,12 @@ namespace AssignmentOne
 		PointVsTriangle.renderScene = AssignmentScenes::PointVsTriangle::Render;
 		PointVsTriangle.updateScene = AssignmentScenes::PointVsTriangle::Update;
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsTriangle, AssignmentScene(PointVsTriangle)));
+
+		//AssignmentScenes::ScenetoFunction<AssignmentScenes::TestScene>("test");
+
+		using namespace AssignmentScenes;
+
+		ScenetoFunction<CubeScene>(SceneNames::TestSceneCube);
 	}
 
 	int InitAssignment()
@@ -3380,7 +3449,7 @@ namespace AssignmentOne
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::SphereVsSphere;
+		currentSceneName = SceneNames::TestSceneCube;
 		SetScene(currentSceneName);
 
 		return 0;

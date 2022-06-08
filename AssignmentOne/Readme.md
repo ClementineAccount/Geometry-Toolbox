@@ -7,6 +7,15 @@ Open the solution file using Visual Studio and set `Assignment1` to [`"Set as St
 
 <br/>
 
+# Running 
+
+![Running1](.\ReadmeImages\Running1.png)
+![Running2](.\ReadmeImages\Running2.png)
+
+Ensure the Shaders folder is inside this directory
+
+<br/>
+
 # Controls
 
 Controls and interactivity can be done through Dear Imgui menu in the various scenes.
@@ -14,6 +23,8 @@ Controls and interactivity can be done through Dear Imgui menu in the various sc
 
 Camera interactivity, some control of scene context objects and other options should be visible on the screen as in the example screenshot.
 The compiled project will ship will a reasonable imgui.ini file that should resemble the screenshot. Instructions are self-explantory
+
+<br/>
 
 # Brief
 
@@ -27,14 +38,11 @@ This assigmment simply implements the 14 Tests as indicated in the Assignment Br
 ```
 (extract from `Assignment 1 SU2022.pdf` on Moodle)
 
-
-The default sequence when the program is ran can be taught of in this manner: <br>
-
-$start \rightarrow \left\{test_{0} \rightarrow test_{1} \rightarrow ... \rightarrow \,test_{n}\right\}\rightarrow interactive \ scene$ <br>
-(where n is the total number of tests)
-
+<br/>
 
 ## Scenes
+
+<br/>
 
 Use the Dear Imgui menu in order to navigate to the various scenes. 
 Note that point collisions are are very sensitive so Dear Imgui controls should be used to verify its collisions
@@ -64,15 +72,21 @@ Note that point collisions are are very sensitive so Dear Imgui controls should 
 
 *** Ran out of time to debug Ray/Point vs triangle interactions. Was getting close to it and applying barycentric coordinate principle of edge detection test but I must have missed something
 
+<br/>
 
 ## Failures and Assumptions
 
 Triangle collisions are buggy and unfinished.
 
+<br/>
 
 ## Relevant Source Code
 ![Source Image](.\ReadmeImages\SourceCode.png)
 
+
+![Source Image](.\ReadmeImages\ShaderCode.png)
+
+<br/>
 
 ## Features and Grades
 
@@ -82,3 +96,11 @@ Completed credit features
 |--|--|--|
 |Picture in Picture  | View top down perspective on the top right of the screen | Completed successfully
 |Display the primitives   | Display the primitives of the various bounding voxes| Completed successfully and can be viewed using Wireframe mode
+|Camera   | Simple interactive camera| Completed successfully
+|Correct Rendering| Rendering using shader to display color changes | Completed successfully
+|Objects loaded correctly from the files ... | Load .obj files | NOT COMPLETED 
+
+v
+
+# Hours Spent
+Around 13+ accumlated Hours from scratch. Remebered having two 7 hour days back to back. Did not estimate properly but I spent too long on it.

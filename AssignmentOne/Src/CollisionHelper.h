@@ -2,7 +2,7 @@
 #include "AssignmentOne.h"
 #include <memory>
 
-namespace AssignmentOne
+namespace Assignment
 {
 	
 

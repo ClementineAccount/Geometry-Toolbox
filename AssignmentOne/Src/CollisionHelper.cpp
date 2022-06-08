@@ -4,7 +4,7 @@
 
 #include <glm/gtx/norm.hpp>
 
-namespace AssignmentOne
+namespace Assignment
 {
 
 	SphereCollider::SphereCollider()
