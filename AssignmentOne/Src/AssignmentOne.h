@@ -62,19 +62,6 @@ namespace Assignment
     };
 
 
-    struct MeshPrimitives
-    {
-        unsigned int VAO = 0;
-        unsigned int VBO = 0;
-
-        unsigned int arrayCount;
-
-        GLchar drawType = GL_TRIANGLES;
-
-        bool isDrawElements = false;
-        unsigned int elementCount;
-        unsigned int EBO;
-    };
 
 
     //The origin for use in model and view projection
@@ -166,7 +153,7 @@ namespace Assignment
     struct drawCall
     {
         Model model;
-        MeshPrimitives const& mesh;
+        MeshBuffers const& mesh;
 
         GLuint shaderID = 0;
 
@@ -183,7 +170,7 @@ namespace Assignment
         std::function<void(void)> renderScene;
     };
 
-    static std::unordered_map<std::string, MeshPrimitives> meshMap;
+    static std::unordered_map<std::string, MeshBuffers> meshMap;
 
 
     //Submit to the drawList
@@ -192,7 +179,7 @@ namespace Assignment
     //Draws all 
     void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera);
 
-    MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
+    MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
     //I only wanna create meshes once so..
     void InitMeshes();

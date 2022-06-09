@@ -130,7 +130,7 @@ namespace Assignment
 
 	std::unordered_map<std::string, Model> modelMap;
 
-	MeshPrimitives quadMesh;
+	MeshBuffers quadMesh;
 	ShaderContainer assignmentShaders;
 
 	//Default camera
@@ -219,13 +219,13 @@ namespace Assignment
 
 
 	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
-	MeshPrimitives initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
+	MeshBuffers initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
 		std::vector<GLfloat> vertices;
 		vertices.insert(vertices.end(), std::make_move_iterator(meshPositions.begin()), std::make_move_iterator(meshPositions.end()));
 		vertices.insert(vertices.end(), std::make_move_iterator(meshColor.begin()), std::make_move_iterator(meshColor.end()));
 
-		MeshPrimitives mesh;
+		MeshBuffers mesh;
 
 		glGenVertexArrays(1, &(mesh.VAO));
 		glBindVertexArray(mesh.VAO);
@@ -259,7 +259,7 @@ namespace Assignment
 
 	
 	//Using GL lines
-	MeshPrimitives InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
+	MeshBuffers InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
 	{
 		glm::vec3 rightAxis = worldOrigin + (axisRight * axisScaleRight);
 		glm::vec3 upAxis = worldOrigin + (axisUp * axisScaleUp);
@@ -291,14 +291,14 @@ namespace Assignment
 			axisColorForward.r,	axisColorForward.g, axisColorForward.b,
 		};
 
-		MeshPrimitives axisMesh = initVBO(axisPoints, axisColor);
+		MeshBuffers axisMesh = initVBO(axisPoints, axisColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 
 	//Line that is affected by MVP projection (so it exists in the world). The default orientation is pointing to the Right vector
-	MeshPrimitives InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
+	MeshBuffers InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
 	{
 		glm::vec3 vectorDir = worldOrigin + (basisVector * lineScale);
 		std::vector<GLfloat> linePoints
@@ -314,19 +314,19 @@ namespace Assignment
 			axisColorRight.r, axisColorRight.g, axisColorRight.b,
 		};
 
-		MeshPrimitives axisMesh = initVBO(linePoints, lineColor);
+		MeshBuffers axisMesh = initVBO(linePoints, lineColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 	//Unit 1x1x1 Cube for Model transform
-	//MeshPrimitives InitCubeMesh(float cubeScale = 0.5f)
+	//MeshBuffers InitCubeMesh(float cubeScale = 0.5f)
 	//{
-	//	return MeshPrimitives mesh;
+	//	return MeshBuffers mesh;
 	//}
 
 	//For seeing the makeQuadFromVertex function in action
-	MeshPrimitives InitTestAlignedPlanes()
+	MeshBuffers InitTestAlignedPlanes()
 	{
 		std::vector<GLfloat> finalBuffer;
 		glm::vec3 relativeRight = worldRight;
@@ -379,7 +379,7 @@ namespace Assignment
 	}
 
 	//Don't use: it's buggy and unfinished
-	MeshPrimitives InitPoint()
+	MeshBuffers InitPoint()
 	{
 		std::vector<GLfloat> point
 		{
@@ -391,7 +391,7 @@ namespace Assignment
 			pointDefaultColor.r, pointDefaultColor.g, pointDefaultColor.b
 		};
 
-		MeshPrimitives pointMesh = initVBO(point, color);
+		MeshBuffers pointMesh = initVBO(point, color);
 		pointMesh.drawType = GL_POINT; //just the one I guess
 		return pointMesh;
 	}
@@ -426,7 +426,7 @@ namespace Assignment
 	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
 	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
-	MeshPrimitives initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
+	MeshBuffers initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
 	{
 		
 
@@ -468,7 +468,7 @@ namespace Assignment
 			colorBuffer.push_back(sphereColor.g);
 			colorBuffer.push_back(sphereColor.b);
 		}
-		MeshPrimitives sphereMesh = initVBO(positions, colorBuffer);
+		MeshBuffers sphereMesh = initVBO(positions, colorBuffer);
 
 
 		//Genererate the EBO
@@ -501,6 +501,8 @@ namespace Assignment
 			}
 		}
 
+
+
 		glGenBuffers(1, &sphereMesh.EBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereMesh.EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
@@ -514,7 +516,7 @@ namespace Assignment
 
 	//Didn't finish it 
 	//Ring for testing. It's the same as a stack for the Sphere (ring is similar to sphere so it uses 0, 0, 0 as center
-	MeshPrimitives initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
+	MeshBuffers initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
 	{
 		std::vector<GLfloat> posBuffer;
 
@@ -572,12 +574,12 @@ namespace Assignment
 			colorBuffer.push_back(ringColor.b);
 		}
 
-		MeshPrimitives ringMesh = initVBO(posBuffer, colorBuffer);
+		MeshBuffers ringMesh = initVBO(posBuffer, colorBuffer);
 		ringMesh.drawType = GL_TRIANGLE_STRIP;
 		return ringMesh;
 	}
 	
-	MeshPrimitives initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
+	MeshBuffers initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
 	{
 		glm::vec3 relativeUp;
 		glm::vec3 relativeRight;
@@ -625,12 +627,12 @@ namespace Assignment
 			colorBuffer.push_back(defaultCubeColor.b);
 		}
 
-		MeshPrimitives cubeMesh = initVBO(posBuffer, colorBuffer);
+		MeshBuffers cubeMesh = initVBO(posBuffer, colorBuffer);
 		cubeMesh.drawType = GL_TRIANGLES;
 		return cubeMesh;
 	}
 
-	MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
+	MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
 		//Allows me to set quad positions normalized to 1 unit while applying the 0.5 scale afterwards
 		for (GLfloat& i : quadPositions)
@@ -650,7 +652,7 @@ namespace Assignment
 			quadColorR, quadColorG, quadColorB,
 		};
 
-		MeshPrimitives quadMesh = initVBO(quadPositions, quadColors);
+		MeshBuffers quadMesh = initVBO(quadPositions, quadColors);
 		return quadMesh;
 	}
 
@@ -670,7 +672,7 @@ namespace Assignment
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
 	void FillScreen(glm::vec3 colorFill = glm::vec3(1.0f, 1.0f, 1.0f))
 	{
-		MeshPrimitives quadMesh = meshMap.at(MeshNames::quadNormalForward);
+		MeshBuffers quadMesh = meshMap.at(MeshNames::quadNormalForward);
 
 		glm::mat4 modelMat = glm::mat4(1.0f);
 		modelMat = glm::scale(modelMat, glm::vec3(1000.0f, 1000.0f, 1000.0f));
@@ -755,7 +757,7 @@ namespace Assignment
 			unsigned int programID = currDraw.shaderID;
 			glUseProgram(currDraw.shaderID);
 
-			MeshPrimitives const& currMesh = currDraw.mesh;
+			MeshBuffers const& currMesh = currDraw.mesh;
 
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 
