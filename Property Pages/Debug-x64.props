@@ -3,15 +3,15 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)\dependencies\glew\include;$(SolutionDir)\dependencies\glm\;$(SolutionDir)\dependencies\glfw\include;$(SolutionDir)\dependencies\glm\glm\detail;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\dependencies\glew\include;$(SolutionDir)\dependencies\glm\;$(SolutionDir)\dependencies\glfw\include;$(SolutionDir)\dependencies\glm\glm\detail;$(SolutionDir)\dependencies\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\dependencies\glfw\lib;$(SolutionDir)\dependencies\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\dependencies\glfw\lib;$(SolutionDir)\dependencies\glew\lib;$(SolutionDir)\dependencies\assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\dependencies\imgui;$(SolutionDir)\dependencies\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

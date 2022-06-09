@@ -16,6 +16,9 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 
+//#define ASSIGNMENT_ONE
+
+
 //Settings
 namespace Assignment
 {
@@ -127,7 +130,7 @@ namespace Assignment
 
 	std::unordered_map<std::string, Model> modelMap;
 
-	Mesh quadMesh;
+	MeshPrimitives quadMesh;
 	ShaderContainer assignmentShaders;
 
 	//Default camera
@@ -216,13 +219,13 @@ namespace Assignment
 
 
 	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
-	Mesh initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
+	MeshPrimitives initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
 		std::vector<GLfloat> vertices;
 		vertices.insert(vertices.end(), std::make_move_iterator(meshPositions.begin()), std::make_move_iterator(meshPositions.end()));
 		vertices.insert(vertices.end(), std::make_move_iterator(meshColor.begin()), std::make_move_iterator(meshColor.end()));
 
-		Mesh mesh;
+		MeshPrimitives mesh;
 
 		glGenVertexArrays(1, &(mesh.VAO));
 		glBindVertexArray(mesh.VAO);
@@ -256,7 +259,7 @@ namespace Assignment
 
 	
 	//Using GL lines
-	Mesh InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
+	MeshPrimitives InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
 	{
 		glm::vec3 rightAxis = worldOrigin + (axisRight * axisScaleRight);
 		glm::vec3 upAxis = worldOrigin + (axisUp * axisScaleUp);
@@ -288,14 +291,14 @@ namespace Assignment
 			axisColorForward.r,	axisColorForward.g, axisColorForward.b,
 		};
 
-		Mesh axisMesh = initVBO(axisPoints, axisColor);
+		MeshPrimitives axisMesh = initVBO(axisPoints, axisColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 
 	//Line that is affected by MVP projection (so it exists in the world). The default orientation is pointing to the Right vector
-	Mesh InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
+	MeshPrimitives InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
 	{
 		glm::vec3 vectorDir = worldOrigin + (basisVector * lineScale);
 		std::vector<GLfloat> linePoints
@@ -311,19 +314,19 @@ namespace Assignment
 			axisColorRight.r, axisColorRight.g, axisColorRight.b,
 		};
 
-		Mesh axisMesh = initVBO(linePoints, lineColor);
+		MeshPrimitives axisMesh = initVBO(linePoints, lineColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 	//Unit 1x1x1 Cube for Model transform
-	//Mesh InitCubeMesh(float cubeScale = 0.5f)
+	//MeshPrimitives InitCubeMesh(float cubeScale = 0.5f)
 	//{
-	//	return Mesh mesh;
+	//	return MeshPrimitives mesh;
 	//}
 
 	//For seeing the makeQuadFromVertex function in action
-	Mesh InitTestAlignedPlanes()
+	MeshPrimitives InitTestAlignedPlanes()
 	{
 		std::vector<GLfloat> finalBuffer;
 		glm::vec3 relativeRight = worldRight;
@@ -376,7 +379,7 @@ namespace Assignment
 	}
 
 	//Don't use: it's buggy and unfinished
-	Mesh InitPoint()
+	MeshPrimitives InitPoint()
 	{
 		std::vector<GLfloat> point
 		{
@@ -388,7 +391,7 @@ namespace Assignment
 			pointDefaultColor.r, pointDefaultColor.g, pointDefaultColor.b
 		};
 
-		Mesh pointMesh = initVBO(point, color);
+		MeshPrimitives pointMesh = initVBO(point, color);
 		pointMesh.drawType = GL_POINT; //just the one I guess
 		return pointMesh;
 	}
@@ -423,7 +426,7 @@ namespace Assignment
 	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
 	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
-	Mesh initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
+	MeshPrimitives initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
 	{
 		
 
@@ -465,7 +468,7 @@ namespace Assignment
 			colorBuffer.push_back(sphereColor.g);
 			colorBuffer.push_back(sphereColor.b);
 		}
-		Mesh sphereMesh = initVBO(positions, colorBuffer);
+		MeshPrimitives sphereMesh = initVBO(positions, colorBuffer);
 
 
 		//Genererate the EBO
@@ -511,7 +514,7 @@ namespace Assignment
 
 	//Didn't finish it 
 	//Ring for testing. It's the same as a stack for the Sphere (ring is similar to sphere so it uses 0, 0, 0 as center
-	Mesh initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
+	MeshPrimitives initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
 	{
 		std::vector<GLfloat> posBuffer;
 
@@ -569,12 +572,12 @@ namespace Assignment
 			colorBuffer.push_back(ringColor.b);
 		}
 
-		Mesh ringMesh = initVBO(posBuffer, colorBuffer);
+		MeshPrimitives ringMesh = initVBO(posBuffer, colorBuffer);
 		ringMesh.drawType = GL_TRIANGLE_STRIP;
 		return ringMesh;
 	}
 	
-	Mesh initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
+	MeshPrimitives initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
 	{
 		glm::vec3 relativeUp;
 		glm::vec3 relativeRight;
@@ -622,12 +625,12 @@ namespace Assignment
 			colorBuffer.push_back(defaultCubeColor.b);
 		}
 
-		Mesh cubeMesh = initVBO(posBuffer, colorBuffer);
+		MeshPrimitives cubeMesh = initVBO(posBuffer, colorBuffer);
 		cubeMesh.drawType = GL_TRIANGLES;
 		return cubeMesh;
 	}
 
-	Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
+	MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
 		//Allows me to set quad positions normalized to 1 unit while applying the 0.5 scale afterwards
 		for (GLfloat& i : quadPositions)
@@ -647,7 +650,7 @@ namespace Assignment
 			quadColorR, quadColorG, quadColorB,
 		};
 
-		Mesh quadMesh = initVBO(quadPositions, quadColors);
+		MeshPrimitives quadMesh = initVBO(quadPositions, quadColors);
 		return quadMesh;
 	}
 
@@ -667,7 +670,7 @@ namespace Assignment
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
 	void FillScreen(glm::vec3 colorFill = glm::vec3(1.0f, 1.0f, 1.0f))
 	{
-		Mesh quadMesh = meshMap.at(MeshNames::quadNormalForward);
+		MeshPrimitives quadMesh = meshMap.at(MeshNames::quadNormalForward);
 
 		glm::mat4 modelMat = glm::mat4(1.0f);
 		modelMat = glm::scale(modelMat, glm::vec3(1000.0f, 1000.0f, 1000.0f));
@@ -752,7 +755,7 @@ namespace Assignment
 			unsigned int programID = currDraw.shaderID;
 			glUseProgram(currDraw.shaderID);
 
-			Mesh const& currMesh = currDraw.mesh;
+			MeshPrimitives const& currMesh = currDraw.mesh;
 
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 
@@ -1321,7 +1324,7 @@ namespace Assignment
 //Debug Testing
 namespace Assignment
 {
-	namespace DebugTesting
+	namespace Tests
 	{
 
 
@@ -1739,28 +1742,28 @@ namespace Assignment
 		void RunAllTests()
 		{
 
-			DebugTesting::TestQuadVertices1();
-			DebugTesting::TestQuadVertices2();
-			DebugTesting::TestQuadVertices3();
-			DebugTesting::TestQuadVertices4();
-			DebugTesting::TestSphereAngle1();
-			DebugTesting::TestSphereAngle2();
-			DebugTesting::TestSphereAngle3();
+			Tests::TestQuadVertices1();
+			Tests::TestQuadVertices2();
+			Tests::TestQuadVertices3();
+			Tests::TestQuadVertices4();
+			Tests::TestSphereAngle1();
+			Tests::TestSphereAngle2();
+			Tests::TestSphereAngle3();
 
-			DebugTesting::TestPointAABB();
-			DebugTesting::TestPointAABB2();
+			Tests::TestPointAABB();
+			Tests::TestPointAABB2();
 
-			DebugTesting::TestSphereAABB();
+			Tests::TestSphereAABB();
 
-			DebugTesting::TestAABBvsAABB();
-			DebugTesting::TestAABBvsAABB2();
+			Tests::TestAABBvsAABB();
+			Tests::TestAABBvsAABB2();
 
-			DebugTesting::TestPointOnPlane();
-			DebugTesting::TestPointOnPlane2();
-			DebugTesting::TestPointOnPlane3();
-			DebugTesting::TestRayOnSphere();
+			Tests::TestPointOnPlane();
+			Tests::TestPointOnPlane2();
+			Tests::TestPointOnPlane3();
+			Tests::TestRayOnSphere();
 
-			DebugTesting::TestPointOnTriangle();
+			Tests::TestPointOnTriangle();
 		}
 	}
 
@@ -3115,7 +3118,28 @@ namespace Assignment
 				RenderPictureinPicture();
 				drawList.clear();
 			}
+		};
 
+		class AssimapExample : Scene
+		{
+		public:
+			Mesh meshObject;
+
+			std::string filePath = "Models/cube.obj";
+
+			void Init() override {
+				//Try and load the model
+				meshObject.loadOBJ(filePath);
+			}
+
+			void Update() override {
+				//Nothing
+			}
+
+			void Render() override
+			{
+				//Nothing yet
+			}
 
 		};
 
@@ -3123,6 +3147,7 @@ namespace Assignment
 		template <typename T>
 		void ScenetoFunction(std::string const& sceneName)
 		{
+			//static unique_ptr allows runtime polymorphism with <memory> managing it automatically
 			static std::unique_ptr<T> scenePtr = std::make_unique<T>();
 
 			AssignmentScene curr;
@@ -3130,14 +3155,7 @@ namespace Assignment
 			curr.updateScene = std::bind(&T::Update, scenePtr.get());
 			curr.renderScene = std::bind(&T::Render, scenePtr.get());
 
-
 			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
-		}
-
-		namespace LoadOBJ
-		{
-
-
 		}
 
 		/**
@@ -3308,118 +3326,131 @@ namespace Assignment
 		const char PlaneVsAABB[] = "(12) Plane vs AABB";
 		const char PlaneVsSphere[] = "(13) Plane vs Sphere";
 		const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
+
+		const char AssimapExample[] = "AssimapExample";
 	}
+
 
 
 	void InitScenes()
 	{
 		currentSceneName = SceneNames::defaultScene;
 
-		//AssignmentScene defaultScene;
-		//defaultScene.initScene = Assignment::AssignmentScenes::Default::Init;
-		//defaultScene.renderScene = Assignment::AssignmentScenes::Default::Render;
-		//defaultScene.updateScene = Assignment::AssignmentScenes::Default::Update;
-
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
 			AssignmentScene{ Assignment::AssignmentScenes::Default::Init,
 			Assignment::AssignmentScenes::Default::Render,  Assignment::AssignmentScenes::Default::Update }));
 
-		//AssignmentScene cubeScene;
-		//cubeScene.initScene = Assignment::AssignmentScenes::Cube::Init;
-		//cubeScene.renderScene = Assignment::AssignmentScenes::Cube::Render;
-		//cubeScene.updateScene = Assignment::AssignmentScenes::Cube::Update;
-		//sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
 
-		AssignmentScene sphereScene;
-		sphereScene.initScene = Assignment::AssignmentScenes::Sphere::Init;
-		sphereScene.renderScene = Assignment::AssignmentScenes::Sphere::Render;
-		sphereScene.updateScene = Assignment::AssignmentScenes::Sphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
+		//Previous way of adding scenes to the scene container. 
+		//Replaced with a more polymorphic approach that is only one function call and therefore less error prone
 
-		AssignmentScene sphereSceneTwo;
-		sphereSceneTwo.initScene = AssignmentScenes::SphereVsSphere::Init;
-		sphereSceneTwo.renderScene = AssignmentScenes::SphereVsSphere::Render;
-		sphereSceneTwo.updateScene = AssignmentScenes::SphereVsSphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsSphere, AssignmentScene(sphereSceneTwo)));
+#ifdef ASSIGNMENT_ONE
 
-		AssignmentScene AABB_vs_Sphere;
-		AABB_vs_Sphere.initScene = AssignmentScenes::AABBVsSphere::Init;
-		AABB_vs_Sphere.renderScene = AssignmentScenes::AABBVsSphere::Render;
-		AABB_vs_Sphere.updateScene = AssignmentScenes::AABBVsSphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsSphere, AssignmentScene(AABB_vs_Sphere)));
-
-		AssignmentScene SphereVsAABB;
-		SphereVsAABB.initScene = AssignmentScenes::SphereVsAABB::Init;
-		SphereVsAABB.renderScene = AssignmentScenes::SphereVsAABB::Render;
-		SphereVsAABB.updateScene = AssignmentScenes::SphereVsAABB::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsAABB, AssignmentScene(SphereVsAABB)));
-
-		AssignmentScene AABBVsAABB;
-		AABBVsAABB.initScene = AssignmentScenes::AABBvsAABB::Init;
-		AABBVsAABB.renderScene = AssignmentScenes::AABBvsAABB::Render;
-		AABBVsAABB.updateScene = AssignmentScenes::AABBvsAABB::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsAABB, AssignmentScene(AABBVsAABB)));
-
-		AssignmentScene PointVsAABB;
-		PointVsAABB.initScene = AssignmentScenes::PointVsAABB::Init;
-		PointVsAABB.renderScene = AssignmentScenes::PointVsAABB::Render;
-		PointVsAABB.updateScene = AssignmentScenes::PointVsAABB::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsAABB, AssignmentScene(PointVsAABB)));
-
-		AssignmentScene PointVsSphere;
-		PointVsSphere.initScene = AssignmentScenes::PointVsSphere::Init;
-		PointVsSphere.renderScene = AssignmentScenes::PointVsSphere::Render;
-		PointVsSphere.updateScene = AssignmentScenes::PointVsSphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsSphere, AssignmentScene(PointVsSphere)));
-
-		AssignmentScene PointVsPlane;
-		PointVsPlane.initScene = AssignmentScenes::PointVsPlane::Init;
-		PointVsPlane.renderScene = AssignmentScenes::PointVsPlane::Render;
-		PointVsPlane.updateScene = AssignmentScenes::PointVsPlane::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsPlane, AssignmentScene(PointVsPlane)));
-
-		AssignmentScene PlaneVsSphere;
-		PlaneVsSphere.initScene = AssignmentScenes::PlaneVsSphere::Init;
-		PlaneVsSphere.renderScene = AssignmentScenes::PlaneVsSphere::Render;
-		PlaneVsSphere.updateScene = AssignmentScenes::PlaneVsSphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsSphere, AssignmentScene(PlaneVsSphere)));
-
-		AssignmentScene RayVsPlane;
-		RayVsPlane.initScene = AssignmentScenes::RayVsPlane::Init;
-		RayVsPlane.renderScene = AssignmentScenes::RayVsPlane::Render;
-		RayVsPlane.updateScene = AssignmentScenes::RayVsPlane::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsPlane, AssignmentScene(RayVsPlane)));
-
-		AssignmentScene RayVsSphere;
-		RayVsSphere.initScene = AssignmentScenes::RayVsSphere::Init;
-		RayVsSphere.renderScene = AssignmentScenes::RayVsSphere::Render;
-		RayVsSphere.updateScene = AssignmentScenes::RayVsSphere::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsSphere, AssignmentScene(RayVsSphere)));
-
-		AssignmentScene RayVsAABB;
-		RayVsAABB.initScene = AssignmentScenes::RayVsAABB::Init;
-		RayVsAABB.renderScene = AssignmentScenes::RayVsAABB::Render;
-		RayVsAABB.updateScene = AssignmentScenes::RayVsAABB::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsAABB, AssignmentScene(RayVsAABB)));
+		{
+			//AssignmentScene cubeScene;
+			//cubeScene.initScene = Assignment::AssignmentScenes::Cube::Init;
+			//cubeScene.renderScene = Assignment::AssignmentScenes::Cube::Render;
+			//cubeScene.updateScene = Assignment::AssignmentScenes::Cube::Update;
+			//sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
 
 
-		AssignmentScene PlaneVsAABB;
-		PlaneVsAABB.initScene = AssignmentScenes::PlaneVsAABB::Init;
-		PlaneVsAABB.renderScene = AssignmentScenes::PlaneVsAABB::Render;
-		PlaneVsAABB.updateScene = AssignmentScenes::PlaneVsAABB::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsAABB, AssignmentScene(PlaneVsAABB)));
+			AssignmentScene sphereScene;
+			sphereScene.initScene = Assignment::AssignmentScenes::Sphere::Init;
+			sphereScene.renderScene = Assignment::AssignmentScenes::Sphere::Render;
+			sphereScene.updateScene = Assignment::AssignmentScenes::Sphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
 
-		AssignmentScene PointVsTriangle;
-		PointVsTriangle.initScene = AssignmentScenes::PointVsTriangle::Init;
-		PointVsTriangle.renderScene = AssignmentScenes::PointVsTriangle::Render;
-		PointVsTriangle.updateScene = AssignmentScenes::PointVsTriangle::Update;
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsTriangle, AssignmentScene(PointVsTriangle)));
+			AssignmentScene sphereSceneTwo;
+			sphereSceneTwo.initScene = AssignmentScenes::SphereVsSphere::Init;
+			sphereSceneTwo.renderScene = AssignmentScenes::SphereVsSphere::Render;
+			sphereSceneTwo.updateScene = AssignmentScenes::SphereVsSphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsSphere, AssignmentScene(sphereSceneTwo)));
 
-		//AssignmentScenes::ScenetoFunction<AssignmentScenes::TestScene>("test");
+			AssignmentScene AABB_vs_Sphere;
+			AABB_vs_Sphere.initScene = AssignmentScenes::AABBVsSphere::Init;
+			AABB_vs_Sphere.renderScene = AssignmentScenes::AABBVsSphere::Render;
+			AABB_vs_Sphere.updateScene = AssignmentScenes::AABBVsSphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsSphere, AssignmentScene(AABB_vs_Sphere)));
 
+			AssignmentScene SphereVsAABB;
+			SphereVsAABB.initScene = AssignmentScenes::SphereVsAABB::Init;
+			SphereVsAABB.renderScene = AssignmentScenes::SphereVsAABB::Render;
+			SphereVsAABB.updateScene = AssignmentScenes::SphereVsAABB::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsAABB, AssignmentScene(SphereVsAABB)));
+
+			AssignmentScene AABBVsAABB;
+			AABBVsAABB.initScene = AssignmentScenes::AABBvsAABB::Init;
+			AABBVsAABB.renderScene = AssignmentScenes::AABBvsAABB::Render;
+			AABBVsAABB.updateScene = AssignmentScenes::AABBvsAABB::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsAABB, AssignmentScene(AABBVsAABB)));
+
+			AssignmentScene PointVsAABB;
+			PointVsAABB.initScene = AssignmentScenes::PointVsAABB::Init;
+			PointVsAABB.renderScene = AssignmentScenes::PointVsAABB::Render;
+			PointVsAABB.updateScene = AssignmentScenes::PointVsAABB::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsAABB, AssignmentScene(PointVsAABB)));
+
+			AssignmentScene PointVsSphere;
+			PointVsSphere.initScene = AssignmentScenes::PointVsSphere::Init;
+			PointVsSphere.renderScene = AssignmentScenes::PointVsSphere::Render;
+			PointVsSphere.updateScene = AssignmentScenes::PointVsSphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsSphere, AssignmentScene(PointVsSphere)));
+
+			AssignmentScene PointVsPlane;
+			PointVsPlane.initScene = AssignmentScenes::PointVsPlane::Init;
+			PointVsPlane.renderScene = AssignmentScenes::PointVsPlane::Render;
+			PointVsPlane.updateScene = AssignmentScenes::PointVsPlane::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsPlane, AssignmentScene(PointVsPlane)));
+
+			AssignmentScene PlaneVsSphere;
+			PlaneVsSphere.initScene = AssignmentScenes::PlaneVsSphere::Init;
+			PlaneVsSphere.renderScene = AssignmentScenes::PlaneVsSphere::Render;
+			PlaneVsSphere.updateScene = AssignmentScenes::PlaneVsSphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsSphere, AssignmentScene(PlaneVsSphere)));
+
+			AssignmentScene RayVsPlane;
+			RayVsPlane.initScene = AssignmentScenes::RayVsPlane::Init;
+			RayVsPlane.renderScene = AssignmentScenes::RayVsPlane::Render;
+			RayVsPlane.updateScene = AssignmentScenes::RayVsPlane::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsPlane, AssignmentScene(RayVsPlane)));
+
+			AssignmentScene RayVsSphere;
+			RayVsSphere.initScene = AssignmentScenes::RayVsSphere::Init;
+			RayVsSphere.renderScene = AssignmentScenes::RayVsSphere::Render;
+			RayVsSphere.updateScene = AssignmentScenes::RayVsSphere::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsSphere, AssignmentScene(RayVsSphere)));
+
+			AssignmentScene RayVsAABB;
+			RayVsAABB.initScene = AssignmentScenes::RayVsAABB::Init;
+			RayVsAABB.renderScene = AssignmentScenes::RayVsAABB::Render;
+			RayVsAABB.updateScene = AssignmentScenes::RayVsAABB::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsAABB, AssignmentScene(RayVsAABB)));
+
+
+			AssignmentScene PlaneVsAABB;
+			PlaneVsAABB.initScene = AssignmentScenes::PlaneVsAABB::Init;
+			PlaneVsAABB.renderScene = AssignmentScenes::PlaneVsAABB::Render;
+			PlaneVsAABB.updateScene = AssignmentScenes::PlaneVsAABB::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsAABB, AssignmentScene(PlaneVsAABB)));
+
+			AssignmentScene PointVsTriangle;
+			PointVsTriangle.initScene = AssignmentScenes::PointVsTriangle::Init;
+			PointVsTriangle.renderScene = AssignmentScenes::PointVsTriangle::Render;
+			PointVsTriangle.updateScene = AssignmentScenes::PointVsTriangle::Update;
+			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsTriangle, AssignmentScene(PointVsTriangle)));
+		}
+
+#endif // ASSIGNMENT_ONE
+
+
+
+
+		//Only one line. So much better :)
 		using namespace AssignmentScenes;
-
 		ScenetoFunction<CubeScene>(SceneNames::TestSceneCube);
+
+		ScenetoFunction<AssimapExample>(SceneNames::AssimapExample);
+
 	}
 
 	int InitAssignment()
@@ -3431,7 +3462,7 @@ namespace Assignment
 
 		if (runDebugTests)
 		{
-			DebugTesting::RunAllTests();
+			Tests::RunAllTests();
 		}
 
 		//topDownCamera.pos = topDownCameraHeight;
@@ -3449,7 +3480,7 @@ namespace Assignment
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::TestSceneCube;
+		currentSceneName = SceneNames::AssimapExample;
 		SetScene(currentSceneName);
 
 		return 0;

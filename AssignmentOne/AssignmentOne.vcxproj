@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -81,6 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)\dependencies\glew\include;$(SolutionDir)\dependencies\glm\;$(SolutionDir)\dependencies\glfw\include;$(SolutionDir)\dependencies\glm\glm\detail;$(SolutionDir)\dependencies\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -162,10 +163,10 @@
     <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
-    <ClInclude Include="mesh.h" />
     <ClInclude Include="Src\AssignmentOne.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />
+    <ClInclude Include="Src\mesh.h" />
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
     <ClInclude Include="Src\shader.hpp" />

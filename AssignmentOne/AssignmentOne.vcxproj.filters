@@ -122,7 +122,7 @@
     <ClInclude Include="Src\CollisionHelper.h">
       <Filter>Source\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="mesh.h">
+    <ClInclude Include="Src\mesh.h">
       <Filter>Source\AssigmmentTwo\Mesh</Filter>
     </ClInclude>
   </ItemGroup>

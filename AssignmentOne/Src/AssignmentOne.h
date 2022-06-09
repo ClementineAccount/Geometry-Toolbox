@@ -13,6 +13,9 @@
 #include "shader.hpp"
 
 
+#include "mesh.h"
+
+
 //Forward declare
 class CollisionObject;
 
@@ -59,7 +62,7 @@ namespace Assignment
     };
 
 
-    struct Mesh
+    struct MeshPrimitives
     {
         unsigned int VAO = 0;
         unsigned int VBO = 0;
@@ -67,7 +70,6 @@ namespace Assignment
         unsigned int arrayCount;
 
         GLchar drawType = GL_TRIANGLES;
-
 
         bool isDrawElements = false;
         unsigned int elementCount;
@@ -164,7 +166,7 @@ namespace Assignment
     struct drawCall
     {
         Model model;
-        Mesh const& mesh;
+        MeshPrimitives const& mesh;
 
         GLuint shaderID = 0;
 
@@ -181,7 +183,7 @@ namespace Assignment
         std::function<void(void)> renderScene;
     };
 
-    static std::unordered_map<std::string, Mesh> meshMap;
+    static std::unordered_map<std::string, MeshPrimitives> meshMap;
 
 
     //Submit to the drawList
@@ -190,7 +192,7 @@ namespace Assignment
     //Draws all 
     void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera);
 
-    Mesh InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
+    MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
     //I only wanna create meshes once so..
     void InitMeshes();
