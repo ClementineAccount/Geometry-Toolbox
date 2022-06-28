@@ -1,5 +1,5 @@
 #include "AssignmentOne.h"
-#include "AssignmentOneSettings.h"
+#include "AssignmentCommon.h"
 
 #include "CollisionHelper.h"
 

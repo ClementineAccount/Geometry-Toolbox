@@ -52,17 +52,8 @@ namespace Assignment
 		//extract the vertices
 		//allow create vbo
 		void loadOBJ(std::string const& filePath);
-
-		
 	};
 
 	void createBuffers(MeshBuffers& buffers, Vertices const& vertices, Indices const& indices);
-
-
-
-	namespace Tests
-	{
-
-	}
 }
 
