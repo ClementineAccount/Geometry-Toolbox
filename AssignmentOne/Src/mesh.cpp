@@ -16,26 +16,176 @@
 
 namespace Assignment
 {
-	void Mesh::loadOBJ(std::string const& filePath)
+
+	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
+	MeshBuffers initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
 	{
-		//ctrlc ctrlv: https://learnopengl.com/Model-Loading/Model
+		std::vector<GLfloat> vertices;
+		vertices.insert(vertices.end(), std::make_move_iterator(meshPositions.begin()), std::make_move_iterator(meshPositions.end()));
+		vertices.insert(vertices.end(), std::make_move_iterator(meshColor.begin()), std::make_move_iterator(meshColor.end()));
+
+		MeshBuffers mesh;
+
+		glGenVertexArrays(1, &(mesh.VAO));
+		glBindVertexArray(mesh.VAO);
+		glGenBuffers(1, &(mesh.VBO));
+
+		glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+
+		const size_t offsetToFirstPos = 0; //in index before converted to bytes
+		const size_t vertexCoordinateStride = 0;
+		const size_t indexOfPosition = 0; //in the fragment shader
+		const size_t numberPosCoordinatesPerVertex = 3;
+
+		glEnableVertexAttribArray(indexOfPosition);
+		glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
+
+		const size_t offsetToFirstColor = meshPositions.size(); //in index before converted to bytes (6 times 3)
+		const size_t vertexColorStride = 0;
+		const size_t indexOfColor = 1; //in the fragment shader
+		const size_t numberColorPerVertex = 3;
+
+		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
+		glEnableVertexAttribArray(indexOfColor);
+
+		mesh.arrayCount = meshPositions.size();
+		GLchar defaultDrawType = GL_TRIANGLES;
+		mesh.drawType = defaultDrawType;
+
+		return mesh;
+	}
+
+	MeshBuffers initBuffers(Vertices const& verticeSOA, Indices const& indices)
+	{
+		std::vector<GLfloat> vertices;
+		vertices.insert(vertices.end(), std::make_move_iterator(verticeSOA.positions.begin()), std::make_move_iterator(verticeSOA.positions.end()));
+		vertices.insert(vertices.end(), std::make_move_iterator(verticeSOA.colors.begin()), std::make_move_iterator(verticeSOA.colors.end()));
+
+
+		MeshBuffers mesh;
+
+		glGenVertexArrays(1, &(mesh.VAO));
+		glBindVertexArray(mesh.VAO);
+		glGenBuffers(1, &(mesh.VBO));
+
+		glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+
+		const size_t offsetToFirstPos = 0; //in index before converted to bytes
+		const size_t vertexCoordinateStride = 0;
+		const size_t indexOfPosition = 0; //in the fragment shader
+		const size_t numberPosCoordinatesPerVertex = 3;
+
+		glEnableVertexAttribArray(indexOfPosition);
+		glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
+
+		const size_t offsetToFirstColor = verticeSOA.positions.size(); //in index before converted to bytes (6 times 3)
+		const size_t vertexColorStride = 0;
+		const size_t indexOfColor = 1; //in the fragment shader
+		const size_t numberColorPerVertex = 3;
+
+		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
+		glEnableVertexAttribArray(indexOfColor);
+
+		//Now do EBO
+
+		std::vector<int> indices;
+
+		glGenBuffers(1, &mesh.EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.indexVector.size() * sizeof(int), indices.indexVector.data(), GL_STATIC_DRAW);
+
+		mesh.elementCount = indices.indexVector.size();
+		mesh.isDrawElements = true;
+		mesh.drawType = GL_TRIANGLES; //So we can do texture stuff with this later
+		return mesh;
+	}
+
+	void Mesh::ProcessMesh(const aiMesh& addMesh, const aiScene& Scene) noexcept
+	{
+		Mesh mesh;
+
+		//Go through the vertices to add positions, normals and so on
+		for (auto i = 0u; i < addMesh.mNumVertices; ++i)
+		{
+			mesh.meshVertices.positions.emplace_back(addMesh.mVertices[i].x, addMesh.mVertices[i].y, addMesh.mVertices[i].z);
+
+			//Add if there are normals
+			//if (addMesh.HasNormals())
+			//{
+			//	mesh.meshVertices.normals.emplace_back(glm::vec3(addMesh.mNormals[i].x, addMesh.mNormals[i].y, addMesh.mNormals[i].z));
+			//}
+
+			//if (addMesh.HasTextureCoords(0))
+			//{
+			//	mesh.meshVertices.textureCords.emplace_back(glm::vec2(addMesh.mTextureCoords[0][i].x, addMesh.mTextureCoords[0][i].y));
+			//}
+
+			//if (addMesh.HasNormals())
+			//{
+			//	mesh.meshVertices.normals.emplace_back(addMesh.mNormals[i].x, addMesh.mNormals[i].y, addMesh.mNormals[i].z);
+			//}
+
+			//if (addMesh.HasTangentsAndBitangents())
+			//{
+			//	mesh.meshVertices.tangent.emplace_back(addMesh.mTangents[i].x, addMesh.mTangents[i].y, addMesh.mTangents[i].z);
+			//	mesh.meshVertices.biTangent.emplace_back(addMesh.mBitangents[i].x, addMesh.mBitangents[i].y, addMesh.mBitangents[i].z);
+			//}
+
+			if (addMesh.HasVertexColors(0))
+			{
+				//Only add the first color set
+				mesh.meshVertices.colors.emplace_back(glm::vec3(addMesh.mColors[0][i].r, addMesh.mColors[0][i].g, addMesh.mColors[0][i].b));
+			}
+			else
+			{
+				static glm::vec3 defaultColor = glm::vec3(1.0f, 0.0f, 0.0f);
+				mesh.meshVertices.colors.push_back(defaultColor);
+			}
+		}
+
+		//Go through the indices
+		for (auto i = 0u; i < addMesh.mNumFaces; ++i)
+		{
+			const auto& Face = addMesh.mFaces[i];
+
+			for (auto j = 0u; j < Face.mNumIndices; ++j)
+				mesh.meshIndices.indexVector.push_back(Face.mIndices[j]);
+		}
+	}
+
+	void Mesh::ProcessNode(const aiNode& Node, const aiScene& Scene) noexcept
+	{
+		for (auto i = 0u, end = Node.mNumMeshes; i < end; ++i)
+		{
+			aiMesh* pMesh = Scene.mMeshes[Node.mMeshes[i]];
+			ProcessMesh(*pMesh, Scene);
+		}
+
+		for (auto i = 0u; i < Node.mNumChildren; ++i)
+		{
+			ProcessNode(*Node.mChildren[i], Scene);
+		}
+	}
+
+	void Mesh::loadOBJ(std::string const& filePath) noexcept
+	{
 		Assimp::Importer importer;
-		const aiScene* meshScene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* meshScene = importer.ReadFile(filePath
+			, aiProcess_Triangulate                // Make sure we get triangles rather than nvert polygons
+			| aiProcess_GenUVCoords                // Convert any type of mapping to uv mapping
+			| aiProcess_TransformUVCoords          // preprocess UV transformations (scaling, translation ...)
+			| aiProcess_FindInstances              // search for instanced meshes and remove them by references to one master
+			| aiProcess_PreTransformVertices       // pre-transform all vertices
+		);
 
 		//To Do: Replace this with proper runtime error handling for Release mode
 		assert(meshScene->mRootNode && ("failed to load the mesh at: " + filePath).c_str());
 		assert(meshScene->mMeshes && "no mesh?");
 
-		//What if there are child meshes? You could add them to a list using bfs or dfs but we will do that later
+		ProcessNode(*meshScene->mRootNode, *meshScene);
 
-		//"Assimp calls their vertex position array mVertices which isn't the most intuitive name."
-		for (size_t i = 0; i < meshScene->mNumMeshes; ++i)
-		{
-			aiMesh* currMesh = meshScene->mMeshes[i];
-			for (size_t j = 0; j < currMesh->mNumVertices; ++j)
-			{
-				positions.emplace_back( glm::vec3(currMesh->mVertices[j].x, currMesh->mVertices[j].y, currMesh->mVertices[j].z));
-			}
-		}
+		meshBuffer = initBuffers(meshVertices, meshIndices);
 	}
 }

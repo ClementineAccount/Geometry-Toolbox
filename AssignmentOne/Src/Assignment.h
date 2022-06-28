@@ -1,6 +1,7 @@
 #pragma once
 #include "GLApplication.h"
 
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include "shader.hpp"
 #include "mesh.h"
+
 
 //Forward declare
 class CollisionObject;
@@ -47,31 +49,6 @@ namespace Assignment
         }
     };
 
-    struct Vertex
-    {
-        glm::vec3 position;
-
-        //Will add it later
-
-        //glm::vec3 color;
-
-        //glm::vec3 normal;
-        //glm::vec2 texture;
-    };
-
-    struct MeshPrimitives
-    {
-        unsigned int VAO = 0;
-        unsigned int VBO = 0;
-
-        unsigned int arrayCount;
-
-        GLchar drawType = GL_TRIANGLES;
-
-        bool isDrawElements = false;
-        unsigned int elementCount;
-        unsigned int EBO;
-    };
 
 
     //The origin for use in model and view projection
@@ -85,15 +62,6 @@ namespace Assignment
 
     constexpr glm::vec3 defaultPivotPercent = { 0.5f, 0.5f, 0.0f };
     constexpr float defaultFOV = 90.0f;
-
-
-    //Cheap and easy subsitition to allow user to rotate in a set order
-    //struct AxisRotation
-    //{
-    //    float rotationDegrees = 0.0f;
-    //    glm::vec3 rotationAxis = worldRight; //User must choose one of the three rotDegrees axis
-
-    //};
 
     struct Model
     {
@@ -120,12 +88,7 @@ namespace Assignment
         //glm::vec3 normAccelerationVector = glm::vec3(0.0f, 0.0f, 0.0f);
     };
 
-    void UpdatePhysics(Model& model, Kinematics const& kinematics);
-
-
     constexpr glm::vec3 defaultCameraPos = { 5.0f, 5.0f, 3.0f };
-
-
 
     //Viewports can be treated like 2D plane model transformations
     struct ViewportModel
@@ -134,27 +97,10 @@ namespace Assignment
         glm::vec2 viewportScale{ 1.0f, 1.0f }; //in pixels
     };
 
-    //For testing some functions. I can just assign it here and then pass it in
-    //Model placeholderModels[10];
-
-    //void RenderModel(Model const& model, GLuint const shaderID = defaultShaderID);
-
-
-    //Bad 
-    struct GameObject
-    {
-        Model model; //the transforms
-        std::string meshID; //To Do: You could change this to use uint_32 instead eventually
-        bool isActive = true;
-        
-        std::unique_ptr<CollisionObject> colliderPtr;
-        std::unique_ptr<Kinematics> kinematics = std::make_unique<Kinematics>();
-    };
-
     struct drawCall
     {
         Model model;
-        MeshPrimitives const& mesh;
+        MeshBuffers const& mesh;
 
         GLuint shaderID = 0;
 
@@ -171,7 +117,7 @@ namespace Assignment
         std::function<void(void)> renderScene;
     };
 
-    static std::unordered_map<std::string, MeshPrimitives> meshMap;
+    static std::unordered_map<std::string, MeshBuffers> meshMap;
 
 
     //Submit to the drawList
@@ -180,7 +126,7 @@ namespace Assignment
     //Draws all 
     void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera);
 
-    MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
+    MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
     //I only wanna create meshes once so..
     void InitMeshes();
@@ -196,14 +142,6 @@ namespace Assignment
     //Render with the mesh struct instead of more hardcoded approach
     void RenderQuadMesh();
     void RenderAssignment();
-
-    //Functions that just add objects to scenes.  Gonna make it a class for now in case I want to make it a proper class in the future
-    class ObjectMaker
-    {
-    public:
-        static void MakeFloor();
-    };
-
 
     namespace MeshNames
     {
@@ -225,6 +163,34 @@ namespace Assignment
         static const char rayForward[] = "rayForward";
         static const char rayUp[] = "rayUp";
         static const char rayRight[] = "rayRight";
+    }
+
+    //'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
+    namespace SceneNames
+    {
+        const char defaultScene[] = "Default (Blank)";
+
+        //Just the axis and cube
+        const char TestSceneCube[] = "Cube Primitive Example";
+
+        //Just the axis and sphere
+        const char TestSceneSphere[] = "Sphere Primitive Example";
+
+        const char SphereVsSphere[] = "(01) Sphere Vs Sphere";
+        const char AABBVsSphere[] = "(02) AABB Vs Sphere";
+        const char SphereVsAABB[] = "(03) Sphere vs AABB";
+        const char AABBVsAABB[] = "(04) AABB vs AABB";
+        const char PointVsSphere[] = "(05) Point vs Sphere";
+        const char PointVsAABB[] = "(06) Point vs AABB";
+        const char PointVsPlane[] = "(08) Point vs Plane";
+        const char RayVsPlane[] = "(09) Ray vs Plane";
+        const char RayVsAABB[] = "(10) Ray Vs AABB";
+        const char RayVsSphere[] = "(11) Ray Vs Sphere";
+        const char PlaneVsAABB[] = "(12) Plane vs AABB";
+        const char PlaneVsSphere[] = "(13) Plane vs Sphere";
+        const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
+
+        const char AssimapExample[] = "AssimapExample";
     }
  
 }

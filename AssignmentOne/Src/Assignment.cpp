@@ -15,9 +15,7 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
-
 //#define ASSIGNMENT_ONE
-
 
 //Settings
 namespace Assignment
@@ -100,10 +98,24 @@ namespace Assignment
 }
 
 
-
-
+//Misc (Mesh, Drawing, ...)
 namespace Assignment
 {
+	std::map<std::string, AssignmentScene> sceneMap;
+
+	std::unordered_map<std::string, Model> modelMap;
+
+	MeshBuffers quadMesh;
+	ShaderContainer assignmentShaders;
+
+	//Default camera
+	Camera defaultLookAtCamera;
+	Camera topDownCamera = defaultLookAtCamera;
+	Camera currCamera = defaultLookAtCamera;
+
+	std::string currentSceneName;
+
+
 	std::vector<GLfloat> quadNormalUpPos =
 	{
 		-1.0f, 0.0f,  1.0f,  // 0
@@ -124,28 +136,12 @@ namespace Assignment
 		 0.0f, 1.0f, -1.0f  // 5
 	};
 
-
-
-	std::map<std::string, AssignmentScene> sceneMap;
-
-	std::unordered_map<std::string, Model> modelMap;
-
-	MeshPrimitives quadMesh;
-	ShaderContainer assignmentShaders;
-
-	//Default camera
-	Camera defaultLookAtCamera;
-	Camera topDownCamera = defaultLookAtCamera;
-	Camera currCamera = defaultLookAtCamera;
-
-	std::string currentSceneName;
 	//Camera firstPersonCamera;
 
 
 	ViewportModel topRightViewport;
 	ViewportModel topRightViewportBorder; //for a border effect
 
-	//Yea its ugly but just set it in the main. I'll abstract it away later
 	GeometryToolbox::GLApplication* applicationPtr;
 
 	void setApplicationPtr(GeometryToolbox::GLApplication& appPtr)
@@ -218,48 +214,10 @@ namespace Assignment
 	}
 
 
-	//Call the buffers for sometihng meant to be drawn with GL_ARRAYS
-	MeshPrimitives initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor)
-	{
-		std::vector<GLfloat> vertices;
-		vertices.insert(vertices.end(), std::make_move_iterator(meshPositions.begin()), std::make_move_iterator(meshPositions.end()));
-		vertices.insert(vertices.end(), std::make_move_iterator(meshColor.begin()), std::make_move_iterator(meshColor.end()));
-
-		MeshPrimitives mesh;
-
-		glGenVertexArrays(1, &(mesh.VAO));
-		glBindVertexArray(mesh.VAO);
-		glGenBuffers(1, &(mesh.VBO));
-
-		glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
-
-		const size_t offsetToFirstPos = 0; //in index before converted to bytes
-		const size_t vertexCoordinateStride = 0;
-		const size_t indexOfPosition = 0; //in the fragment shader
-		const size_t numberPosCoordinatesPerVertex = 3;
-
-		glEnableVertexAttribArray(indexOfPosition);
-		glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
-
-		const size_t offsetToFirstColor = meshPositions.size(); //in index before converted to bytes (6 times 3)
-		const size_t vertexColorStride = 0;
-		const size_t indexOfColor = 1; //in the fragment shader
-		const size_t numberColorPerVertex = 3;
-
-		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
-		glEnableVertexAttribArray(indexOfColor);
-
-		mesh.arrayCount = meshPositions.size();
-		GLchar defaultDrawType = GL_TRIANGLES;
-		mesh.drawType = defaultDrawType;
-
-		return mesh;
-	}
 
 	
 	//Using GL lines
-	MeshPrimitives InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
+	MeshBuffers InitAxis(glm::vec3 axisRight = worldRight, glm::vec3 axisUp = worldUp, glm::vec3 axisForward = worldForward)
 	{
 		glm::vec3 rightAxis = worldOrigin + (axisRight * axisScaleRight);
 		glm::vec3 upAxis = worldOrigin + (axisUp * axisScaleUp);
@@ -291,14 +249,14 @@ namespace Assignment
 			axisColorForward.r,	axisColorForward.g, axisColorForward.b,
 		};
 
-		MeshPrimitives axisMesh = initVBO(axisPoints, axisColor);
+		MeshBuffers axisMesh = initVBO(axisPoints, axisColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 
 	//Line that is affected by MVP projection (so it exists in the world). The default orientation is pointing to the Right vector
-	MeshPrimitives InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
+	MeshBuffers InitWorldLine(glm::vec3 basisVector = unitLineBasisVector, float lineScale = unitLineScale)
 	{
 		glm::vec3 vectorDir = worldOrigin + (basisVector * lineScale);
 		std::vector<GLfloat> linePoints
@@ -314,19 +272,19 @@ namespace Assignment
 			axisColorRight.r, axisColorRight.g, axisColorRight.b,
 		};
 
-		MeshPrimitives axisMesh = initVBO(linePoints, lineColor);
+		MeshBuffers axisMesh = initVBO(linePoints, lineColor);
 		axisMesh.drawType = GL_LINES;
 		return axisMesh;
 	}
 
 	//Unit 1x1x1 Cube for Model transform
-	//MeshPrimitives InitCubeMesh(float cubeScale = 0.5f)
+	//MeshBuffers InitCubeMesh(float cubeScale = 0.5f)
 	//{
-	//	return MeshPrimitives mesh;
+	//	return MeshBuffers mesh;
 	//}
 
 	//For seeing the makeQuadFromVertex function in action
-	MeshPrimitives InitTestAlignedPlanes()
+	MeshBuffers InitTestAlignedPlanes()
 	{
 		std::vector<GLfloat> finalBuffer;
 		glm::vec3 relativeRight = worldRight;
@@ -379,7 +337,7 @@ namespace Assignment
 	}
 
 	//Don't use: it's buggy and unfinished
-	MeshPrimitives InitPoint()
+	MeshBuffers InitPoint()
 	{
 		std::vector<GLfloat> point
 		{
@@ -391,11 +349,10 @@ namespace Assignment
 			pointDefaultColor.r, pointDefaultColor.g, pointDefaultColor.b
 		};
 
-		MeshPrimitives pointMesh = initVBO(point, color);
+		MeshBuffers pointMesh = initVBO(point, color);
 		pointMesh.drawType = GL_POINT; //just the one I guess
 		return pointMesh;
 	}
-
 
 	//To Do: Move all these into a mesh construction class? 
 	namespace MeshConstructor
@@ -426,7 +383,7 @@ namespace Assignment
 	//adapted from: http://www.songho.ca/opengl/gl_sphere.html (tried it myself but am running out of time)
 	//The site's guide uses pi and radians directly, while I had attempted to do it using degrees (if u study the test cases)
 	//I might rewrite/refactor this to use my own functions if I have time, but I have been spending too long on this sphere thing
-	MeshPrimitives initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
+	MeshBuffers initSphereMesh(glm::vec3 sphereColor = defaultSphereColor, unsigned int numSlices = 36, unsigned int numStacks = 18, float sphereRadius = 1.0f)
 	{
 		
 
@@ -468,7 +425,7 @@ namespace Assignment
 			colorBuffer.push_back(sphereColor.g);
 			colorBuffer.push_back(sphereColor.b);
 		}
-		MeshPrimitives sphereMesh = initVBO(positions, colorBuffer);
+		MeshBuffers sphereMesh = initVBO(positions, colorBuffer);
 
 
 		//Genererate the EBO
@@ -510,74 +467,8 @@ namespace Assignment
 		sphereMesh.drawType = GL_TRIANGLES; //So we can do texture stuff with this later
 		return sphereMesh;
 	}
-
-
-	//Didn't finish it 
-	//Ring for testing. It's the same as a stack for the Sphere (ring is similar to sphere so it uses 0, 0, 0 as center
-	MeshPrimitives initRingMesh(glm::vec3 ringColor = defaultRingColor, unsigned int numSlices = 4, float heightAngleDegree = 30.0f, float ringRadiusScale = 1.0f)
-	{
-		std::vector<GLfloat> posBuffer;
-
-		//glm::vec3 radiusRightVector = worldRight * ringRadiusScale;
-
-		////Each slice has a 'pair' for the stack
-		//for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
-		//{
-		//	//Stacks must alternative
-		//	float thisPhi = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
-		//	float stackOne = heightAngleDegree;
-		//	float stackTwo = heightAngleDegree + heightAngleDegree;
-
-		//	//Rotate about the z-axis
-		//	glm::vec4 vectorFromCenter  = glm::vec4(radiusRightVector, 0.0f); //Vector
-
-		//	//about the z-axis
-		//	//glm::mat4 rotateMatrix = glm::mat4{glm::vec3()}
-
-		//	vectorFromCenter =  rotateMatrix * vectorFromCenter;
-
-		//	//about the y-axis
-		//	rotateMatrix = glm::rotate(thisPhi, worldUp);
-		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
-
-
-		//	posBuffer.push_back(vectorFromCenter.x);
-		//	posBuffer.push_back(vectorFromCenter.y);
-		//	posBuffer.push_back(vectorFromCenter.z);
-
-		//	//Rotate about the z-axis
-		//	vectorFromCenter = glm::vec4(radiusRightVector, 0.0f); //Vector
-
-		//	//about the z-axis
-		//	rotateMatrix = glm::rotate(stackTwo, worldForward);
-		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
-
-
-		//	//about the y-axis
-		//	
-		//	rotateMatrix = glm::rotate(thisPhi, worldUp);
-		//	vectorFromCenter = rotateMatrix * vectorFromCenter;
-
-		//	posBuffer.push_back(vectorFromCenter.x);
-		//	posBuffer.push_back(vectorFromCenter.y);
-		//	posBuffer.push_back(vectorFromCenter.z);
-		//}
-
-		std::vector<GLfloat> colorBuffer;
-
-		for (size_t i = 0; i < posBuffer.size() / 3; ++i)
-		{
-			colorBuffer.push_back(ringColor.r);
-			colorBuffer.push_back(ringColor.g);
-			colorBuffer.push_back(ringColor.b);
-		}
-
-		MeshPrimitives ringMesh = initVBO(posBuffer, colorBuffer);
-		ringMesh.drawType = GL_TRIANGLE_STRIP;
-		return ringMesh;
-	}
 	
-	MeshPrimitives initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
+	MeshBuffers initCubeMesh(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
 	{
 		glm::vec3 relativeUp;
 		glm::vec3 relativeRight;
@@ -625,12 +516,12 @@ namespace Assignment
 			colorBuffer.push_back(defaultCubeColor.b);
 		}
 
-		MeshPrimitives cubeMesh = initVBO(posBuffer, colorBuffer);
+		MeshBuffers cubeMesh = initVBO(posBuffer, colorBuffer);
 		cubeMesh.drawType = GL_TRIANGLES;
 		return cubeMesh;
 	}
 
-	MeshPrimitives InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
+	MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
 		//Allows me to set quad positions normalized to 1 unit while applying the 0.5 scale afterwards
 		for (GLfloat& i : quadPositions)
@@ -650,7 +541,7 @@ namespace Assignment
 			quadColorR, quadColorG, quadColorB,
 		};
 
-		MeshPrimitives quadMesh = initVBO(quadPositions, quadColors);
+		MeshBuffers quadMesh = initVBO(quadPositions, quadColors);
 		return quadMesh;
 	}
 
@@ -670,7 +561,7 @@ namespace Assignment
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
 	void FillScreen(glm::vec3 colorFill = glm::vec3(1.0f, 1.0f, 1.0f))
 	{
-		MeshPrimitives quadMesh = meshMap.at(MeshNames::quadNormalForward);
+		MeshBuffers quadMesh = meshMap.at(MeshNames::quadNormalForward);
 
 		glm::mat4 modelMat = glm::mat4(1.0f);
 		modelMat = glm::scale(modelMat, glm::vec3(1000.0f, 1000.0f, 1000.0f));
@@ -755,7 +646,7 @@ namespace Assignment
 			unsigned int programID = currDraw.shaderID;
 			glUseProgram(currDraw.shaderID);
 
-			MeshPrimitives const& currMesh = currDraw.mesh;
+			MeshBuffers const& currMesh = currDraw.mesh;
 
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 
@@ -812,7 +703,6 @@ namespace Assignment
 
 		meshMap.emplace(MeshNames::worldLine, InitWorldLine());
 		meshMap.emplace(MeshNames::sphere, initSphereMesh());
-		meshMap.emplace(MeshNames::ring, initRingMesh());
 
 		meshMap.emplace("Test", InitTestAlignedPlanes());
 		//meshMap.emplace(MeshNames::point, InitPoint());
@@ -839,6 +729,269 @@ namespace Assignment
 		currentSceneName = setScene;
 	}
 
+
+
+	//Temp values for testing
+	int RenderQuadTest()
+	{
+		unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
+		glUseProgram(programID);
+
+		// Uniform matrix
+		// Uniform transformation (vertex shader)
+		GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
+
+		// Draw the triangle !
+		// T * R * S * Vertex
+		glm::mat4 modelMat = glm::mat4(1.0f);
+		glm::vec3 scaleVector = glm::vec3(1.0f);
+		glm::vec3 centroid = glm::vec3(0.0f, -0.0f, 0.0f);
+		glm::vec3 triPos = glm::vec3(0.0f, -0.5f, -1.0f);
+
+		glm::vec3 quadPos{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 quadScale{ 1.0f, 1.0f, 1.0f };
+		glm::vec3 quadAngles{ 0.0f, 0.0f, 0.0f };
+
+		modelMat = glm::translate(modelMat, quadPos);
+
+		float pivotPercentFromLeft = 0.5f;
+
+		modelMat = glm::translate(modelMat, glm::vec3(pivotPercentFromLeft * quadScale.x,
+			pivotPercentFromLeft * quadScale.y,
+			pivotPercentFromLeft * quadScale.z));
+
+		modelMat = glm::rotate(modelMat, quadAngles.z, glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMat = glm::rotate(modelMat, quadAngles.y, glm::vec3(0.0f, 1.0f, 1.0f));
+		modelMat = glm::rotate(modelMat, quadAngles.x, glm::vec3(1.0f, 0.0f, 1.0f));
+		modelMat = glm::translate(modelMat, glm::vec3(-pivotPercentFromLeft * quadScale.x, -pivotPercentFromLeft * quadScale.y, -pivotPercentFromLeft * quadScale.z));
+
+		modelMat = glm::scale(modelMat, quadScale);
+
+		glm::mat4 perspectiveMat = glm::mat4(1.0f);
+		glm::mat4 viewMat = glm::mat4(1.0f);
+
+		glm::mat4 mvpMat = glm::mat4(1.0f);
+		mvpMat = perspectiveMat * viewMat * modelMat;
+
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
+
+		glBindVertexArray(quadMesh.VAO);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//glDisableVertexAttribArray(0);
+
+		return 0;
+	}
+
+	void InitPictureInPicture()
+	{
+		topDownCamera.targetPos = currCamera.targetPos;
+		topDownCamera.pos = topDownCamera.targetPos;
+		topDownCamera.pos.y = topDownCameraHeight;
+
+		//Hardcoded testing of ideas in pixels
+
+		//in pixels
+
+		//Add this twice to each edge (think of a picture frame)
+		float borderSideLength = 2.0f;
+		float borderSideHeight = 2.0f;
+
+		topRightViewport.viewportScale = glm::vec2(200.0f, 200.0f);
+		topRightViewport.bottomLeft.x = (applicationPtr->getWindowWidth() - topRightViewport.viewportScale.x - topRightViewport.viewportScale.x * 0.1f);
+		topRightViewport.bottomLeft.y = (applicationPtr->getWindowHeight() - topRightViewport.viewportScale.y - topRightViewport.viewportScale.y * 0.1f);
+
+
+		topRightViewportBorder.bottomLeft = topRightViewport.bottomLeft;
+		topRightViewportBorder.bottomLeft.x -= borderSideLength;
+		topRightViewportBorder.bottomLeft.y -= borderSideHeight;
+
+
+		topRightViewportBorder.viewportScale = glm::vec2(topRightViewport.viewportScale.x + borderSideLength * 2.0f, topRightViewport.viewportScale.y + borderSideHeight * 2.0f);
+	}
+	
+	void RenderPictureinPicture()
+	{
+		//topDownCamera.targetPos = currCamera.targetPos;
+		topDownCamera.pos = topDownCamera.targetPos;
+		topDownCamera.pos.y = topDownCameraHeight;
+		topDownCamera.right = worldRight;
+		topDownCamera.up = -worldForward;
+
+		//Treat the viewports like transformations.
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDisable(GL_DEPTH_TEST);
+		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
+		FillScreen();
+
+
+		glViewport(topRightViewport.bottomLeft.x, topRightViewport.bottomLeft.y, topRightViewport.viewportScale.x, topRightViewport.viewportScale.y);
+		
+		FillScreen(backgroundColor);
+
+
+		if (wireFramePictureInPicture)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+
+		glEnable(GL_DEPTH_TEST);
+		DrawAll(drawList, topDownCamera);
+	}
+
+	void RenderAxis()
+	{
+		if (showAxis)
+		{
+			SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
+			SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
+		}
+	}
+
+
+	void RenderAssignmentTesting()
+	{
+
+		Model testModel;
+		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
+
+		Model sphereModel;
+		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+		//SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
+
+		RenderAxis();
+		//SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
+		//SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
+
+
+		static Model worldLineTestMode;
+		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
+		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
+
+		SubmitDraw(worldLineTestMode, MeshNames::worldLine);
+
+		static Model testCube;
+		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
+
+
+		DrawAll(drawList, currCamera);
+
+	}
+
+	
+	//The three models for the triangle to match the rotation
+	void RotateTriangleLines(Triangle& triangle)
+	{
+		//Also ensures the scale is correctly
+		//Rotations are based off the right axis
+		triangle.rayA.pos = triangle.pt1;
+		triangle.rayB.pos = triangle.pt1;
+		triangle.rayC.pos = triangle.pt2;
+
+		//angle from right vector to the vector (to do: cache this when you rotate)
+		glm::vec3 edgeA = (triangle.pt0 - triangle.pt1);
+
+		//Note this is in radians --> since we are projecting onto the x-axis, we can skip dot product calculation
+		float angleBetween = acosf(edgeA.x / glm::length(edgeA));
+
+		triangle.rayA.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayA.scale.x = glm::length(edgeA);
+
+		glm::vec3 edgeB = (triangle.pt2 - triangle.pt1);
+
+		angleBetween = acosf(edgeB.x / glm::length(edgeB));
+
+		triangle.rayB.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayB.scale.x = glm::length(edgeB);
+
+		glm::vec3 edgeC = (triangle.pt0 - triangle.pt2);
+
+		angleBetween = acosf(edgeC.x / glm::length(edgeC));
+
+		triangle.rayC.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
+		triangle.rayC.scale.x = glm::length(edgeC);
+	}
+
+	void UpdateTriangle(Triangle& triangle)
+	{
+		RotateTriangleLines(triangle);
+	}
+
+
+	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
+	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
+	{
+		glm::vec3 normalVector = worldRight;
+
+		normalVector = glm::rotateX(normalVector, glm::radians(rotateRightDegrees));
+		normalVector = glm::rotateY(normalVector, glm::radians(rotateUpDegrees));
+		normalVector = glm::rotateZ(normalVector, glm::radians(rotateForwardDegrees));
+
+		plane.outwardNormal = normalVector;
+		//y-axis visual representation a little off and I don't know why 
+		plane.model.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
+		plane.normalModel.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
+
+	}
+
+	void UpdatePlane(Plane& plane)
+	{
+		plane.model.pos = plane.pointOnPlane;
+		plane.normalModel.pos = plane.pointOnPlane;
+
+		//Reset the rotation normal first before reapplying the rotation from this point
+		plane.outwardNormal = worldRight;
+		RotatePlane(plane, plane.rotation.x, plane.rotation.y, plane.rotation.z);
+	}
+
+	void RotateRay(Ray& ray, float rightDegrees, float upDegrees, float forwardDegrees)
+	{
+		//Reset to the right (ensure the ray model matches)
+		ray.meshID = MeshNames::rayRight; 
+		glm::vec3 newDirection = worldRight;
+
+		newDirection = glm::rotateX(newDirection, glm::radians(rightDegrees));
+		newDirection = glm::rotateY(newDirection, glm::radians(upDegrees));
+		newDirection = glm::rotateZ(newDirection, glm::radians(forwardDegrees));
+
+		ray.direction = newDirection;
+
+		ray.model.rotDegrees = glm::vec3(rightDegrees, upDegrees, forwardDegrees);
+	}
+
+	void UpdateRay(Ray& ray)
+	{
+		//Rotation in mvp for ray should be from the leftmost point of the VBO
+		ray.model.pivotPercent = glm::vec3(0.0f, 0.0f, 0.0f);
+		ray.model.pos = ray.startPoint;
+
+		//Based off right vector
+		ray.model.scale.x = ray.length;
+
+		RotateRay(ray, ray.model.rotDegrees.x, ray.model.rotDegrees.y, ray.model.rotDegrees.z);
+	}
+
+	void UpdatePhysics(glm::vec3& pos, Kinematics const& kinematics)
+	{
+		if (glm::length(kinematics.normVector) - 0.0f <= std::numeric_limits<float>::epsilon())
+			return;
+
+		//Currently assumes constant acceleration (also instanaous velocity anyways)
+
+		pos += static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * glm::normalize(kinematics.normVector));
+	}
+
+}
+
+//Dear Imgui UI
+namespace Assignment
+{
+
 	//Has to be different per thing later
 	void RenderDearImguiDefault()
 	{
@@ -846,7 +999,7 @@ namespace Assignment
 
 		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
 
-		ImGui::DragFloat3("Camera Position", (float*) &currCamera.pos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
@@ -953,207 +1106,7 @@ namespace Assignment
 		ImGui::End();
 	}
 
-	//Temp values for testing
-	int RenderQuadTest()
-	{
-		unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
-		glUseProgram(programID);
-
-		// Uniform matrix
-		// Uniform transformation (vertex shader)
-		GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
-
-		// Draw the triangle !
-		// T * R * S * Vertex
-		glm::mat4 modelMat = glm::mat4(1.0f);
-		glm::vec3 scaleVector = glm::vec3(1.0f);
-		glm::vec3 centroid = glm::vec3(0.0f, -0.0f, 0.0f);
-		glm::vec3 triPos = glm::vec3(0.0f, -0.5f, -1.0f);
-
-		glm::vec3 quadPos{ 0.0f, 0.0f, 0.0f };
-		glm::vec3 quadScale{ 1.0f, 1.0f, 1.0f };
-		glm::vec3 quadAngles{ 0.0f, 0.0f, 0.0f };
-
-		modelMat = glm::translate(modelMat, quadPos);
-
-		float pivotPercentFromLeft = 0.5f;
-
-		modelMat = glm::translate(modelMat, glm::vec3(pivotPercentFromLeft * quadScale.x,
-			pivotPercentFromLeft * quadScale.y,
-			pivotPercentFromLeft * quadScale.z));
-
-		modelMat = glm::rotate(modelMat, quadAngles.z, glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMat = glm::rotate(modelMat, quadAngles.y, glm::vec3(0.0f, 1.0f, 1.0f));
-		modelMat = glm::rotate(modelMat, quadAngles.x, glm::vec3(1.0f, 0.0f, 1.0f));
-		modelMat = glm::translate(modelMat, glm::vec3(-pivotPercentFromLeft * quadScale.x, -pivotPercentFromLeft * quadScale.y, -pivotPercentFromLeft * quadScale.z));
-
-		modelMat = glm::scale(modelMat, quadScale);
-
-		glm::mat4 perspectiveMat = glm::mat4(1.0f);
-		glm::mat4 viewMat = glm::mat4(1.0f);
-
-		glm::mat4 mvpMat = glm::mat4(1.0f);
-		mvpMat = perspectiveMat * viewMat * modelMat;
-
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
-
-		glBindVertexArray(quadMesh.VAO);
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		//glDisableVertexAttribArray(0);
-
-		return 0;
-	}
-
-
-	void InitPictureInPicture()
-	{
-	
-
-		topDownCamera.targetPos = currCamera.targetPos;
-		topDownCamera.pos = topDownCamera.targetPos;
-		topDownCamera.pos.y = topDownCameraHeight;
-
-		//Hardcoded testing of ideas in pixels
-
-		//in pixels
-
-		//Add this twice to each edge (think of a picture frame)
-		float borderSideLength = 2.0f;
-		float borderSideHeight = 2.0f;
-
-		topRightViewport.viewportScale = glm::vec2(200.0f, 200.0f);
-		topRightViewport.bottomLeft.x = (applicationPtr->getWindowWidth() - topRightViewport.viewportScale.x - topRightViewport.viewportScale.x * 0.1f);
-		topRightViewport.bottomLeft.y = (applicationPtr->getWindowHeight() - topRightViewport.viewportScale.y - topRightViewport.viewportScale.y * 0.1f);
-
-
-		topRightViewportBorder.bottomLeft = topRightViewport.bottomLeft;
-		topRightViewportBorder.bottomLeft.x -= borderSideLength;
-		topRightViewportBorder.bottomLeft.y -= borderSideHeight;
-
-
-		topRightViewportBorder.viewportScale = glm::vec2(topRightViewport.viewportScale.x + borderSideLength * 2.0f, topRightViewport.viewportScale.y + borderSideHeight * 2.0f);
-	}
-	
-	void RenderPictureinPicture()
-	{
-		//topDownCamera.targetPos = currCamera.targetPos;
-		topDownCamera.pos = topDownCamera.targetPos;
-		topDownCamera.pos.y = topDownCameraHeight;
-		topDownCamera.right = worldRight;
-		topDownCamera.up = -worldForward;
-
-		//Treat the viewports like transformations.
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDisable(GL_DEPTH_TEST);
-		glViewport(topRightViewportBorder.bottomLeft.x, topRightViewportBorder.bottomLeft.y, topRightViewportBorder.viewportScale.x, topRightViewportBorder.viewportScale.y);
-		FillScreen();
-
-
-		glViewport(topRightViewport.bottomLeft.x, topRightViewport.bottomLeft.y, topRightViewport.viewportScale.x, topRightViewport.viewportScale.y);
-		
-		FillScreen(backgroundColor);
-
-
-		if (wireFramePictureInPicture)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-
-		glEnable(GL_DEPTH_TEST);
-		DrawAll(drawList, topDownCamera);
-	}
-
-	void RenderAxis()
-	{
-		if (showAxis)
-		{
-			SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
-			SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
-		}
-	}
-
-	void UpdatePhysics(glm::vec3& pos, Kinematics const& kinematics)
-	{
-
-		if (glm::length(kinematics.normVector) - 0.0f <= std::numeric_limits<float>::epsilon())
-			return;
-
-		//Currently assumes constant acceleration (also instanaous velocity anyways)
-
-		pos +=  static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * glm::normalize(kinematics.normVector));
-	}
-
-	void RenderAssignmentTesting()
-	{
-
-		Model testModel;
-		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
-
-		Model sphereModel;
-		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-		//SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
-
-		RenderAxis();
-		//SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
-		//SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
-
-
-		static Model worldLineTestMode;
-		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
-		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
-
-		SubmitDraw(worldLineTestMode, MeshNames::worldLine);
-
-		static Model testCube;
-		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
-
-
-		DrawAll(drawList, currCamera);
-
-	}
-
-	void UpdateAssignment()
-	{
-		collisionDetected = false;
-		sceneMap.at(currentSceneName).updateScene();
-	}
-
-
-	void RenderAssignment()
-	{
-		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
-
-		RenderDearImguiDefault();
-		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_CULL_FACE);
-		if (enableDepthTest)
-		{
-			glEnable(GL_DEPTH_TEST);
-		}
-		else
-		{
-			glDisable(GL_DEPTH_TEST);
-		}
-
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		if (wireFrameMode)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-
-		sceneMap.at(currentSceneName).renderScene();
-	}
-
-	void RenderSphereUI(SphereCollider &sphere, std::string const& sphereName)
+	void RenderSphereUI(SphereCollider& sphere, std::string const& sphereName)
 	{
 		if (ImGui::CollapsingHeader(("Settings for " + sphereName).c_str()))
 		{
@@ -1225,100 +1178,6 @@ namespace Assignment
 			ImGui::DragFloat(("pt2 y (" + triangleName + ")").c_str(), (float*)&triangle.pt2.y, 0.01f, -10.0f, 10.0f);
 		}
 	}
-
-	
-	//The three models for the triangle to match the rotation
-	void RotateTriangleLines(Triangle& triangle)
-	{
-		//Also ensures the scale is correctly
-		//Rotations are based off the right axis
-		triangle.rayA.pos = triangle.pt1;
-		triangle.rayB.pos = triangle.pt1;
-		triangle.rayC.pos = triangle.pt2;
-
-		//angle from right vector to the vector (to do: cache this when you rotate)
-		glm::vec3 edgeA = (triangle.pt0 - triangle.pt1);
-
-		//Note this is in radians --> since we are projecting onto the x-axis, we can skip dot product calculation
-		float angleBetween = acosf(edgeA.x / glm::length(edgeA));
-
-		triangle.rayA.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
-		triangle.rayA.scale.x = glm::length(edgeA);
-
-		glm::vec3 edgeB = (triangle.pt2 - triangle.pt1);
-
-		angleBetween = acosf(edgeB.x / glm::length(edgeB));
-
-		triangle.rayB.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
-		triangle.rayB.scale.x = glm::length(edgeB);
-
-		glm::vec3 edgeC = (triangle.pt0 - triangle.pt2);
-
-		angleBetween = acosf(edgeC.x / glm::length(edgeC));
-
-		triangle.rayC.rotDegrees = glm::vec3(0.0f, 0.0f, glm::degrees(angleBetween));
-		triangle.rayC.scale.x = glm::length(edgeC);
-	}
-
-	void UpdateTriangle(Triangle& triangle)
-	{
-		RotateTriangleLines(triangle);
-	}
-
-
-	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
-	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
-	{
-		glm::vec3 normalVector = worldRight;
-
-		normalVector = glm::rotateX(normalVector, glm::radians(rotateRightDegrees));
-		normalVector = glm::rotateY(normalVector, glm::radians(rotateUpDegrees));
-		normalVector = glm::rotateZ(normalVector, glm::radians(rotateForwardDegrees));
-
-		plane.outwardNormal = normalVector;
-		//y-axis visual representation a little off and I don't know why 
-		plane.model.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
-		plane.normalModel.rotDegrees = glm::vec3(rotateRightDegrees, rotateUpDegrees, rotateForwardDegrees);
-
-	}
-
-	void UpdatePlane(Plane& plane)
-	{
-		plane.model.pos = plane.pointOnPlane;
-		plane.normalModel.pos = plane.pointOnPlane;
-
-		//Reset the rotation normal first before reapplying the rotation from this point
-		plane.outwardNormal = worldRight;
-		RotatePlane(plane, plane.rotation.x, plane.rotation.y, plane.rotation.z);
-	}
-
-	void RotateRay(Ray& ray, float rightDegrees, float upDegrees, float forwardDegrees)
-	{
-		//Reset to the right (ensure the ray model matches)
-		ray.meshID = MeshNames::rayRight; 
-		glm::vec3 newDirection = worldRight;
-
-		newDirection = glm::rotateX(newDirection, glm::radians(rightDegrees));
-		newDirection = glm::rotateY(newDirection, glm::radians(upDegrees));
-		newDirection = glm::rotateZ(newDirection, glm::radians(forwardDegrees));
-
-		ray.direction = newDirection;
-
-		ray.model.rotDegrees = glm::vec3(rightDegrees, upDegrees, forwardDegrees);
-	}
-
-	void UpdateRay(Ray& ray)
-	{
-		//Rotation in mvp for ray should be from the leftmost point of the VBO
-		ray.model.pivotPercent = glm::vec3(0.0f, 0.0f, 0.0f);
-		ray.model.pos = ray.startPoint;
-
-		//Based off right vector
-		ray.model.scale.x = ray.length;
-
-		RotateRay(ray, ray.model.rotDegrees.x, ray.model.rotDegrees.y, ray.model.rotDegrees.z);
-	}
-
 }
 
 //Debug Testing
@@ -1326,8 +1185,6 @@ namespace Assignment
 {
 	namespace Tests
 	{
-
-
 		//Test the function 'makeQuadFromVertices'
 		void TestQuadVertices1()
 		{
@@ -1769,33 +1626,135 @@ namespace Assignment
 
 }
 
+
 //Scenes
 namespace Assignment
 {
-	namespace AssignmentScenes
+	//Default init for a camera
+	void initCamera()
 	{
-		//Default init for a camera
-		void initCamera()
-		{
+		currCamera.pos = defaultCameraPos;
+	}
+	void initBackground()
+	{
+		backgroundColor = neutralBackgroundColor;
+		prevBackGround = backgroundColor;
+	}
 
-			currCamera.pos = defaultCameraPos;
+	void initFresh()
+	{
+		initCamera();
+		initBackground();
+	}
+
+	//Apply some simple polymorphism in order to create helper function for adding scenes to the map
+	class Scene
+	{
+	public:
+		virtual void Init() = 0;
+		virtual void Update() = 0;
+		virtual void Render() = 0;
+	};
+
+	class TestScene : Scene
+	{
+	public:
+		void Init() override { std::cout << "Init()\n"; };
+		void Update() override { std::cout << "Update()\n"; };
+		void Render() override { std::cout << "Render()\n"; };
+	};
+
+	class CubeScene : Scene
+	{
+	public:
+		Model cubeModel;
+
+		void Init() override {
+			cubeModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 		}
 
-		void initBackground()
-		{
-
-			backgroundColor = neutralBackgroundColor;
-			prevBackGround = backgroundColor;
+		void Update() override {
+			cubeModel.rotDegrees.y += applicationPtr->getDeltaTime() * 200.0f;
 		}
 
-		//So I don't have to keep typing the same three lines for every scene
-		void initFresh()
-		{
-			initCamera();
-			initBackground();
+		void Render() override {
+			RenderAxis();
+
+			SubmitDraw(cubeModel, MeshNames::cube);
+			DrawAll(drawList, currCamera);
+			RenderPictureinPicture();
+			drawList.clear();
+		}
+	};
+
+	class AssimapExample : Scene
+	{
+	public:
+		Mesh meshObject;
+
+		std::string filePath = "Models/cube.obj";
+
+		void Init() override {
+			//Try and load the model
+			meshObject.loadOBJ(filePath);
 		}
 
-		//AssignmentScenes that does nothing
+		void Update() override {
+			//Nothing
+		}
+
+		void Render() override
+		{
+			//Nothing yet
+		}
+
+	};
+
+	//Convert the specified scene into functions and adds it to sceneMap
+	template <typename T>
+	void ScenetoFunction(std::string const& sceneName)
+	{
+		//static unique_ptr allows runtime polymorphism with <memory> managing it automatically
+		static std::unique_ptr<T> scenePtr = std::make_unique<T>();
+
+		AssignmentScene curr;
+		curr.initScene = std::bind(&T::Init, scenePtr.get());
+		curr.updateScene = std::bind(&T::Update, scenePtr.get());
+		curr.renderScene = std::bind(&T::Render, scenePtr.get());
+
+		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
+	}
+
+	//Probably gonna only be one scene this time with options to toggle 
+	namespace AssignmentTwoScenes
+	{
+		class AssignmentTwoScene : Scene
+		{
+		public:
+			Mesh meshObject;
+
+			std::string filePath = "Models/cube.obj";
+
+			void Init() override {
+				//Try and load the model
+				meshObject.loadOBJ(filePath);
+			}
+
+			void Update() override {
+				//Nothing
+			}
+
+			void Render() override
+			{
+				//Nothing yet
+			}
+
+		};
+	}
+
+	namespace AssignmentOneScenes
+	{
+		//AssignmentOneScenes that does nothing
 		namespace Default
 		{
 			void Init() {};
@@ -1886,7 +1845,7 @@ namespace Assignment
 				box.model.color = greenscreenGreen;
 				box.centerPos = boxStartPos;
 				box.scale = boxStartScale;
-				
+
 				boxKinematics.speed = boxStartSpeed;
 				boxKinematics.normVector = worldForward;
 
@@ -2041,14 +2000,14 @@ namespace Assignment
 			};
 		}
 
-		namespace SphereVsSphere 
+		namespace SphereVsSphere
 		{
 			//GameObject sphereObject;
-				
+
 			SphereCollider sphereOne;
 			SphereCollider sphereTwo;
 			Kinematics sphereOnePhysics;
-			
+
 			glm::vec3 sphereOneStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
 			float sphereOneStartSpeed = 2.0f;
 			glm::vec3 sphereOneVelocityDir = worldForward;
@@ -2133,7 +2092,7 @@ namespace Assignment
 
 			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -15.0f);
 			glm::vec3 boxTwoStartPos = glm::vec3(0.0f, 1.0f, 0.0f);
-			glm::vec3 boxStartScale = glm::vec3(5.0f, 5.0f, 5.0f); 
+			glm::vec3 boxStartScale = glm::vec3(5.0f, 5.0f, 5.0f);
 			glm::vec3 boxTwoStartScale = glm::vec3(10.0f, 1.0f, 1.0f); //a little thin
 			float boxStartSpeed = 2.0f;
 			glm::vec3 boxVelocityNorm = worldForward;
@@ -2410,7 +2369,7 @@ namespace Assignment
 
 				//Closer for this scene
 				topDownCameraHeight = 1.0f;
-				
+
 				currCamera.pos = cameraStartPos;
 
 				backgroundColor = neutralBackgroundColor;
@@ -2456,7 +2415,7 @@ namespace Assignment
 
 				RenderSettings();
 				UpdatePlane(plane);
-				
+
 				if (checkPointOnPlane(pointCollision, plane))
 				{
 					collisionDetected = true;
@@ -2540,7 +2499,7 @@ namespace Assignment
 
 
 
-				
+
 
 			}
 
@@ -2651,7 +2610,7 @@ namespace Assignment
 				box.scale = glm::vec3(0.75f, 0.75f, 0.75f);
 				boxPhysics.speed = boxSpeed;
 				boxPhysics.normVector = boxVelocityDir;
-			
+
 			}
 
 			void RenderSettings()
@@ -2744,12 +2703,12 @@ namespace Assignment
 
 				ray.startPoint = glm::vec3(0.0f, 0.1f, 0.0f);
 				ray.length = 1.0f;
-				
+
 				//RotateRay(ray, 0.0f, 0.0f, 0.0f);
 
 				//Don't set this directly. Rotate to get to the norm (easier for the mvp)
 				//ray.direction = glm::vec3(1.0f, 1.0f, 1.0f);
-				
+
 				ray.model.color = glm::vec3(0.0f, 1.0f, 1.0f);
 
 				//Rotations are based on right vector transformations
@@ -2852,7 +2811,7 @@ namespace Assignment
 
 				sphere.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 				sphere.radius = 2.0f;
-				
+
 				sphere.model.color = basicBlue;
 
 				sphereKinematics.speed = 0.0f;
@@ -2875,7 +2834,7 @@ namespace Assignment
 				UpdateRay(ray);
 
 				sphere.UpdateModel();
-				
+
 
 				if (checkRayOnSphere(ray, sphere))
 				{
@@ -2905,7 +2864,7 @@ namespace Assignment
 			}
 		}
 
-		namespace RayVsAABB 
+		namespace RayVsAABB
 		{
 			Ray ray;
 			AABB box;
@@ -3080,83 +3039,7 @@ namespace Assignment
 
 		}
 
-		//Apply some simple polymorphism in order to create helper function for adding scenes to the map
-		class Scene
-		{
-		public:
-			virtual void Init() = 0;
-			virtual void Update() = 0;
-			virtual void Render() = 0;
-		};
 
-		class TestScene : Scene
-		{
-		public:
-			void Init() override { std::cout << "Init()\n"; };
-			void Update() override { std::cout << "Update()\n"; };
-			void Render() override { std::cout << "Render()\n"; };
-		};
-
-		class CubeScene : Scene
-		{
-		public:
-			Model cubeModel;
-
-			void Init() override {
-				cubeModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-			}
-
-			void Update() override {
-				cubeModel.rotDegrees.y += applicationPtr->getDeltaTime() * 200.0f;
-			}
-
-			void Render() override {
-				RenderAxis();
-
-				SubmitDraw(cubeModel, MeshNames::cube);
-				DrawAll(drawList, currCamera);
-				RenderPictureinPicture();
-				drawList.clear();
-			}
-		};
-
-		class AssimapExample : Scene
-		{
-		public:
-			Mesh meshObject;
-
-			std::string filePath = "Models/cube.obj";
-
-			void Init() override {
-				//Try and load the model
-				meshObject.loadOBJ(filePath);
-			}
-
-			void Update() override {
-				//Nothing
-			}
-
-			void Render() override
-			{
-				//Nothing yet
-			}
-
-		};
-
-		//Convert the specified scene into functions and adds it to sceneMap
-		template <typename T>
-		void ScenetoFunction(std::string const& sceneName)
-		{
-			//static unique_ptr allows runtime polymorphism with <memory> managing it automatically
-			static std::unique_ptr<T> scenePtr = std::make_unique<T>();
-
-			AssignmentScene curr;
-			curr.initScene = std::bind(&T::Init, scenePtr.get());
-			curr.updateScene = std::bind(&T::Update, scenePtr.get());
-			curr.renderScene = std::bind(&T::Render, scenePtr.get());
-
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
-		}
 
 		/**
 		namespace PlaneVsAABB
@@ -3186,7 +3069,7 @@ namespace Assignment
 
 			void Init()
 			{
-				//Default for this scene is a little different 
+				//Default for this scene is a little different
 				changeBackGroundOnCollision = false;
 				showAxis = false;
 				wireFrameMode = true;
@@ -3281,64 +3164,14 @@ namespace Assignment
 		}
 		  */
 	}
-}
-
-
-//For the object maker
-namespace Assignment
-{
-	void ObjectMaker::MakeFloor()
-	{
-		//Make an infinite plane at origin
-
-		Model planeModel;
-		planeModel.pos = worldOrigin;
-		planeModel.pos.y += floorSpawnPos;
-
-		planeModel.scale = floorPlaneScale;
-
-		planeModel.rotDegrees = glm::vec3(0.0f, 0.0f, 0.0f);
-
-		modelMap.emplace(ModelNames::floorPlane, planeModel);
-	}
-
-	//'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
-	namespace SceneNames
-	{
-		const char defaultScene[] = "Default (Blank)";
-
-		//Just the axis and cube
-		const char TestSceneCube[] = "Cube Primitive Example";
-
-		//Just the axis and sphere
-		const char TestSceneSphere[] = "Sphere Primitive Example";
-
-		const char SphereVsSphere[] = "(01) Sphere Vs Sphere";
-		const char AABBVsSphere[] = "(02) AABB Vs Sphere";
-		const char SphereVsAABB[] = "(03) Sphere vs AABB";
-		const char AABBVsAABB[] = "(04) AABB vs AABB";
-		const char PointVsSphere[] = "(05) Point vs Sphere";
-		const char PointVsAABB[] = "(06) Point vs AABB";
-		const char PointVsPlane[] = "(08) Point vs Plane";
-		const char RayVsPlane[] = "(09) Ray vs Plane";
-		const char RayVsAABB[] = "(10) Ray Vs AABB";
-		const char RayVsSphere[] = "(11) Ray Vs Sphere";
-		const char PlaneVsAABB[] = "(12) Plane vs AABB";
-		const char PlaneVsSphere[] = "(13) Plane vs Sphere";
-		const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
-
-		const char AssimapExample[] = "AssimapExample";
-	}
-
-
 
 	void InitScenes()
 	{
 		currentSceneName = SceneNames::defaultScene;
 
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
-			AssignmentScene{ Assignment::AssignmentScenes::Default::Init,
-			Assignment::AssignmentScenes::Default::Render,  Assignment::AssignmentScenes::Default::Update }));
+			AssignmentScene{ Assignment::AssignmentOneScenes::Default::Init,
+			Assignment::AssignmentOneScenes::Default::Render,  Assignment::AssignmentOneScenes::Default::Update }));
 
 
 		//Previous way of adding scenes to the scene container. 
@@ -3348,9 +3181,9 @@ namespace Assignment
 
 		{
 			//AssignmentScene cubeScene;
-			//cubeScene.initScene = Assignment::AssignmentScenes::Cube::Init;
-			//cubeScene.renderScene = Assignment::AssignmentScenes::Cube::Render;
-			//cubeScene.updateScene = Assignment::AssignmentScenes::Cube::Update;
+			//cubeScene.initScene = Assignment::AssignmentOneScenes::Cube::Init;
+			//cubeScene.renderScene = Assignment::AssignmentOneScenes::Cube::Render;
+			//cubeScene.updateScene = Assignment::AssignmentOneScenes::Cube::Update;
 			//sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
 
 
@@ -3443,14 +3276,54 @@ namespace Assignment
 #endif // ASSIGNMENT_ONE
 
 
-
-
 		//Only one line. So much better :)
-		using namespace AssignmentScenes;
+		using namespace AssignmentOneScenes;
 		ScenetoFunction<CubeScene>(SceneNames::TestSceneCube);
 
 		ScenetoFunction<AssimapExample>(SceneNames::AssimapExample);
 
+	}
+}
+
+
+//Initialization and Update Loop
+namespace Assignment
+{
+
+
+
+	void UpdateAssignment()
+	{
+		collisionDetected = false;
+		sceneMap.at(currentSceneName).updateScene();
+	}
+
+	void RenderAssignment()
+	{
+		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
+
+		RenderDearImguiDefault();
+		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_CULL_FACE);
+		if (enableDepthTest)
+		{
+			glEnable(GL_DEPTH_TEST);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
+
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (wireFrameMode)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+
+		sceneMap.at(currentSceneName).renderScene();
 	}
 
 	int InitAssignment()
@@ -3472,9 +3345,6 @@ namespace Assignment
 		InitMeshes();
 		InitPictureInPicture();
 
-
-		ObjectMaker::MakeFloor();
-
 		Model model;
 
 		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
@@ -3486,5 +3356,8 @@ namespace Assignment
 		return 0;
 	}
 }
+
+
+
 
 
