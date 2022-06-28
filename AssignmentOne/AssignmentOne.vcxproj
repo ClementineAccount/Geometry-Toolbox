@@ -163,6 +163,7 @@
     <ClInclude Include="..\dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="Src\AssignmentCommon.h" />
     <ClInclude Include="Src\AssignmentOne.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />

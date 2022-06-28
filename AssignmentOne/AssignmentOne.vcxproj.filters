@@ -46,6 +46,12 @@
     <Filter Include="Source\Assigmment">
       <UniqueIdentifier>{a6879aeb-ea43-4d6d-b4ab-5dc69d1f6243}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Assigmment\AssignmentOne">
+      <UniqueIdentifier>{5901f2eb-7b0a-47f3-a071-f1e774ad0ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assigmment\AssignmentTwo">
+      <UniqueIdentifier>{a078bfab-9e02-496a-8e1c-73a099ddb90e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\DiffuseShader.frag">
@@ -116,14 +122,17 @@
     <ClInclude Include="Src\Scene.h">
       <Filter>Source\Ignore\Scene Classes</Filter>
     </ClInclude>
-    <ClInclude Include="Src\AssignmentOne.h">
-      <Filter>Source\Assigmment</Filter>
-    </ClInclude>
     <ClInclude Include="Src\CollisionHelper.h">
       <Filter>Source\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Src\mesh.h">
       <Filter>Source\AssigmmentTwo\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\AssignmentOne.h">
+      <Filter>Source\Assigmment\AssignmentOne</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\AssignmentCommon.h">
+      <Filter>Source\Assigmment</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -163,17 +172,17 @@
     <ClCompile Include="Src\SceneManager.cpp">
       <Filter>Source\Ignore\Scene Classes</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AssignmentOne.cpp">
-      <Filter>Source\Assigmment</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\AssignmentOneSettings.h">
-      <Filter>Source\Assigmment</Filter>
-    </ClCompile>
     <ClCompile Include="Src\CollisionHelper.cpp">
       <Filter>Source\Collision</Filter>
     </ClCompile>
     <ClCompile Include="Src\mesh.cpp">
       <Filter>Source\AssigmmentTwo\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\AssignmentOne.cpp">
+      <Filter>Source\Assigmment\AssignmentOne</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\AssignmentOneSettings.h">
+      <Filter>Source\Assigmment\AssignmentOne</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
