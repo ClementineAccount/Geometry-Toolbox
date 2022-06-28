@@ -39,6 +39,7 @@ namespace Assignment
 		unsigned int EBO;
 	};
 
+	std::vector<GLfloat> verticesFromVectorList(std::vector<glm::vec3> vectorList);
 
 	MeshBuffers initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor);
 

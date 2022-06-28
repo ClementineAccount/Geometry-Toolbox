@@ -63,7 +63,7 @@ namespace Assignment
     constexpr glm::vec3 defaultPivotPercent = { 0.5f, 0.5f, 0.0f };
     constexpr float defaultFOV = 90.0f;
 
-    struct Model
+    struct Transform
     {
         glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
         glm::vec3 pos{ worldOrigin };
@@ -99,7 +99,7 @@ namespace Assignment
 
     struct drawCall
     {
-        Model model;
+        Transform model;
         MeshBuffers const& mesh;
 
         GLuint shaderID = 0;
@@ -176,6 +176,7 @@ namespace Assignment
         //Just the axis and sphere
         const char TestSceneSphere[] = "Sphere Primitive Example";
 
+        //Assignment One
         const char SphereVsSphere[] = "(01) Sphere Vs Sphere";
         const char AABBVsSphere[] = "(02) AABB Vs Sphere";
         const char SphereVsAABB[] = "(03) Sphere vs AABB";
@@ -189,6 +190,9 @@ namespace Assignment
         const char PlaneVsAABB[] = "(12) Plane vs AABB";
         const char PlaneVsSphere[] = "(13) Plane vs Sphere";
         const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
+
+
+        const char AssignmentTwo[] = "Assignment Two";
 
         const char AssimapExample[] = "AssimapExample";
     }

@@ -103,7 +103,7 @@ namespace Assignment
 {
 	std::map<std::string, AssignmentScene> sceneMap;
 
-	std::unordered_map<std::string, Model> modelMap;
+	std::unordered_map<std::string, Transform> modelMap;
 
 	MeshBuffers quadMesh;
 	ShaderContainer assignmentShaders;
@@ -152,18 +152,7 @@ namespace Assignment
 	static std::vector<drawCall> drawList;
 
 
-	std::vector<GLfloat> verticesFromVectorList(std::vector<glm::vec3> vectorList)
-	{
-		std::vector<GLfloat> vertices;
-		for (auto& point : vectorList)
-		{
-			vertices.push_back(point.x);
-			vertices.push_back(point.y);
-			vertices.push_back(point.z);
-		}
 
-		return vertices;
-	}
 
 	// Does the counter-clockwise triangle vertex assignment automatically. 
 	// Assumptions: The first vertex passed in is the 'top-left' vertex
@@ -277,7 +266,7 @@ namespace Assignment
 		return axisMesh;
 	}
 
-	//Unit 1x1x1 Cube for Model transform
+	//Unit 1x1x1 Cube for Transform transform
 	//MeshBuffers InitCubeMesh(float cubeScale = 0.5f)
 	//{
 	//	return MeshBuffers mesh;
@@ -552,10 +541,15 @@ namespace Assignment
 
 	}
 
-	void SubmitDraw(Model model, std::string const meshName, std::string const shaderName = defaultShader.shaderName, unsigned int drawOrder = 0)
+	void SubmitDraw(Transform model, std::string const meshName, std::string const shaderName = defaultShader.shaderName, unsigned int drawOrder = 0)
 	{
 		drawList.push_back(drawCall{ model, meshMap.at(meshName), assignmentShaders.getShaderID(shaderName)});
 
+	}
+
+	void SubmitDraw(Transform model, MeshBuffers const& meshBuffer, std::string const shaderName = defaultShader.shaderName, unsigned int drawOrder = 0)
+	{
+		drawList.push_back(drawCall{ model, meshBuffer, assignmentShaders.getShaderID(shaderName) });
 	}
 
 	//Fills the entire screen with a quad (example of usage to create a border for Top Left picture-in-view)
@@ -583,7 +577,7 @@ namespace Assignment
 
 	void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera)
 	{
-		auto makePivotVector = [](Model const& model)
+		auto makePivotVector = [](Transform const& model)
 		{
 			return glm::vec3(
 				model.pivotPercent.x * model.scale.x,
@@ -605,7 +599,7 @@ namespace Assignment
 			//if (!currDraw.isRendering)
 			//	continue;
 
-			Model const& currModel = currDraw.model;
+			Transform const& currModel = currDraw.model;
 
 			//mvp
 			glm::mat4 modelMat = glm::mat4(1.0f);
@@ -854,27 +848,27 @@ namespace Assignment
 	void RenderAssignmentTesting()
 	{
 
-		Model testModel;
+		Transform testModel;
 		testModel.scale = glm::vec3(0.5f, 0.5f, 0.5f);
 
-		Model sphereModel;
+		Transform sphereModel;
 		sphereModel.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
-		//SubmitDraw(Model{}, meshMap.at(MeshNames::sphere));
+		//SubmitDraw(Transform{}, meshMap.at(MeshNames::sphere));
 
 		RenderAxis();
 		//SubmitDraw(ModelNames::defaultModel, MeshNames::axisInverted);
 		//SubmitDraw(ModelNames::defaultModel, MeshNames::axis);
 
 
-		static Model worldLineTestMode;
+		static Transform worldLineTestMode;
 		worldLineTestMode.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 		worldLineTestMode.pos = glm::vec3(0.0f, 0.5f, 0.0f);
 		worldLineTestMode.rotDegrees.y += applicationPtr->getDeltaTime() * 100.0f;
 
 		SubmitDraw(worldLineTestMode, MeshNames::worldLine);
 
-		static Model testCube;
+		static Transform testCube;
 		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
 
@@ -1667,7 +1661,7 @@ namespace Assignment
 	class CubeScene : Scene
 	{
 	public:
-		Model cubeModel;
+		Transform cubeModel;
 
 		void Init() override {
 			cubeModel.scale = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -1690,22 +1684,33 @@ namespace Assignment
 	class AssimapExample : Scene
 	{
 	public:
-		Mesh meshObject;
+		Transform cubeTransforms;
+		Mesh cubeMesh;
 
 		std::string filePath = "Models/cube.obj";
 
 		void Init() override {
 			//Try and load the model
-			meshObject.loadOBJ(filePath);
+			cubeMesh.loadOBJ(filePath);
+
+
+			cubeTransforms.pos = worldOrigin;
+			cubeTransforms.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
 		}
 
 		void Update() override {
-			//Nothing
+			//cubeTransforms.rotDegrees.y += applicationPtr->getDeltaTime() * 200.0f;
 		}
 
 		void Render() override
 		{
-			//Nothing yet
+			RenderAxis();
+
+			SubmitDraw(cubeTransforms, cubeMesh.meshBuffer);
+			DrawAll(drawList, currCamera);
+			//RenderPictureinPicture();
+			drawList.clear();
 		}
 
 	};
@@ -1736,17 +1741,17 @@ namespace Assignment
 			std::string filePath = "Models/cube.obj";
 
 			void Init() override {
-				//Try and load the model
+
 				meshObject.loadOBJ(filePath);
 			}
 
 			void Update() override {
-				//Nothing
+
 			}
 
 			void Render() override
 			{
-				//Nothing yet
+
 			}
 
 		};
@@ -1764,7 +1769,7 @@ namespace Assignment
 
 		namespace Cube
 		{
-			Model cubeModel;
+			Transform cubeModel;
 
 			//Assumption: Meshes are already initialized so we are only creating models
 			void Init()
@@ -1797,7 +1802,7 @@ namespace Assignment
 
 		namespace Sphere
 		{
-			Model sphereModel;
+			Transform sphereModel;
 
 			void Init()
 			{
@@ -2180,7 +2185,7 @@ namespace Assignment
 			float sphereOneStartSpeed = 2.0f;
 			glm::vec3 sphereOneVelocityDir = worldForward;
 
-			Model pointModel;
+			Transform pointModel;
 			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			//For the physical representation. Does not influence collision
@@ -2258,7 +2263,7 @@ namespace Assignment
 			Kinematics boxKinematics;
 
 			//Can use a sphere to represent it
-			Model pointModel;
+			Transform pointModel;
 			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -5.0f);
@@ -2345,7 +2350,7 @@ namespace Assignment
 
 			Kinematics pointKinematics;
 
-			Model pointModel;
+			Transform pointModel;
 			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
 
 			glm::vec3 pointCollision = glm::vec3(0.0f, 0.1f, 0.0f);
@@ -2950,7 +2955,7 @@ namespace Assignment
 			glm::vec3 point;
 			Ray ray;
 
-			Model pointModel;
+			Transform pointModel;
 			glm::vec3 pointModelScale = glm::vec3(0.01f, 0.01f, 0.01f);
 
 			Kinematics pointPhysics;
@@ -3054,7 +3059,7 @@ namespace Assignment
 			Kinematics boxKinematics;
 
 			//Can use a sphere to represent it
-			Model pointModel;
+			Transform pointModel;
 			glm::vec3 pointCollision = glm::vec3(0.0f, 1.0f, 0.0f);
 
 			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -5.0f);
@@ -3345,9 +3350,9 @@ namespace Assignment
 		InitMeshes();
 		InitPictureInPicture();
 
-		Model model;
+		Transform model;
 
-		modelMap.insert(std::make_pair<std::string, Model>(ModelNames::defaultModel, Model(model)));
+		modelMap.insert(std::make_pair<std::string, Transform>(ModelNames::defaultModel, Transform(model)));
 
 		InitScenes();
 		currentSceneName = SceneNames::AssimapExample;

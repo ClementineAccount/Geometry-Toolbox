@@ -19,7 +19,7 @@ namespace Assignment
 	{
 		Collider colliderType;
 
-		Model model; //storing the transform within the AABB
+		Transform model; //storing the transform within the AABB
 		std::string meshID; //To Do: You could change this to use uint_32 instead eventually
 		bool isActive = true;
 	};
@@ -67,7 +67,7 @@ namespace Assignment
 		glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		//Render the normal as well as a ray
-		Model normalModel;
+		Transform normalModel;
 
 		bool showPlaneNormal = true;
 	};
@@ -100,9 +100,9 @@ namespace Assignment
 		glm::vec3 pt2;
 
 		//All rays will rotate counter clockwise to match the pt orientation
-		Model rayA; //pt1 to pt2
-		Model rayB; //pt1 to pt0
-		Model rayC; //pt0 to pt2
+		Transform rayA; //pt1 to pt2
+		Transform rayB; //pt1 to pt0
+		Transform rayC; //pt0 to pt2
 	};
 
 	bool checkRayOnTriangle(Triangle const& triagle, Ray const& ray);
