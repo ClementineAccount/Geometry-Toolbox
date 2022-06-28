@@ -34,17 +34,17 @@
     <Filter Include="Source\Main">
       <UniqueIdentifier>{6c2f76e5-4e54-403c-bcd0-8023a0b0d9e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\AssigmmentTwo">
-      <UniqueIdentifier>{a5432bdb-3708-44d6-9fac-5f169928361d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Collision">
       <UniqueIdentifier>{0e64404a-3cb9-46f9-af06-d354163221d2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\AssigmmentTwo\Mesh">
-      <UniqueIdentifier>{47fdb5cb-dce8-4f7f-97e1-023ad7719495}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Assigmment">
       <UniqueIdentifier>{a6879aeb-ea43-4d6d-b4ab-5dc69d1f6243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Camera">
+      <UniqueIdentifier>{aa4da512-348b-4679-a67e-e87a015e69b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Mesh">
+      <UniqueIdentifier>{47fdb5cb-dce8-4f7f-97e1-023ad7719495}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -116,14 +116,17 @@
     <ClInclude Include="Src\Scene.h">
       <Filter>Source\Ignore\Scene Classes</Filter>
     </ClInclude>
-    <ClInclude Include="Src\AssignmentOne.h">
+    <ClInclude Include="Src\Assignment.h">
       <Filter>Source\Assigmment</Filter>
     </ClInclude>
     <ClInclude Include="Src\CollisionHelper.h">
       <Filter>Source\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Src\mesh.h">
-      <Filter>Source\AssigmmentTwo\Mesh</Filter>
+      <Filter>Source\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Camera.h">
+      <Filter>Source\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -163,7 +166,7 @@
     <ClCompile Include="Src\SceneManager.cpp">
       <Filter>Source\Ignore\Scene Classes</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AssignmentOne.cpp">
+    <ClCompile Include="Src\Assignment.cpp">
       <Filter>Source\Assigmment</Filter>
     </ClCompile>
     <ClCompile Include="Src\AssignmentOneSettings.h">
@@ -173,7 +176,7 @@
       <Filter>Source\Collision</Filter>
     </ClCompile>
     <ClCompile Include="Src\mesh.cpp">
-      <Filter>Source\AssigmmentTwo\Mesh</Filter>
+      <Filter>Source\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

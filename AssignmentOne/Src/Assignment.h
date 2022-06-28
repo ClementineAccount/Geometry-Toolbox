@@ -11,13 +11,11 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 #include "shader.hpp"
-
-
 #include "mesh.h"
-
 
 //Forward declare
 class CollisionObject;
+class Camera;
 
 namespace Assignment
 {
@@ -60,7 +58,6 @@ namespace Assignment
         //glm::vec3 normal;
         //glm::vec2 texture;
     };
-
 
     struct MeshPrimitives
     {
@@ -128,16 +125,7 @@ namespace Assignment
 
     constexpr glm::vec3 defaultCameraPos = { 5.0f, 5.0f, 3.0f };
 
-    //View matrix
-    struct Camera
-    {
-        glm::vec3 pos{ defaultCameraPos };
-        glm::vec3 targetPos{ worldOrigin }; //looking at the origin as the default
-        glm::vec3 up{ worldUp };
-        glm::vec3 right{ worldRight };
 
-       float FOV{ defaultFOV };
-    };
 
     //Viewports can be treated like 2D plane model transformations
     struct ViewportModel

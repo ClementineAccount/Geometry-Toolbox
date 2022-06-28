@@ -33,7 +33,7 @@
 #include "Scene.h"
 #include "shader.hpp"
 
-#include "AssignmentOne.h"
+#include "Assignment.h"
 
 
 constexpr unsigned int startWindowWidth = 1280;

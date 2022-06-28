@@ -1,5 +1,5 @@
 #include "CollisionHelper.h"
-#include "AssignmentOne.h"
+#include "Assignment.h"
 
 
 #include <glm/gtx/norm.hpp>

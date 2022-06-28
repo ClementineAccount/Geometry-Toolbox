@@ -1,7 +1,7 @@
-#include "AssignmentOne.h"
-#include "AssignmentOneSettings.h"
+#include "Assignment.h"
 
 #include "CollisionHelper.h"
+#include "Camera.h"
 
 #include <functional>
 #include <iostream>

@@ -1,5 +1,5 @@
 #include "GLApplication.h"
-#include "AssignmentOne.h"
+#include "Assignment.h"
 #include <memory>
 #include <iostream>
 
