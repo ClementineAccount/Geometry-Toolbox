@@ -3,6 +3,9 @@
 #include "CollisionHelper.h"
 #include "Camera.h"
 
+#include "Object.h"
+
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -980,6 +983,52 @@ namespace Assignment
 		pos += static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * glm::normalize(kinematics.normVector));
 	}
 
+	void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath)
+	{
+		std::string modelFolderPath = "Models/";
+
+		std::ifstream sceneFile;
+		sceneFile.open(scenePath);
+
+		//Should do proper error handling if reusing outside Assignment 2 
+		if (!sceneFile.is_open())
+		{
+			assert("File not found!");
+		}
+		else 
+		{
+			std::string buffer;
+
+			while (!sceneFile.eof())
+			{
+				Object obj;
+				sceneFile >> buffer;
+				obj.objectMesh.loadOBJ(modelFolderPath + buffer);
+
+				auto vec3Buffer = [&](glm::vec3& vec3Ref)
+				{
+					sceneFile >> buffer;
+					vec3Ref.x = std::stof(buffer);
+
+					sceneFile >> buffer;
+					vec3Ref.y = std::stof(buffer);
+
+					sceneFile >> buffer;
+					vec3Ref.z = std::stof(buffer);
+				};
+
+				vec3Buffer(obj.transform.pos);
+				vec3Buffer(obj.transform.scale);
+				vec3Buffer(obj.transform.rotDegrees);
+				vec3Buffer(obj.transform.color);
+
+				objectVectorRef.push_back(obj);
+			}
+
+		}
+		sceneFile.close();
+
+	}
 }
 
 //Dear Imgui UI
@@ -1684,19 +1733,23 @@ namespace Assignment
 	class AssimapExample : Scene
 	{
 	public:
-		Transform cubeTransforms;
-		Mesh cubeMesh;
+		std::vector<Object> objectVector;
+		std::vector<std::string> filePaths;
 
-		std::string filePath = "Models/cube.obj";
+		std::string modelFolderPath = "Models/";
 
 		void Init() override {
-			//Try and load the model
-			cubeMesh.loadOBJ(filePath);
 
+			filePaths.emplace_back(modelFolderPath + "bunny.obj");
 
-			cubeTransforms.pos = worldOrigin;
-			cubeTransforms.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+			LoadScene(objectVector, "Scenes/AssignmentTwo.txt");
 
+			//for (std::string const& path : filePaths)
+			//{
+			//	Object obj;
+			//	obj.objectMesh.loadOBJ(path);
+			//	objectVector.push_back(obj);
+			//}
 		}
 
 		void Update() override {
@@ -1707,12 +1760,15 @@ namespace Assignment
 		{
 			RenderAxis();
 
-			SubmitDraw(cubeTransforms, cubeMesh.meshBuffer);
+			for (const Object& obj : objectVector)
+			{
+				SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+			}
+
 			DrawAll(drawList, currCamera);
 			//RenderPictureinPicture();
 			drawList.clear();
 		}
-
 	};
 
 	//Convert the specified scene into functions and adds it to sceneMap

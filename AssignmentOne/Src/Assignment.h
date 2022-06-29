@@ -15,12 +15,15 @@
 #include "mesh.h"
 
 
-//Forward declare
-class CollisionObject;
-class Camera;
+
 
 namespace Assignment
 {
+    //Forward declare
+    class CollisionObject;
+    class Camera;
+    class Object;
+
     constexpr GLuint defaultShaderID = 0;
 
     struct shaderFilePath
@@ -196,7 +199,9 @@ namespace Assignment
 
         const char AssimapExample[] = "AssimapExample";
     }
- 
+
+    //Load the scene from a text file
+    void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath);
 }
 
 

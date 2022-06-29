@@ -168,6 +168,7 @@
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />
     <ClInclude Include="Src\mesh.h" />
+    <ClInclude Include="Src\Object.h" />
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
     <ClInclude Include="Src\shader.hpp" />
@@ -186,6 +187,7 @@
     <ClCompile Include="Src\GLApplication.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\mesh.cpp" />
+    <ClCompile Include="Src\Object.cpp" />
     <ClCompile Include="Src\Scene.cpp" />
     <ClCompile Include="Src\SceneManager.cpp" />
     <ClCompile Include="Src\shader.cpp" />

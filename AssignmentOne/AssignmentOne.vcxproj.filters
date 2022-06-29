@@ -46,6 +46,9 @@
     <Filter Include="Source\Mesh">
       <UniqueIdentifier>{47fdb5cb-dce8-4f7f-97e1-023ad7719495}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Object">
+      <UniqueIdentifier>{22c78fcb-bbfc-4ce9-86cc-20046176619b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\DiffuseShader.frag">
@@ -128,6 +131,9 @@
     <ClInclude Include="Src\Camera.h">
       <Filter>Source\Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Object.h">
+      <Filter>Source\Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp">
@@ -177,6 +183,9 @@
     </ClCompile>
     <ClCompile Include="Src\mesh.cpp">
       <Filter>Source\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Object.cpp">
+      <Filter>Source\Object</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

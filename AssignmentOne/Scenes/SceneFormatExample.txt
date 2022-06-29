@@ -1,0 +1,14 @@
+Scene Format:
+[.obj name] 
+[Position]
+[Scale]
+[Rotation]
+[Color] 
+
+
+Example:
+bunny.obj
+0 10 0
+10 10 10
+0
+0.816 0.949 0.992

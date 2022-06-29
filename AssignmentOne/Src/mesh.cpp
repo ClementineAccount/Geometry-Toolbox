@@ -155,7 +155,7 @@ namespace Assignment
 			}
 			else
 			{
-				static glm::vec3 defaultColor = glm::vec3(1.0f, 0.0f, 0.0f);
+				static glm::vec3 defaultColor = glm::vec3(0.816, 0.949, 0.992);
 				meshVertices.colors.push_back(defaultColor);
 			}
 		}
