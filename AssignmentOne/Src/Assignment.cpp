@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include "CollisionHelper.h"
 #include "Camera.h"
+#include "BoundingVolume.h"
 
 #include "Object.h"
 
@@ -1228,442 +1229,465 @@ namespace Assignment
 {
 	namespace Tests
 	{
-		//Test the function 'makeQuadFromVertices'
-		void TestQuadVertices1()
+
+		//Assignment One Tests
+		namespace AssignmentOneTests
 		{
-			//Example used is the z-front of a cube
-			std::vector<glm::vec3> tri;
-			tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
-			tri.emplace_back(glm::vec3(-1.0f, -1.0f, 1.0f));
-			tri.emplace_back(glm::vec3(1.0f, -1.0f, 1.0f));
-
-			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
-			glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-			std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
-
-			std::vector<GLfloat> expected =
+			void TestQuadVertices1()
 			{
-				-1.0f, 1.0f, 1.0f,
-				-1.0f, -1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				-1.0f, 1.0f, 1.0f
-			};
+				//Example used is the z-front of a cube
+				std::vector<glm::vec3> tri;
+				tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+				tri.emplace_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+				tri.emplace_back(glm::vec3(1.0f, -1.0f, 1.0f));
 
-			assert(actual == expected && "Test1() Failed");
-		}
+				glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+				glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-		void TestQuadVertices2()
-		{
-			//Example used is the z-front of a cube
-			std::vector<glm::vec3> tri;
-			tri.emplace_back(glm::vec3(-1.0f, 1.0f, -1.0f));
-			tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
-			tri.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+				std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
 
-			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
-			glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, - 1.0f);
+				std::vector<GLfloat> expected =
+				{
+					-1.0f, 1.0f, 1.0f,
+					-1.0f, -1.0f, 1.0f,
+					1.0f, -1.0f, 1.0f,
+					1.0f, -1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					-1.0f, 1.0f, 1.0f
+				};
 
-			std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
-
-			std::vector<GLfloat> expected =
+				assert(actual == expected && "Test1() Failed");
+			}
+			void TestQuadVertices2()
 			{
-				-1.0f, 1.0f, -1.0f,
-				-1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, -1.0f,
-				-1.0f, 1.0f, -1.0f
-			};
+				//Example used is the z-front of a cube
+				std::vector<glm::vec3> tri;
+				tri.emplace_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+				tri.emplace_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+				tri.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
 
-			assert(actual == expected && "Test2() Failed");
-		}
+				glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+				glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, -1.0f);
 
-		void TestQuadVertices3()
-		{
-			glm::vec3 pt(-1.0f, 1.0f, 1.0f);
+				std::vector<GLfloat> actual = makeQuadFromVertices(tri, relativeRight, relativeUp);
 
-			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
-			glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
+				std::vector<GLfloat> expected =
+				{
+					-1.0f, 1.0f, -1.0f,
+					-1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, -1.0f,
+					-1.0f, 1.0f, -1.0f
+				};
 
-			std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
-
-			std::vector<GLfloat> expected =
+				assert(actual == expected && "Test2() Failed");
+			}
+			void TestQuadVertices3()
 			{
-				-1.0f, 1.0f, 1.0f,
-				-1.0f, -1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				1.0f, -1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				-1.0f, 1.0f, 1.0f
-			};
+				glm::vec3 pt(-1.0f, 1.0f, 1.0f);
 
-			assert(actual == expected && "Test3() Failed");
-		}
+				glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+				glm::vec3 relativeUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-		void TestQuadVertices4()
-		{
+				std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
 
-			glm::vec3 pt(-1.0f, 1.0f, -1.0f);
+				std::vector<GLfloat> expected =
+				{
+					-1.0f, 1.0f, 1.0f,
+					-1.0f, -1.0f, 1.0f,
+					1.0f, -1.0f, 1.0f,
+					1.0f, -1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					-1.0f, 1.0f, 1.0f
+				};
 
-			glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
-			glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, -1.0f);
-
-			std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
-
-			std::vector<GLfloat> expected =
+				assert(actual == expected && "Test3() Failed");
+			}
+			void TestQuadVertices4()
 			{
-				-1.0f, 1.0f, -1.0f,
-				-1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, -1.0f,
-				-1.0f, 1.0f, -1.0f
-			};
 
-			assert(actual == expected && "Test4() Failed");
-		}
+				glm::vec3 pt(-1.0f, 1.0f, -1.0f);
 
-		//Testing functions to help with sphere construction
-		void TestSphereAngle1()
-		{
-			//Basic test for a sphere with 4 stacks
-			size_t numStacks = 4;
+				glm::vec3 relativeRight = glm::vec3(1.0f, 0.0f, 0.0f);
+				glm::vec3 relativeUp = glm::vec3(0.0f, 0.0f, -1.0f);
 
-			auto approximateEplisionCheck = [](float lhs, float rhs)
+				std::vector<GLfloat> actual = makeQuadFromPointTopLeft(pt, relativeRight, relativeUp);
+
+				std::vector<GLfloat> expected =
+				{
+					-1.0f, 1.0f, -1.0f,
+					-1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, 1.0f,
+					1.0f, 1.0f, -1.0f,
+					-1.0f, 1.0f, -1.0f
+				};
+
+				assert(actual == expected && "Test4() Failed");
+			}
+			void TestSphereAngle1()
 			{
-				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
-			};
+				//Basic test for a sphere with 4 stacks
+				size_t numStacks = 4;
+
+				auto approximateEplisionCheck = [](float lhs, float rhs)
+				{
+					return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+				};
 
 
-			auto checkStack = [&](size_t currSlice, float expectedDegrees)
+				auto checkStack = [&](size_t currSlice, float expectedDegrees)
+				{
+					float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
+					return (approximateEplisionCheck(actual, expectedDegrees));
+				};
+
+				assert(checkStack(0, 270.0f));
+				assert(checkStack(1, 270.0f + 45.0f));
+				assert(checkStack(2, 270.0f + 90.0f));
+				assert(checkStack(3, 270.0f + 135.0f));
+				assert(checkStack(4, 270.0f + 180.0f));
+			}
+			void TestSphereAngle2()
 			{
-				float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
-				return (approximateEplisionCheck(actual, expectedDegrees));
-			};
+				//Test the phi side
 
-			assert(checkStack(0, 270.0f));
-			assert(checkStack(1, 270.0f + 45.0f));
-			assert(checkStack(2, 270.0f + 90.0f));
-			assert(checkStack(3, 270.0f + 135.0f));
-			assert(checkStack(4, 270.0f + 180.0f));
-		}
+				//Basic test for a sphere with 4 slices
+				size_t numSlices = 4;
 
-		void TestSphereAngle2()
-		{
-			//Test the phi side
-			
-			//Basic test for a sphere with 4 slices
-			size_t numSlices = 4;
+				//Getting the angle of slices are very similar to doing a circle 
 
-			//Getting the angle of slices are very similar to doing a circle 
+				auto approximateEplisionCheck = [](float lhs, float rhs)
+				{
+					return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+				};
 
-			auto approximateEplisionCheck = [](float lhs, float rhs)
+
+				auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+				{
+					float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+					return (approximateEplisionCheck(actual, expectedDegrees));
+				};
+
+
+				assert(checkSlice(0, 0.0f));
+				assert(checkSlice(1, 90.0f));
+				assert(checkSlice(2, 180.0f));
+				assert(checkSlice(3, 270.0f));
+				assert(checkSlice(4, 360.0f));
+			}
+			void TestSphereAngle3()
 			{
-				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
-			};
+				//Test the supposed mid section for 
+				// totalStack = 5. currStack = 2.
+				// totalSlice = 4. Loop thorugh all slice (draw from left to right)
 
+				size_t numStacks = 3;
+				size_t currStack = 1;
 
-			auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+				size_t numSlices = 4;
+
+				auto approximateEplisionCheck = [](float lhs, float rhs)
+				{
+					return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
+				};
+
+				auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+				{
+					float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+					return (approximateEplisionCheck(actual, expectedDegrees));
+				};
+
+				auto checkStack = [&](size_t currSlice, float expectedDegrees)
+				{
+					float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
+					return (approximateEplisionCheck(actual, expectedDegrees));
+				};
+
+				std::vector<glm::vec2> anglePairs;
+
+				//Each slice has a 'pair' for the stack
+				for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
+				{
+					//Stacks must alternative
+					float thisPhi = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
+					float stackOne = MeshConstructor::Sphere::getThetaDegrees(currStack, numStacks);
+					float stackTwo = MeshConstructor::Sphere::getThetaDegrees(currStack + 1, numStacks);
+
+					anglePairs.push_back(glm::vec2(stackOne, thisPhi));
+					anglePairs.push_back(glm::vec2(stackTwo, thisPhi));
+				}
+
+				std::vector<glm::vec2> expectedAnglePairs =
+				{
+					glm::vec2(60.0f + 270.0f, 0.0f),
+					glm::vec2(120.0f + 270.0f, 0.0f),
+					glm::vec2(60.0f + 270.0f, 90.0f),
+					glm::vec2(120.0f + 270.0f, 90.0f),
+					glm::vec2(60.0f + 270.0f, 180.0f),
+					glm::vec2(120.0f + 270.0f, 180.0f),
+					glm::vec2(60.0f + 270.0f, 270.0f),
+					glm::vec2(120.0f + 270.0f, 270.0f),
+					glm::vec2(60.0f + 270.0f, 360.0f),
+					glm::vec2(120.0f + 270.0f, 360.0f)
+				};
+
+				std::function<bool(glm::vec2, glm::vec2)> checkPair = [&](glm::vec2 lhs, glm::vec2 rhs)
+				{
+					return (approximateEplisionCheck(lhs.x, rhs.x) == (approximateEplisionCheck(lhs.y, rhs.y) == true));
+				};
+
+				assert(std::equal(expectedAnglePairs.begin(), expectedAnglePairs.end(), anglePairs.begin(), anglePairs.end(),
+					checkPair));
+			}
+			void TestPointAABB()
 			{
-				float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
-				return (approximateEplisionCheck(actual, expectedDegrees));
-			};
+				glm::vec3 point = glm::vec3(1.0f, 0.0f, 0.0f);
 
+				AABB aabb;
+				aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
-			assert(checkSlice(0, 0.0f));
-			assert(checkSlice(1, 90.0f));
-			assert(checkSlice(2, 180.0f));
-			assert(checkSlice(3, 270.0f));
-			assert(checkSlice(4, 360.0f));
-		}
+				aabb.CalculatePoints();
 
-		void TestSphereAngle3()
-		{
-			//Test the supposed mid section for 
-			// totalStack = 5. currStack = 2.
-			// totalSlice = 4. Loop thorugh all slice (draw from left to right)
-
-			size_t numStacks = 3;
-			size_t currStack = 1;
-
-			size_t numSlices = 4;
-
-			auto approximateEplisionCheck = [](float lhs, float rhs)
+				assert(checkPointOnAABB(point, aabb));
+			}
+			void TestPointAABB2()
 			{
-				return fabs(lhs - rhs) <= std::numeric_limits<float>::epsilon();
-			};
+				glm::vec3 point = glm::vec3(1.0f, 1000.0f, 0.0f);
 
-			auto checkSlice = [&](size_t currSlice, float expectedDegrees)
+				AABB aabb;
+				aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+				aabb.CalculatePoints();
+
+				assert(!checkPointOnAABB(point, aabb));
+			}
+			void TestSphereAABB()
 			{
-				float actual = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
-				return (approximateEplisionCheck(actual, expectedDegrees));
-			};
+				SphereCollider sphere;
+				sphere.centerPos = glm::vec3(1.0f, 1.0f, 1.0f);
+				sphere.radius = 1.0f;
 
-			auto checkStack = [&](size_t currSlice, float expectedDegrees)
+				//Should collide
+				AABB aabb;
+				aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
+				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+				aabb.CalculatePoints();
+
+				//Must be true
+				assert(collisionCheck(aabb, sphere));
+			}
+			void TestAABBvsAABB()
 			{
-				float actual = MeshConstructor::Sphere::getThetaDegrees(currSlice, numStacks);
-				return (approximateEplisionCheck(actual, expectedDegrees));
-			};
+				AABB aabb;
+				aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
+				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
-			std::vector<glm::vec2> anglePairs;
+				aabb.CalculatePoints();
 
-			//Each slice has a 'pair' for the stack
-			for (size_t currSlice = 0; currSlice <= numSlices; ++currSlice)
+				AABB aabb2;
+				aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
+				aabb2.scale = glm::vec3(10.0f, 10.0f, 10.0f);
+
+				aabb2.CalculatePoints();
+
+				assert(collisionCheck(aabb, aabb2));
+			}
+			void TestAABBvsAABB2()
 			{
-				//Stacks must alternative
-				float thisPhi = MeshConstructor::Sphere::getPhiDegrees(currSlice, numSlices);
-				float stackOne = MeshConstructor::Sphere::getThetaDegrees(currStack, numStacks);
-				float stackTwo = MeshConstructor::Sphere::getThetaDegrees(currStack + 1, numStacks);
+				AABB aabb;
+				aabb.centerPos = glm::vec3(1.0f, 100.0f, 1.0f);
+				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
-				anglePairs.push_back(glm::vec2(stackOne, thisPhi));
-				anglePairs.push_back(glm::vec2(stackTwo, thisPhi));
+				aabb.CalculatePoints();
+
+				AABB aabb2;
+				aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
+				aabb2.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
+				aabb2.CalculatePoints();
+
+				assert(!collisionCheck(aabb, aabb2));
+			}
+			void TestPointOnPlane()
+			{
+				Plane plane;
+				plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
+				plane.outwardNormal = glm::vec3(0.0f, 1.0f, 0.0f); //This is the floor
+
+				//Should count
+				glm::vec3 pointOne = glm::vec3(100.0f, 0.0f, 0.0f);
+				glm::vec3 pointTwo = glm::vec3(100.0f, 0.0f, 100.0f);
+
+				assert(checkPointOnPlane(pointOne, plane));
+				assert(checkPointOnPlane(pointTwo, plane));
+
+				//Should reject
+				glm::vec3 pointThree = glm::vec3(100.0f, 1.0f, 0.0f);
+				assert(!checkPointOnPlane(pointThree, plane));
+
+			}
+			void TestPointOnPlane2()
+			{
+				Plane plane;
+				plane.pointOnPlane = glm::vec3(30.0f, 10.0f, 0.0f);
+				plane.outwardNormal = glm::vec3(1.0f, 1.0f, 1.0f); //Some diagional plane
+
+				//Should count
+				glm::vec3 pointOne = glm::vec3(30.0f, 10.0f, 0.0f);
+				assert(checkPointOnPlane(pointOne, plane));
+
+				glm::vec3 pointTwo = glm::vec3(10.0f, 50.0f, 100.0f);
+				assert(!checkPointOnPlane(pointTwo, plane));
+
+			}
+			void TestPointOnPlane3()
+			{
+				Plane plane;
+				plane.pointOnPlane = glm::vec3(0.0f, 10.0f, 0.0f);
+				plane.outwardNormal = glm::vec3(0.0f, 0.0f, 1.0f);
+
+				//Should count
+				glm::vec3 pointOne = glm::vec3(0.0f, 10.0f, 0.0f);
+				assert(checkPointOnPlane(pointOne, plane));
+
+				//Should also count
+				glm::vec3 pointTwo = glm::vec3(0.0f, 50.0f, 0.0f);
+				assert(checkPointOnPlane(pointTwo, plane));
+
+				//Point is front of the plane now
+				glm::vec3 pointThree = glm::vec3(0.0f, 50.0f, 1.0f);
+				assert(!checkPointOnPlane(pointThree, plane));
+			}
+			void TestRayOnSphere()
+			{
+				//Test for trivial acceptance
+				SphereCollider sphere;
+				Ray ray;
+
+
+				//Ray is definitely inside (start is inside)
+				sphere.radius = 1.0f;
+				sphere.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
+
+				ray.startPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+				ray.length = 1.0f;
+				ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+				assert(checkRayOnSphere(ray, sphere));
+
+				///Ray is inside (end is inside)
+				ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
+				ray.length = 2.1f; //Ray ends at origin
+				ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+				assert(checkRayOnSphere(ray, sphere));
+
+				//Test for trivial rejection away
+				ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
+				ray.direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+				assert(!checkRayOnSphere(ray, sphere));
+
+				//Test for skimmed past
+				ray.startPoint = glm::vec3(-2.0f, -20.0f, 0.0f);
+				ray.length = 100.0f; //Ray ends at origin
+				ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+				assert(!checkRayOnSphere(ray, sphere));
+
+				//Test for intersection true
+				ray.startPoint = glm::vec3(-20.0f, 0.0f, 0.0f);
+				ray.length = 100.0f; //Ray ends at origin
+				ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
+				assert(checkRayOnSphere(ray, sphere));
+
+
+			}
+			void TestPointOnTriangle()
+			{
+				glm::vec3 pt = glm::vec3(0.0f, 0.0f, 0.0f);
+
+				Triangle triangle;
+				//Surrounds the origin
+				triangle.pt0 = glm::vec3(0.0f, 1.0f, 0.0f);
+				triangle.pt1 = glm::vec3(-1.0f, 0.0f, 0.0f);
+				triangle.pt2 = glm::vec3(1.0f, 0.0f, 0.0f);
+
+				assert(checkPointOnTriangle(triangle, pt));
+
+				//Definitely not on the triangle
+				pt = glm::vec3(0.0f, 10.0f, 0.0f);
+				assert(!checkPointOnTriangle(triangle, pt));
 			}
 
-			std::vector<glm::vec2> expectedAnglePairs =
+
+			void RunTests()
 			{
-				glm::vec2(60.0f + 270.0f, 0.0f),
-				glm::vec2(120.0f +270.0f, 0.0f),
-				glm::vec2(60.0f + 270.0f, 90.0f),
-				glm::vec2(120.0f + 270.0f, 90.0f),
-				glm::vec2(60.0f + 270.0f, 180.0f),
-				glm::vec2(120.0f + 270.0f, 180.0f),
-				glm::vec2(60.0f + 270.0f, 270.0f),
-				glm::vec2(120.0f + 270.0f, 270.0f),
-				glm::vec2(60.0f + 270.0f, 360.0f),
-				glm::vec2(120.0f + 270.0f, 360.0f)
-			};
+				TestQuadVertices1();
+				TestQuadVertices2();
+				TestQuadVertices3();
+				TestQuadVertices4();
+				TestSphereAngle1();
+				TestSphereAngle2();
+				TestSphereAngle3();
 
-			std::function<bool(glm::vec2, glm::vec2)> checkPair = [&](glm::vec2 lhs, glm::vec2 rhs)
+				TestPointAABB();
+				TestPointAABB2();
+
+				TestSphereAABB();
+
+				TestAABBvsAABB();
+				TestAABBvsAABB2();
+
+				TestPointOnPlane();
+				TestPointOnPlane2();
+				TestPointOnPlane3();
+				TestRayOnSphere();
+
+				TestPointOnTriangle();
+			}
+		}
+
+		namespace AssignmentTwoTests
+		{
+			//Assignment Two Tests
+			void TestAABBCalculation()
 			{
-				return (approximateEplisionCheck(lhs.x, rhs.x) == (approximateEplisionCheck(lhs.y, rhs.y) == true));
-			};
+				//Check with a 3D pyramid-like structure
+				std::vector<glm::vec3> transformList;
 
-			assert(std::equal(expectedAnglePairs.begin(), expectedAnglePairs.end(), anglePairs.begin(), anglePairs.end(),
-				checkPair));
+				//The square base
+				transformList.push_back(glm::vec3(-1.0f, 0.0f, -1.0f));
+				transformList.push_back(glm::vec3(1.0f, 0.0f, -1.0f));
+				transformList.push_back(glm::vec3(-1.0f, 0.0f, 1.0f));
+				transformList.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
+
+				//The tip of the pyramid
+				transformList.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+
+				BV::AABB aabb;
+
+				BV::CalculateAABB(transformList, aabb);
+
+				glm::vec3 expectedMaxPoint = glm::vec3(1.0f, 1.0f, 1.0f);
+				assert(expectedMaxPoint == aabb.maxPoint);
+
+				glm::vec3 expectedMinPoint = glm::vec3(-1.0f, 0.0f, -1.0f);
+				assert(expectedMinPoint == aabb.minPoint);
+			}
+
+			void RunTests()
+			{
+				TestAABBCalculation();
+			}
 		}
-
-		void TestPointAABB()
-		{
-			glm::vec3 point = glm::vec3(1.0f, 0.0f, 0.0f);
-
-			AABB aabb;
-			aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
-			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb.CalculatePoints();
-
-			assert(checkPointOnAABB(point, aabb));
-		}
-
-
-		void TestPointAABB2()
-		{
-			glm::vec3 point = glm::vec3(1.0f, 1000.0f, 0.0f);
-
-			AABB aabb;
-			aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
-			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb.CalculatePoints();
-
-			assert(!checkPointOnAABB(point, aabb));
-		}
-
-		void TestSphereAABB()
-		{
-			SphereCollider sphere;
-			sphere.centerPos = glm::vec3(1.0f, 1.0f, 1.0f);
-			sphere.radius = 1.0f;
-
-			//Should collide
-			AABB aabb;
-			aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
-			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb.CalculatePoints();
-
-			//Must be true
-			assert(collisionCheck(aabb, sphere));
-		}
-
-
-		void TestAABBvsAABB()
-		{
-			AABB aabb;
-			aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
-			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb.CalculatePoints();
-
-			AABB aabb2;
-			aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
-			aabb2.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb2.CalculatePoints();
-
-			assert(collisionCheck(aabb, aabb2));
-		}
-
-		void TestAABBvsAABB2()
-		{
-			AABB aabb;
-			aabb.centerPos = glm::vec3(1.0f, 100.0f, 1.0f);
-			aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-
-			aabb.CalculatePoints();
-
-			AABB aabb2;
-			aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
-			aabb2.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-
-			aabb2.CalculatePoints();
-
-			assert(!collisionCheck(aabb, aabb2));
-		}
-
-		void TestPointOnPlane()
-		{
-			Plane plane;
-			plane.pointOnPlane = glm::vec3(0.0f, 0.0f, 0.0f);
-			plane.outwardNormal = glm::vec3(0.0f, 1.0f, 0.0f); //This is the floor
-
-			//Should count
-			glm::vec3 pointOne = glm::vec3(100.0f, 0.0f, 0.0f);
-			glm::vec3 pointTwo = glm::vec3(100.0f, 0.0f, 100.0f);
-
-			assert(checkPointOnPlane(pointOne, plane));
-			assert(checkPointOnPlane(pointTwo, plane));
-
-			//Should reject
-			glm::vec3 pointThree = glm::vec3(100.0f, 1.0f, 0.0f);
-			assert(!checkPointOnPlane(pointThree, plane));
-
-		}
-
-		void TestPointOnPlane2()
-		{
-			Plane plane;
-			plane.pointOnPlane = glm::vec3(30.0f, 10.0f, 0.0f);
-			plane.outwardNormal = glm::vec3(1.0f, 1.0f, 1.0f); //Some diagional plane
-
-			//Should count
-			glm::vec3 pointOne = glm::vec3(30.0f, 10.0f, 0.0f);
-			assert(checkPointOnPlane(pointOne, plane));
-
-			glm::vec3 pointTwo = glm::vec3(10.0f, 50.0f, 100.0f);
-			assert(!checkPointOnPlane(pointTwo, plane));
-
-		}
-
-		void TestPointOnPlane3()
-		{
-			Plane plane;
-			plane.pointOnPlane = glm::vec3(0.0f, 10.0f, 0.0f);
-			plane.outwardNormal = glm::vec3(0.0f, 0.0f, 1.0f);
-
-			//Should count
-			glm::vec3 pointOne = glm::vec3(0.0f, 10.0f, 0.0f);
-			assert(checkPointOnPlane(pointOne, plane));
-
-			//Should also count
-			glm::vec3 pointTwo = glm::vec3(0.0f, 50.0f, 0.0f);
-			assert(checkPointOnPlane(pointTwo, plane));
-
-			//Point is front of the plane now
-			glm::vec3 pointThree = glm::vec3(0.0f, 50.0f, 1.0f);
-			assert(!checkPointOnPlane(pointThree, plane));
-		}
-
-
-		void TestRayOnSphere()
-		{
-			//Test for trivial acceptance
-			SphereCollider sphere;
-			Ray ray;
-
-
-			//Ray is definitely inside (start is inside)
-			sphere.radius = 1.0f;
-			sphere.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
-
-			ray.startPoint = glm::vec3(0.0f, 0.0f, 0.0f);
-			ray.length = 1.0f;
-			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
-
-			assert(checkRayOnSphere(ray, sphere));
-			
-			///Ray is inside (end is inside)
-			ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
-			ray.length = 2.1f; //Ray ends at origin
-			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
-
-			assert(checkRayOnSphere(ray, sphere));
-
-			//Test for trivial rejection away
-			ray.startPoint = glm::vec3(-2.0f, 0.0f, 0.0f);
-			ray.direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-			assert(!checkRayOnSphere(ray, sphere));
-
-			//Test for skimmed past
-			ray.startPoint = glm::vec3(-2.0f, -20.0f, 0.0f);
-			ray.length = 100.0f; //Ray ends at origin
-			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
-			assert(!checkRayOnSphere(ray, sphere));
-
-			//Test for intersection true
-			ray.startPoint = glm::vec3(-20.0f, 0.0f, 0.0f);
-			ray.length = 100.0f; //Ray ends at origin
-			ray.direction = glm::vec3(1.0f, 0.0f, 0.0f);
-			assert(checkRayOnSphere(ray, sphere));
-
-
-		}
-
-		void TestPointOnTriangle()
-		{
-			glm::vec3 pt = glm::vec3(0.0f, 0.0f, 0.0f);
-			
-			Triangle triangle;
-			//Surrounds the origin
-			triangle.pt0 = glm::vec3(0.0f, 1.0f, 0.0f);
-			triangle.pt1 = glm::vec3(-1.0f, 0.0f, 0.0f);
-			triangle.pt2 = glm::vec3(1.0f, 0.0f, 0.0f);
-
-			assert(checkPointOnTriangle(triangle, pt));
-
-			//Definitely not on the triangle
-			pt = glm::vec3(0.0f, 10.0f, 0.0f);
-			assert(!checkPointOnTriangle(triangle, pt));
-		}
-
 		void RunAllTests()
 		{
-
-			Tests::TestQuadVertices1();
-			Tests::TestQuadVertices2();
-			Tests::TestQuadVertices3();
-			Tests::TestQuadVertices4();
-			Tests::TestSphereAngle1();
-			Tests::TestSphereAngle2();
-			Tests::TestSphereAngle3();
-
-			Tests::TestPointAABB();
-			Tests::TestPointAABB2();
-
-			Tests::TestSphereAABB();
-
-			Tests::TestAABBvsAABB();
-			Tests::TestAABBvsAABB2();
-
-			Tests::TestPointOnPlane();
-			Tests::TestPointOnPlane2();
-			Tests::TestPointOnPlane3();
-			Tests::TestRayOnSphere();
-
-			Tests::TestPointOnTriangle();
+			//AssignmentOneTests::RunTests();
+			AssignmentTwoTests::RunTests();
 		}
 	}
 
@@ -1735,14 +1759,15 @@ namespace Assignment
 	public:
 		std::vector<Object> objectVector;
 		std::vector<std::string> filePaths;
-
 		std::string modelFolderPath = "Models/";
+		BV::AABB aabbTest;
 
 		void Init() override {
 
-			filePaths.emplace_back(modelFolderPath + "bunny.obj");
-
 			LoadScene(objectVector, "Scenes/AssignmentTwo.txt");
+			//std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector, 0, objectVector.size() - 1);
+			//BV::CalculateAABB(v, aabbTest);
+			
 
 			//for (std::string const& path : filePaths)
 			//{
@@ -1789,16 +1814,58 @@ namespace Assignment
 	//Probably gonna only be one scene this time with options to toggle 
 	namespace AssignmentTwoScenes
 	{
-		class AssignmentTwoScene : Scene
+		class BaseScene : Scene
+		{
+		protected:
+			//Every scene for A2 have these functions
+			std::vector<Object> objectVector;
+
+
+
+			std::vector<std::string> filePaths;
+			std::string modelFolderPath = "Models/";
+
+			void RenderObjects()
+			{
+				for (const Object& obj : objectVector)
+				{
+					SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+				}
+
+				DrawAll(drawList, currCamera);
+				drawList.clear();
+			}
+
+		};
+
+		//Test if I put a few cubes, if it'd generate an expected AABB and rendering
+		class CubeLoadScene : public BaseScene
+		{
+			BV::AABB aabbAll;
+		public:
+			void Init() override {
+				LoadScene(objectVector, "Scenes/CubeTest.txt");
+				
+				std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector);
+				BV::CalculateAABB(v, aabbAll);
+			}
+
+			void Update() override {
+
+			}
+
+			void Render() override
+			{
+				RenderAxis();
+				RenderObjects();
+			}
+		};
+
+		class AssignmentTwoScene : public BaseScene
 		{
 		public:
-			Mesh meshObject;
-
-			std::string filePath = "Models/cube.obj";
-
 			void Init() override {
 
-				meshObject.loadOBJ(filePath);
 			}
 
 			void Update() override {
@@ -3340,8 +3407,10 @@ namespace Assignment
 		//Only one line. So much better :)
 		using namespace AssignmentOneScenes;
 		ScenetoFunction<CubeScene>(SceneNames::TestSceneCube);
-
 		ScenetoFunction<AssimapExample>(SceneNames::AssimapExample);
+
+		using namespace AssignmentTwoScenes;
+		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
 
 	}
 }
@@ -3411,7 +3480,7 @@ namespace Assignment
 		modelMap.insert(std::make_pair<std::string, Transform>(ModelNames::defaultModel, Transform(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::AssimapExample;
+		currentSceneName = SceneNames::CubeSceneTest;
 		SetScene(currentSceneName);
 
 		return 0;

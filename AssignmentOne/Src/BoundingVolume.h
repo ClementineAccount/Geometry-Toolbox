@@ -26,6 +26,7 @@ namespace Assignment
 		class AABB : BoundingVolume
 		{
 		public:
+			glm::vec3 halfExtent;
 			glm::vec3 centerPos;
 			glm::vec3 scale; //Allows calculation of half extents
 
@@ -37,8 +38,11 @@ namespace Assignment
 			glm::vec3 maxPoint;
 		};
 
-		
-		void CalculateAABB(std::vector<Object> const& objects, AABB& aabbRef);
+
+		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end);
+		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList);
+
+		void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
 	}
 }
 

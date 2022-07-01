@@ -171,8 +171,8 @@ namespace Assignment
         const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
 
 
+        const char CubeSceneTest[] = "CubeSceneTest";
         const char AssignmentTwo[] = "Assignment Two";
-
         const char AssimapExample[] = "AssimapExample";
     }
 
