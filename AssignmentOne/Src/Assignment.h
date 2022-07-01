@@ -15,7 +15,10 @@
 #include "mesh.h"
 
 
+#include "Transform.h"
+#include "AssignmentOneSettings.h"
 
+#include "CollisionHelper.h"
 
 namespace Assignment
 {
@@ -52,33 +55,6 @@ namespace Assignment
         }
     };
 
-
-
-    //The origin for use in model and view projection
-    constexpr glm::vec3 worldOrigin = { 0.0f, 0.0f, 0.0f };
-    constexpr glm::vec3 worldUp = { 0.0f, 1.0f, 0.0f };
-    constexpr glm::vec3 worldRight = { 1.0f, 0.0f, 0.0f };
-    constexpr glm::vec3 worldForward = { 0.0f, 0.0f, 1.0f };
-
-    constexpr glm::vec3 unitLineBasisVector = worldRight;
-    constexpr float unitLineScale = 1.0f;
-
-    constexpr glm::vec3 defaultPivotPercent = { 0.5f, 0.5f, 0.0f };
-    constexpr float defaultFOV = 90.0f;
-
-    struct Transform
-    {
-        glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
-        glm::vec3 pos{ worldOrigin };
-
-        //in degrees for each axis
-        glm::vec3 rotDegrees{ 0.0f, 0.0f, 0.0f };
-
-        glm::vec3 pivotPercent{ defaultPivotPercent };
-
-        //Can be inserted into the shader if wanted
-        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
-    };
 
     struct Kinematics
     {

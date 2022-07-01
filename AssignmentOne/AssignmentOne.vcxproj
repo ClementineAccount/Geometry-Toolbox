@@ -164,6 +164,7 @@
     <ClInclude Include="..\dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="Src\Assignment.h" />
+    <ClInclude Include="Src\BoundingVolume.h" />
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
     <ClInclude Include="Src\shader.hpp" />
+    <ClInclude Include="Src\Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp" />
@@ -183,6 +185,7 @@
     <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Assignment.cpp" />
     <ClCompile Include="Src\AssignmentOneSettings.h" />
+    <ClCompile Include="Src\BoundingVolume.cpp" />
     <ClCompile Include="Src\CollisionHelper.cpp" />
     <ClCompile Include="Src\GLApplication.cpp" />
     <ClCompile Include="Src\main.cpp" />

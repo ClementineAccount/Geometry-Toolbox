@@ -1,12 +1,11 @@
 #pragma once
+
+#include "AssignmentOneSettings.h"
 #include "Assignment.h"
 #include <memory>
 
 namespace Assignment
 {
-	
-
-	
 	enum class Collider
 	{
 		AABB,
@@ -15,8 +14,9 @@ namespace Assignment
 
 
 	//Polymorphism so we can store it in the same container
-	struct CollisionObject
+	class CollisionObject
 	{
+	public:
 		Collider colliderType;
 
 		Transform model; //storing the transform within the AABB
