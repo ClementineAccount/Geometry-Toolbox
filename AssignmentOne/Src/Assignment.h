@@ -96,6 +96,7 @@ namespace Assignment
         std::function<void(void)> renderScene;
     };
 
+    //To Do: Switch to using enums as the key instead of strings
     static std::unordered_map<std::string, MeshBuffers> meshMap;
 
 
@@ -122,6 +123,8 @@ namespace Assignment
     void RenderQuadMesh();
     void RenderAssignment();
 
+
+    //To Do: Use enum instead of string in the future 
     namespace MeshNames
     {
         //can be used for planes too
@@ -143,6 +146,13 @@ namespace Assignment
         static const char rayUp[] = "rayUp";
         static const char rayRight[] = "rayRight";
     }
+
+    //enum class MeshID
+    //{
+    //    CUBE
+    //};
+
+    //static std::unordered_map<MeshID, MeshBuffers> meshMap;
 
     //'Scenes' that are just a collection of functions. Took away some abstraction from a more overengineered implementation
     namespace SceneNames
@@ -178,6 +188,8 @@ namespace Assignment
 
     //Load the scene from a text file
     void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath);
+
+
 }
 
 

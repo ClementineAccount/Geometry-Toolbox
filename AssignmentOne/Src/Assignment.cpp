@@ -579,15 +579,11 @@ namespace Assignment
 	}
 
 
+
+
 	void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera)
 	{
-		auto makePivotVector = [](Transform const& model)
-		{
-			return glm::vec3(
-				model.pivotPercent.x * model.scale.x,
-				model.pivotPercent.y * model.scale.y,
-				model.pivotPercent.z * model.scale.z);
-		};
+
 
 		//auto sortDraw = [](drawCall const& lhs, drawCall const& rhs) {
 		//	return lhs.drawOrder < rhs.drawOrder;
@@ -603,25 +599,7 @@ namespace Assignment
 			//if (!currDraw.isRendering)
 			//	continue;
 
-			Transform const& currModel = currDraw.model;
-
-			//mvp
-			glm::mat4 modelMat = glm::mat4(1.0f);
-
-			modelMat = glm::translate(modelMat, currModel.pos);
-
-			//The vector that does rotation at the pivot specified
-			glm::vec3 pivotTransVector = makePivotVector(currModel);
-
-			//modelMat = glm::translate(modelMat, pivotTransVector);
-
-			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.x), worldRight);
-			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.y), worldUp);
-			modelMat = glm::rotate(modelMat, glm::radians(currModel.rotDegrees.z), worldForward);
-
-			//modelMat = glm::translate(modelMat, -pivotTransVector);
-			modelMat = glm::scale(modelMat, currModel.scale);
-
+			glm::mat4 modelMat = calculateModel(currDraw.model);
 
 			glm::mat4 viewMat = glm::mat4(1.0f);
 
@@ -1848,16 +1826,26 @@ namespace Assignment
 				
 				std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector);
 				BV::CalculateAABB(v, aabbAll);
+
+				aabbAll.meshID = MeshNames::cube;
 			}
 
 			void Update() override {
-
+				aabbAll.Update();
 			}
 
 			void Render() override
 			{
 				RenderAxis();
 				RenderObjects();
+
+				//Draw the AABB in wireframe mode
+
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+				SubmitDraw(aabbAll.model, aabbAll.meshID);
+				DrawAll(drawList, currCamera);
+				drawList.clear();
 			}
 		};
 

@@ -15,7 +15,13 @@ namespace Assignment
 			//The caller will have to pass in (size - 1) if they wish to go until the end
 			for (size_t i = start; i <= end; ++i)
 			{
-				positions.push_back(objectList[i].transform.pos);
+				glm::mat4 modelMat = calculateModel(objectList[i].transform);
+				for (auto const& localPos : objectList[i].objectMesh.meshVertices.positions)
+				{
+					glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
+					positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
+				}
+
 			}
 
 			return positions;
@@ -57,6 +63,17 @@ namespace Assignment
 			setScale(x);
 			setScale(y);
 			setScale(z);
+
+			aabbRef.Update();
 		}
+
+		//Update it based off the current position
+		void AABB::Update()
+		{
+			model.pos = centerPos;
+			model.scale = scale;
+		}
+
+
 	}
 }

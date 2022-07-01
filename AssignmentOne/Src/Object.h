@@ -21,4 +21,6 @@ namespace Assignment
 
 		//To Do: Add the bounding volume
 	};
+
+	glm::mat4 calculateModel(Transform trans);
 }

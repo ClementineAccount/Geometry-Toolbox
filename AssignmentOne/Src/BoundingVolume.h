@@ -16,6 +16,7 @@ namespace Assignment
 		//base class interface
 		class BoundingVolume
 		{
+		public:
 			Transform model; //storing the transform within the AABB
 			std::string meshID; //To Do: You could change this to use uint_32 instead eventually
 
@@ -23,19 +24,19 @@ namespace Assignment
 			bool isRendering = true;
 		};
 
-		class AABB : BoundingVolume
+		class AABB : public BoundingVolume
 		{
 		public:
 			glm::vec3 halfExtent;
 			glm::vec3 centerPos;
 			glm::vec3 scale; //Allows calculation of half extents
 
-			//Updates the collision points and the model
-			void CalculatePoints();
-			void UpdateModel();
 
 			glm::vec3 minPoint;
 			glm::vec3 maxPoint;
+
+			//Updates the collision points and the model
+			void Update();
 		};
 
 
