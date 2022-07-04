@@ -1798,8 +1798,6 @@ namespace Assignment
 			//Every scene for A2 have these functions
 			std::vector<Object> objectVector;
 
-
-
 			std::vector<std::string> filePaths;
 			std::string modelFolderPath = "Models/";
 
@@ -1813,17 +1811,22 @@ namespace Assignment
 				DrawAll(drawList, currCamera);
 				drawList.clear();
 			}
-
 		};
 
-		//Test if I put a few cubes, if it'd generate an expected AABB and rendering
-		class CubeLoadScene : public BaseScene
+
+		class ModelLoadScene : public BaseScene
 		{
 			BV::AABB aabbAll;
 		public:
-			void Init() override {
+
+			virtual void LoadSceneLocal()
+			{
 				LoadScene(objectVector, "Scenes/CubeTest.txt");
-				
+			}
+
+			void Init() override {
+
+				LoadSceneLocal();
 				std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector);
 				BV::CalculateAABB(v, aabbAll);
 
@@ -1846,6 +1849,32 @@ namespace Assignment
 				SubmitDraw(aabbAll.model, aabbAll.meshID);
 				DrawAll(drawList, currCamera);
 				drawList.clear();
+			}
+		};
+
+		class CubeLoadScene : public ModelLoadScene
+		{
+			void LoadSceneLocal() override
+			{
+				LoadScene(objectVector, "Scenes/CubeTest.txt");
+			}
+		};
+
+		class BunnyLoadScene : public ModelLoadScene
+		{
+			
+			void LoadSceneLocal() override
+			{
+				LoadScene(objectVector, "Scenes/Bunny.txt");
+			}
+		};
+
+		class StarWarsLoadScene : public ModelLoadScene
+		{
+
+			void LoadSceneLocal() override
+			{
+				LoadScene(objectVector, "Scenes/StarWars.txt");
 			}
 		};
 
@@ -3399,6 +3428,8 @@ namespace Assignment
 
 		using namespace AssignmentTwoScenes;
 		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
+		ScenetoFunction<BunnyLoadScene>("Bunny Scene");
+		ScenetoFunction<StarWarsLoadScene>("Star Wars 1");
 
 	}
 }
