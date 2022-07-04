@@ -186,6 +186,7 @@
     <ClCompile Include="Src\Assignment.cpp" />
     <ClCompile Include="Src\AssignmentOneSettings.h" />
     <ClCompile Include="Src\BoundingVolume.cpp" />
+    <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\CollisionHelper.cpp" />
     <ClCompile Include="Src\GLApplication.cpp" />
     <ClCompile Include="Src\main.cpp" />

@@ -202,5 +202,8 @@
     <ClCompile Include="Src\BoundingVolume.cpp">
       <Filter>Source\BoundingVolume</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Camera.cpp">
+      <Filter>Source\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

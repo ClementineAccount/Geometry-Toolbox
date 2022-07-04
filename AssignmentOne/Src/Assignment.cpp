@@ -12,6 +12,9 @@
 #include <string>
 #include <map>
 
+#include <compare> 
+#include <algorithm> 
+
 // Include Dear Imgui
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
@@ -603,9 +606,8 @@ namespace Assignment
 
 			glm::mat4 viewMat = glm::mat4(1.0f);
 
-			//Calculate the view mat
 
-			viewMat = glm::lookAt(drawCamera.pos, drawCamera.targetPos, drawCamera.up);
+			viewMat = glm::lookAt(drawCamera.pos, drawCamera.targetVector, drawCamera.up);
 
 			glm::mat4 perspectiveMat = glm::mat4(1.0f);
 			GLfloat fov = drawCamera.FOV;
@@ -1022,7 +1024,8 @@ namespace Assignment
 		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
 
 		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Camera Target Position", (float*)&currCamera.targetPos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
@@ -1679,6 +1682,7 @@ namespace Assignment
 	void initCamera()
 	{
 		currCamera.pos = defaultCameraPos;
+		currCamera.updateCameraVectors();
 	}
 	void initBackground()
 	{
@@ -1814,6 +1818,7 @@ namespace Assignment
 		};
 
 
+		
 		class ModelLoadScene : public BaseScene
 		{
 			BV::AABB aabbAll;
@@ -1826,15 +1831,23 @@ namespace Assignment
 
 			void Init() override {
 
+				currCamera.pitch = -20.0f;
+				currCamera.yaw = -152.0f;
+				initCamera();
+
+
 				LoadSceneLocal();
 				std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector);
 				BV::CalculateAABB(v, aabbAll);
 
 				aabbAll.meshID = MeshNames::cube;
+
 			}
 
 			void Update() override {
 				aabbAll.Update();
+				
+				currCamera.updateCamera(applicationPtr);
 			}
 
 			void Render() override
@@ -1871,7 +1884,6 @@ namespace Assignment
 
 		class StarWarsLoadScene : public ModelLoadScene
 		{
-
 			void LoadSceneLocal() override
 			{
 				LoadScene(objectVector, "Scenes/StarWars.txt");
@@ -3438,9 +3450,6 @@ namespace Assignment
 //Initialization and Update Loop
 namespace Assignment
 {
-
-
-
 	void UpdateAssignment()
 	{
 		collisionDetected = false;
