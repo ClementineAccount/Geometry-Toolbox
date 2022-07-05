@@ -109,8 +109,11 @@ namespace Assignment
 namespace Assignment
 {
 	std::map<std::string, AssignmentScene> sceneMap;
-
+	std::unordered_map<std::string, MeshBuffers> meshMap;
 	std::unordered_map<std::string, Transform> modelMap;
+	std::unordered_map<std::string, Mesh> loadedMeshMap;
+	std::vector<drawCall> drawList;
+
 
 	MeshBuffers quadMesh;
 	ShaderContainer assignmentShaders;
@@ -156,7 +159,7 @@ namespace Assignment
 		applicationPtr = &appPtr;
 	}
 
-	static std::vector<drawCall> drawList;
+
 
 
 
@@ -984,7 +987,15 @@ namespace Assignment
 			{
 				Object obj;
 				sceneFile >> buffer;
-				obj.objectMesh.loadOBJ(modelFolderPath + buffer);
+				std::string filePath = modelFolderPath + buffer;
+				if (loadedMeshMap.count(filePath) == 0)
+				{
+					Mesh m;
+					m.loadOBJ(filePath);
+					loadedMeshMap.insert(std::make_pair(filePath, m));
+				}
+			
+				obj.objectMesh = &loadedMeshMap.at(filePath);
 
 				auto vec3Buffer = [&](glm::vec3& vec3Ref)
 				{
@@ -1769,7 +1780,7 @@ namespace Assignment
 
 			for (const Object& obj : objectVector)
 			{
-				SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+				SubmitDraw(obj.transform, obj.objectMesh->meshBuffer);
 			}
 
 			DrawAll(drawList, currCamera);
@@ -1809,7 +1820,7 @@ namespace Assignment
 			{
 				for (const Object& obj : objectVector)
 				{
-					SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer);
 				}
 
 				DrawAll(drawList, currCamera);

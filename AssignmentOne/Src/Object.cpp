@@ -11,7 +11,7 @@ namespace Assignment
 		for (size_t i = start; i <= end; ++i)
 		{
 			glm::mat4 modelMat = calculateModel(objectList[i].transform);
-			for (auto const& localPos : objectList[i].objectMesh.meshVertices.positions)
+			for (auto const& localPos : objectList[i].objectMesh->meshVertices.positions)
 			{
 				glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
 				positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));

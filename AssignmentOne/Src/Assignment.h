@@ -80,9 +80,7 @@ namespace Assignment
     {
         Transform model;
         MeshBuffers const& mesh;
-
         GLuint shaderID = 0;
-
         unsigned int drawOrder = 0;
         bool isRendering = true; //idk if we should have this
     };
@@ -96,8 +94,7 @@ namespace Assignment
         std::function<void(void)> renderScene;
     };
 
-    //To Do: Switch to using enums as the key instead of strings
-    static std::unordered_map<std::string, MeshBuffers> meshMap;
+
 
 
     //Submit to the drawList

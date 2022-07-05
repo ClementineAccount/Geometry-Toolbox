@@ -54,7 +54,8 @@ namespace Assignment
 			std::vector<glm::vec3> centerList;
 			for (auto const& obj : objList)
 			{
-				centerList.push_back(obj->bv.getCenter());
+				glm::vec3 center = obj->bv.getCenter();
+				centerList.push_back(center);
 			}
 
 			glm::vec3 centerPoint = glm::vec3(0.0f, 0.0f, 0.0f);

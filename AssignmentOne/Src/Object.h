@@ -11,7 +11,7 @@ namespace Assignment
 	public:
 
 		Transform transform;
-		Mesh objectMesh; 
+		Mesh* objectMesh; 
 
 		//What shader should this object be drawn with unless otherwise stated?
 		std::string shaderID; 
