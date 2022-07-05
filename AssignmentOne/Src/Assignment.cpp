@@ -109,8 +109,10 @@ namespace Assignment
 namespace Assignment
 {
 	std::map<std::string, AssignmentScene> sceneMap;
-
 	std::unordered_map<std::string, Transform> modelMap;
+
+	std::unordered_map<std::string, MeshBuffers> meshMap;
+	std::unordered_map<std::string, Mesh> loadedMeshMap;
 
 	MeshBuffers quadMesh;
 	ShaderContainer assignmentShaders;
@@ -964,6 +966,12 @@ namespace Assignment
 		pos += static_cast<GLfloat>(applicationPtr->getDeltaTime()) * (kinematics.speed * glm::normalize(kinematics.normVector));
 	}
 
+
+	void LoadMesh(std::string modelPath)
+	{
+		loadedMeshMap.emplace("Test", Mesh(modelPath));
+	}
+	
 	void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath)
 	{
 		std::string modelFolderPath = "Models/";
@@ -984,7 +992,8 @@ namespace Assignment
 			{
 				Object obj;
 				sceneFile >> buffer;
-				obj.objectMesh.loadOBJ(modelFolderPath + buffer);
+				LoadMesh(modelFolderPath + buffer);
+				obj.meshID = (modelFolderPath + buffer);
 
 				auto vec3Buffer = [&](glm::vec3& vec3Ref)
 				{
@@ -1769,7 +1778,7 @@ namespace Assignment
 
 			for (const Object& obj : objectVector)
 			{
-				SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+				SubmitDraw(obj.transform, loadedMeshMap.at(obj.meshID).meshBuffer);
 			}
 
 			DrawAll(drawList, currCamera);
@@ -1809,7 +1818,7 @@ namespace Assignment
 			{
 				for (const Object& obj : objectVector)
 				{
-					SubmitDraw(obj.transform, obj.objectMesh.meshBuffer);
+					SubmitDraw(obj.transform, loadedMeshMap.at(obj.meshID).meshBuffer);
 				}
 
 				DrawAll(drawList, currCamera);
@@ -1822,6 +1831,8 @@ namespace Assignment
 		class ModelLoadScene : public BaseScene
 		{
 		protected:
+
+			std::unordered_map<std::string, Mesh> meshList;
 			BV::AABB aabbAll;
 		public:
 
@@ -1838,7 +1849,7 @@ namespace Assignment
 
 
 				LoadSceneLocal();
-				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
+				std::vector<glm::vec3> v = GetObjectPositions(objectVector, loadedMeshMap);
 				BV::CalculateAABB(v, aabbAll);
 
 				aabbAll.meshID = MeshNames::cube;
@@ -1881,7 +1892,7 @@ namespace Assignment
 				initCamera();
 
 				LoadSceneLocal();
-				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
+				std::vector<glm::vec3> v = GetObjectPositions(objectVector, loadedMeshMap);
 				BV::CalculateAABB(v, aabbAll);
 				aabbAll.meshID = MeshNames::cube;
 

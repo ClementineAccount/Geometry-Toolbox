@@ -43,12 +43,15 @@ namespace Assignment
 
 	MeshBuffers initVBO(std::vector<GLfloat> meshPositions, std::vector<GLfloat> meshColor);
 
-
 	MeshBuffers initBuffers(Vertices const& verticeSOA, Indices const& indices);
 
 	struct Mesh
 	{
 	public:
+		Mesh(std::string const& filePath) {
+			loadOBJ(filePath);
+		}
+
 		Vertices meshVertices;
 		Indices meshIndices;
 
@@ -58,5 +61,7 @@ namespace Assignment
 		void ProcessMesh(const aiMesh& addMesh, const aiScene& Scene) noexcept;
 		void ProcessNode(const aiNode& Node, const aiScene& scene) noexcept;
 	};
+
+
 }
 

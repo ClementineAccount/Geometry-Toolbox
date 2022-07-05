@@ -22,6 +22,9 @@
 
 namespace Assignment
 {
+
+
+
     //Forward declare
     class CollisionObject;
     class Camera;
@@ -97,7 +100,7 @@ namespace Assignment
     };
 
     //To Do: Switch to using enums as the key instead of strings
-    static std::unordered_map<std::string, MeshBuffers> meshMap;
+
 
 
     //Submit to the drawList
@@ -186,10 +189,10 @@ namespace Assignment
         const char AssimapExample[] = "AssimapExample";
     }
 
+    void loadMesh(std::string const& modelPath);
+    
     //Load the scene from a text file
     void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath);
-
-
 }
 
 

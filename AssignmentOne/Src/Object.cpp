@@ -2,7 +2,7 @@
 
 namespace Assignment
 {
-	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end)
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList,  size_t start, size_t end, std::unordered_map<std::string, Mesh> const& loadedMeshMap)
 	{
 		//maybe can just store pointer to the positions? that way there will be no need allocate extra memory
 		std::vector<glm::vec3> positions;
@@ -11,7 +11,7 @@ namespace Assignment
 		for (size_t i = start; i <= end; ++i)
 		{
 			glm::mat4 modelMat = calculateModel(objectList[i].transform);
-			for (auto const& localPos : objectList[i].objectMesh.meshVertices.positions)
+			for (auto const& localPos : loadedMeshMap.at(objectList[i].meshID).meshVertices.positions)
 			{
 				glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
 				positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
@@ -22,9 +22,9 @@ namespace Assignment
 		return positions;
 	}
 
-	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList)
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, std::unordered_map<std::string, Mesh> const& loadedMeshMap)
 	{
-		return GetObjectPositions(objectList, 0, objectList.size() - 1);
+		return GetObjectPositions(objectList, 0, objectList.size() - 1, loadedMeshMap);
 	}
 
 
