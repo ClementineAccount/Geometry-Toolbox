@@ -2,7 +2,7 @@
 
 #include "Assignment.h"
 #include "mesh.h"
-
+#include "BoundingVolume.h"
 
 namespace Assignment
 {
@@ -20,7 +20,11 @@ namespace Assignment
 		glm::vec3 color; 
 
 		//To Do: Add the bounding volume
+		BV::BoundingVolume bv;
 	};
+
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end);
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList);
 
 	glm::mat4 calculateModel(Transform trans);
 }

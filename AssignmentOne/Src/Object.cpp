@@ -2,6 +2,32 @@
 
 namespace Assignment
 {
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end)
+	{
+		//maybe can just store pointer to the positions? that way there will be no need allocate extra memory
+		std::vector<glm::vec3> positions;
+
+		//The caller will have to pass in (size - 1) if they wish to go until the end
+		for (size_t i = start; i <= end; ++i)
+		{
+			glm::mat4 modelMat = calculateModel(objectList[i].transform);
+			for (auto const& localPos : objectList[i].objectMesh.meshVertices.positions)
+			{
+				glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
+				positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
+			}
+
+		}
+
+		return positions;
+	}
+
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList)
+	{
+		return GetObjectPositions(objectList, 0, objectList.size() - 1);
+	}
+
+
 	glm::mat4 calculateModel(Transform currModel)
 	{
 		auto makePivotVector = [](Transform const& model)

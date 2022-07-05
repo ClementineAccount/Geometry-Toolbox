@@ -1821,6 +1821,7 @@ namespace Assignment
 		
 		class ModelLoadScene : public BaseScene
 		{
+		protected:
 			BV::AABB aabbAll;
 		public:
 
@@ -1837,7 +1838,7 @@ namespace Assignment
 
 
 				LoadSceneLocal();
-				std::vector<glm::vec3> v = BV::GetObjectPositions(objectVector);
+				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
 				BV::CalculateAABB(v, aabbAll);
 
 				aabbAll.meshID = MeshNames::cube;
@@ -1865,6 +1866,38 @@ namespace Assignment
 			}
 		};
 
+		class SplitPlaneScene : public ModelLoadScene
+		{
+		public:
+			void LoadSceneLocal() override
+			{
+				LoadScene(objectVector, "Scenes/CubeTest.txt");
+			}
+
+			void Init() override
+			{
+				currCamera.pitch = -20.0f;
+				currCamera.yaw = -152.0f;
+				initCamera();
+
+				LoadSceneLocal();
+				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
+				BV::CalculateAABB(v, aabbAll);
+				aabbAll.meshID = MeshNames::cube;
+
+				std::vector<Object*> objList;
+				
+				for (auto& obj : objectVector)
+				{
+					Object* ptr = &obj;
+					objList.push_back(ptr);
+				}
+
+				BV::SplitObjectRegions(objList, BV::SplitPointMean(objList), BV::SplitPlaneAxis());
+			}
+
+		};
+
 		class CubeLoadScene : public ModelLoadScene
 		{
 			void LoadSceneLocal() override
@@ -1872,6 +1905,7 @@ namespace Assignment
 				LoadScene(objectVector, "Scenes/CubeTest.txt");
 			}
 		};
+
 
 		class BunnyLoadScene : public ModelLoadScene
 		{
@@ -3442,6 +3476,7 @@ namespace Assignment
 		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
 		ScenetoFunction<BunnyLoadScene>("Bunny Scene");
 		ScenetoFunction<StarWarsLoadScene>("Star Wars 1");
+		ScenetoFunction<SplitPlaneScene>("Split Plane Test");
 
 	}
 }

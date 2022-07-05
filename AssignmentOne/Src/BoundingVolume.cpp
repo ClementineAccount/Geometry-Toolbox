@@ -2,36 +2,11 @@
 #include "Object.h"
 
 #include <algorithm>
-
+#include <numeric>
 namespace Assignment
 {
 	namespace BV
 	{
-		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end)
-		{
-			//maybe can just store pointer to the positions? that way there will be no need allocate extra memory
-			std::vector<glm::vec3> positions;
-
-			//The caller will have to pass in (size - 1) if they wish to go until the end
-			for (size_t i = start; i <= end; ++i)
-			{
-				glm::mat4 modelMat = calculateModel(objectList[i].transform);
-				for (auto const& localPos : objectList[i].objectMesh.meshVertices.positions)
-				{
-					glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
-					positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
-				}
-
-			}
-
-			return positions;
-		}
-
-		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList)
-		{
-			return GetObjectPositions(objectList, 0, objectList.size() - 1);
-		}
-
 		void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef)
 		{
 			auto setPos = [&](int glmOffset) {
@@ -74,6 +49,52 @@ namespace Assignment
 			model.scale = scale;
 		}
 
+		glm::vec3 SplitPointMean(std::vector<Object*> const& objList)
+		{
+			std::vector<glm::vec3> centerList;
+			for (auto const& obj : objList)
+			{
+				centerList.push_back(obj->bv.getCenter());
+			}
 
+			glm::vec3 centerPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+			for (glm::vec3 const& point : centerList)
+				centerPoint += point;
+			centerPoint /= centerList.size();
+
+			return centerPoint;
+		}
+
+		glm::vec3 SplitPlaneAxis(glm::vec3 splitAxisNormal)
+		{
+			return splitAxisNormal;
+		}
+
+		void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneNormal)
+		{
+			auto positiveHalfSpace = [&](glm::vec3 point) {
+				glm::vec3 dir = point - splitPlanePoint;
+				return glm::dot(dir, splitPlaneNormal) > 0.0f;
+			};
+
+			for (auto const& obj : objList.allObjects)
+			{
+				if (positiveHalfSpace(obj->bv.getCenter()))
+				{
+					objList.positiveObjects.push_back(obj);
+				}
+				else
+				{
+					objList.negativeObjects.push_back(obj);
+				}
+			}
+		}
+
+		void SplitObjectRegions(std::vector<Object*>& objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir)
+		{
+			objectSplitList obsl;
+			obsl.allObjects = objList;
+			SplitObjectRegions(obsl, splitPlanePoint, splitPlaneDir);
+		}
 	}
 }

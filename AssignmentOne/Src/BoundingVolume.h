@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "Transform.h"
 
@@ -22,6 +23,8 @@ namespace Assignment
 
 			bool isActive = true;
 			bool isRendering = true;
+
+			virtual glm::vec3 getCenter() const { return model.pos; };
 		};
 
 		class AABB : public BoundingVolume
@@ -31,19 +34,45 @@ namespace Assignment
 			glm::vec3 centerPos;
 			glm::vec3 scale; //Allows calculation of half extents
 
-
 			glm::vec3 minPoint;
 			glm::vec3 maxPoint;
 
 			//Updates the collision points and the model
 			void Update();
+
+			glm::vec3 getCenter() const override { return centerPos; };
 		};
 
-
-		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end);
-		std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList);
-
 		void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
+
+
+		struct objectSplitList
+		{
+			std::vector<Object*> allObjects;
+
+			//Pointers to which objects are in the positive/negative half planes
+			std::vector<Object*> positiveObjects;
+			std::vector<Object*> negativeObjects;
+		};
+
+		//struct axisSplitHeuristic
+		//{
+		//	glm::vec3 splitAxis = worldRight;
+		//	float axisOffset = 1.0f;
+		//	float numAttempts = 10;
+		//};
+
+
+	    //Why is this a function? Because it allows passing this into SplitObjectRegions as that takes in functions
+		glm::vec3 SplitPlaneAxis(glm::vec3 splitAxis = worldRight);
+
+		glm::vec3 SplitPointMean(std::vector<Object*> const& objList);
+
+		//void SplitObjectRegionsAxis(objectSplitList objList, axisSplitHeuristic heuristic);
+
+		//Split the object into the positive and negative half planes with the split func as the herustic chosen
+		void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
+		void SplitObjectRegions(std::vector<Object*>& objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
 	}
 }
 
