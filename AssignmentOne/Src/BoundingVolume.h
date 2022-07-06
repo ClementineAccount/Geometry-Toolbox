@@ -14,6 +14,8 @@ namespace Assignment
 
 	namespace BV
 	{
+		//To Do: Use enum to filter the expected BoundingVolume type
+
 		//base class interface (prototype similar to struct atm)
 		class BoundingVolume
 		{
@@ -26,7 +28,15 @@ namespace Assignment
 
 			virtual glm::vec3 getCenter() const { return model.pos; };
 
-			std::vector<Object*> objectList;
+			//Iterates through the objectList to update the BV
+			virtual void UpdateBV() = 0;
+
+			void AddObject(Object const* obj);
+
+		protected:
+
+			//List of objects that inside this bounding volume, if any
+			std::vector<Object const*> objectList;
 		};
 
 		class AABB : public BoundingVolume
@@ -41,21 +51,28 @@ namespace Assignment
 
 			//Updates the collision points and the model
 			void Update();
+			void UpdateBV() override;
+
+			void CalculateAABB(std::vector<glm::vec3>& positions);
 
 			glm::vec3 getCenter() const override { return centerPos; };
 		};
 
-		void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
 
 
-		struct objectSplitList
-		{
-			std::vector<Object*> allObjects;
+		//void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
 
-			//Pointers to which objects are in the positive/negative half planes
-			std::vector<Object*> positiveObjects;
-			std::vector<Object*> negativeObjects;
-		};
+
+		//glm::vec3 GetCenterObject(Object const& obj);
+
+		//struct objectSplitList
+		//{
+		//	std::vector<Object*> allObjects;
+
+		//	//Pointers to which objects are in the positive/negative half planes
+		//	std::vector<Object*> positiveObjects;
+		//	std::vector<Object*> negativeObjects;
+		//};
 
 		//struct axisSplitHeuristic
 		//{
@@ -65,16 +82,15 @@ namespace Assignment
 		//};
 
 
-	    //Why is this a function? Because it allows passing this into SplitObjectRegions as that takes in functions
-		glm::vec3 SplitPlaneAxis(glm::vec3 splitAxis = worldRight);
+	 //   //Why is this a function? Because it allows passing this into SplitObjectRegions as that takes in functions
+		//glm::vec3 SplitPlaneAxis(glm::vec3 splitAxis = worldRight);
+		//glm::vec3 SplitPointMean(std::vector<Object*> const& objList);
 
-		glm::vec3 SplitPointMean(std::vector<Object*> const& objList);
+		////void SplitObjectRegionsAxis(objectSplitList objList, axisSplitHeuristic heuristic);
 
-		//void SplitObjectRegionsAxis(objectSplitList objList, axisSplitHeuristic heuristic);
-
-		//Split the object into the positive and negative half planes with the split func as the herustic chosen
-		void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
-		void SplitObjectRegions(std::vector<Object*>& objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
+		////Split the object into the positive and negative half planes with the split func as the herustic chosen
+		//void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
+		//void SplitObjectRegions(std::vector<Object*>& objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneDir);
 	}
 }
 

@@ -2,6 +2,21 @@
 
 namespace Assignment
 {
+
+	std::vector<glm::vec3> GetObjectPositions(Object const& obj)
+	{
+		std::vector<glm::vec3> positions;
+
+		glm::mat4 modelMat = calculateModel(obj.transform);
+		for (auto const& localPos : obj.objectMesh->meshVertices.positions)
+		{
+			glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
+			positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
+		}
+
+		return positions;
+	}
+
 	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end)
 	{
 		//maybe can just store pointer to the positions? that way there will be no need allocate extra memory
@@ -10,13 +25,8 @@ namespace Assignment
 		//The caller will have to pass in (size - 1) if they wish to go until the end
 		for (size_t i = start; i <= end; ++i)
 		{
-			glm::mat4 modelMat = calculateModel(objectList[i].transform);
-			for (auto const& localPos : objectList[i].objectMesh->meshVertices.positions)
-			{
-				glm::vec4 modelPos = modelMat * glm::vec4(localPos.x, localPos.y, localPos.z, 1.0f);
-				positions.push_back(glm::vec3(modelPos.x, modelPos.y, modelPos.z));
-			}
-
+			std::vector<glm::vec3> objPositions = GetObjectPositions(objectList[i]);
+			positions.insert(positions.end(), objPositions.begin(), objPositions.end());
 		}
 
 		return positions;

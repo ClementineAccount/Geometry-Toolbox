@@ -1661,8 +1661,7 @@ namespace Assignment
 				transformList.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
 
 				BV::AABB aabb;
-
-				BV::CalculateAABB(transformList, aabb);
+				aabb.CalculateAABB(transformList);
 
 				glm::vec3 expectedMaxPoint = glm::vec3(1.0f, 1.0f, 1.0f);
 				assert(expectedMaxPoint == aabb.maxPoint);
@@ -1827,8 +1826,6 @@ namespace Assignment
 				drawList.clear();
 			}
 		};
-
-
 		
 		class ModelLoadScene : public BaseScene
 		{
@@ -1842,23 +1839,23 @@ namespace Assignment
 			}
 
 			void Init() override {
+				objectVector.clear();
 
 				currCamera.pitch = -20.0f;
 				currCamera.yaw = -152.0f;
 				initCamera();
 
-
 				LoadSceneLocal();
-				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
-				BV::CalculateAABB(v, aabbAll);
+				std::for_each(objectVector.begin(), objectVector.end(), [&](Object const& obj) {
+					aabbAll.AddObject(&obj);
+					});
 
+				aabbAll.UpdateBV();
 				aabbAll.meshID = MeshNames::cube;
-
 			}
 
 			void Update() override {
 				aabbAll.Update();
-				
 				currCamera.updateCamera(applicationPtr);
 			}
 
@@ -1877,38 +1874,6 @@ namespace Assignment
 			}
 		};
 
-		class SplitPlaneScene : public ModelLoadScene
-		{
-		public:
-			void LoadSceneLocal() override
-			{
-				LoadScene(objectVector, "Scenes/CubeTest.txt");
-			}
-
-			void Init() override
-			{
-				currCamera.pitch = -20.0f;
-				currCamera.yaw = -152.0f;
-				initCamera();
-
-				LoadSceneLocal();
-				std::vector<glm::vec3> v = GetObjectPositions(objectVector);
-				BV::CalculateAABB(v, aabbAll);
-				aabbAll.meshID = MeshNames::cube;
-
-				std::vector<Object*> objList;
-				
-				for (auto& obj : objectVector)
-				{
-					Object* ptr = &obj;
-					objList.push_back(ptr);
-				}
-
-				BV::SplitObjectRegions(objList, BV::SplitPointMean(objList), BV::SplitPlaneAxis());
-			}
-
-		};
-
 		class CubeLoadScene : public ModelLoadScene
 		{
 			void LoadSceneLocal() override
@@ -1916,7 +1881,6 @@ namespace Assignment
 				LoadScene(objectVector, "Scenes/CubeTest.txt");
 			}
 		};
-
 
 		class BunnyLoadScene : public ModelLoadScene
 		{
@@ -3487,7 +3451,6 @@ namespace Assignment
 		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
 		ScenetoFunction<BunnyLoadScene>("Bunny Scene");
 		ScenetoFunction<StarWarsLoadScene>("Star Wars 1");
-		ScenetoFunction<SplitPlaneScene>("Split Plane Test");
 
 	}
 }
