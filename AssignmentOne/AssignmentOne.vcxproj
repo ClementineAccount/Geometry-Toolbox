@@ -165,6 +165,7 @@
     <ClInclude Include="..\dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="Src\Assignment.h" />
     <ClInclude Include="Src\BoundingVolume.h" />
+    <ClInclude Include="Src\BoundingVolumeTree.hpp" />
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />

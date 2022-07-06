@@ -21,7 +21,7 @@ namespace Assignment
 		model.pos = centerPos;
 	}
 
-	AABB::AABB(glm::vec3 setPos, glm::vec3 setScale)
+	AABBCol::AABBCol(glm::vec3 setPos, glm::vec3 setScale)
 	{
 		centerPos = setPos;
 		scale = setScale;
@@ -31,7 +31,7 @@ namespace Assignment
 		CalculatePoints();
 	}
 
-	void AABB::CalculatePoints()
+	void AABBCol::CalculatePoints()
 	{
 		maxPoint = centerPos;
 
@@ -46,7 +46,7 @@ namespace Assignment
 		minPoint.z -= scale.z * 0.5f;
 	}
 
-	void AABB::UpdateModel()
+	void AABBCol::UpdateModel()
 	{
 		model.scale = scale;
 		model.pos = centerPos;
@@ -69,7 +69,7 @@ namespace Assignment
 		return radiusSquared > distanceSquared;
 	}
 
-	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb)
+	bool checkPointOnAABB(glm::vec3 const& point, AABBCol const& aabb)
 	{
 		//Six boolean checks
 
@@ -82,7 +82,7 @@ namespace Assignment
 		return true;
 	}
 
-	bool checkAABBonAABB(AABB const& lhs, AABB const& rhs)
+	bool checkAABBonAABB(AABBCol const& lhs, AABBCol const& rhs)
 	{
 		if (lhs.maxPoint.x < rhs.minPoint.x || rhs.maxPoint.x < lhs.minPoint.x ||
 			lhs.maxPoint.y < rhs.minPoint.y || rhs.maxPoint.y < lhs.minPoint.y ||
@@ -92,13 +92,13 @@ namespace Assignment
 		return true;
 	}
 
-	bool checkAABBOnSphere(AABB const& aabb, SphereCollider const& sphere)
+	bool checkAABBOnSphere(AABBCol const& aabb, SphereCollider const& sphere)
 	{
 		//Trivial acceptance test if both are at origin
 		//if (aabb.centerPos == sphere.centerPos)
 		//	return true;
 
-		//Get the point on the sphere closest to the AABB
+		//Get the point on the sphere closest to the AABBCol
 		glm::vec3 dir_to_center_AABB = glm::normalize(aabb.centerPos - sphere.centerPos);
 		glm::vec3 nearestPointOnSphere = sphere.centerPos + (sphere.radius * dir_to_center_AABB);
 
@@ -111,7 +111,7 @@ namespace Assignment
 		return glm::dot(vectorToPoint, plane.outwardNormal);
 	}
 
-	bool checkPlaneOnAABB(Plane const& plane, AABB const& aabb)
+	bool checkPlaneOnAABB(Plane const& plane, AABBCol const& aabb)
 	{
 		//Check if the dot products have opposite signs, and hence the plane is in the middle of the box somewhere
 		float minPointDistance = distanceFromPlane(aabb.minPoint, plane);
@@ -326,7 +326,7 @@ namespace Assignment
 		return true;
 	}
 
-	bool checkRayOnAABB(Ray const& ray, AABB const& AABB)
+	bool checkRayOnAABB(Ray const& ray, AABBCol const& AABB)
 	{
 		//First, check the ray start and end points in the box itself
 		if (checkPointOnAABB(ray.startPoint, AABB))
@@ -349,22 +349,22 @@ namespace Assignment
 		return false;
 
 
-		//Assumption: The AABB is not rotated (...it won't be an AABB then)
-		//Assumption. When facing an AABB. The min point is on the bottom left. Max point is on the top right
+		//Assumption: The AABBCol is not rotated (...it won't be an AABBCol then)
+		//Assumption. When facing an AABBCol. The min point is on the bottom left. Max point is on the top right
 		//Plane forwardPlane;
 		//forwardPlane.outwardNormal = worldForward;
-		//forwardPlane.pointOnPlane = AABB.minPoint;
+		//forwardPlane.pointOnPlane = AABBCol.minPoint;
 
 		//if (!checkRayOnPlane(ray, forwardPlane))
 		//	return false;
 	
 		//float tz_max = getIntersectionTimeRayOnPlane(ray, forwardPlane);
 
-		////The ray hits the AABB if the intersection of all axis tvalues is non-empty - Lecture Notes
+		////The ray hits the AABBCol if the intersection of all axis tvalues is non-empty - Lecture Notes
 
 		//Plane backPlane;
 		//backPlane.outwardNormal = -worldForward;
-		//backPlane.pointOnPlane = AABB.maxPoint;
+		//backPlane.pointOnPlane = AABBCol.maxPoint;
 
 		//if (!checkRayOnPlane(ray, backPlane))
 		//	return false;
@@ -373,7 +373,7 @@ namespace Assignment
 
 		//Plane leftPlane;
 		//leftPlane.outwardNormal = -worldRight;
-		//leftPlane.pointOnPlane = AABB.minPoint;
+		//leftPlane.pointOnPlane = AABBCol.minPoint;
 
 
 		//if (!checkRayOnPlane(ray, leftPlane))
@@ -383,7 +383,7 @@ namespace Assignment
 
 		//Plane rightPlane;
 		//rightPlane.outwardNormal = worldRight;
-		//rightPlane.pointOnPlane = AABB.maxPoint;
+		//rightPlane.pointOnPlane = AABBCol.maxPoint;
 
 
 		//if (!checkRayOnPlane(ray, rightPlane))
@@ -393,7 +393,7 @@ namespace Assignment
 
 		//Plane upPlane;
 		//upPlane.outwardNormal = worldUp;
-		//upPlane.pointOnPlane = AABB.maxPoint;
+		//upPlane.pointOnPlane = AABBCol.maxPoint;
 
 
 		//if (!checkRayOnPlane(ray, upPlane))
@@ -403,7 +403,7 @@ namespace Assignment
 
 		//Plane downPlane;
 		//downPlane.outwardNormal = -worldUp;
-		//downPlane.pointOnPlane = AABB.minPoint;
+		//downPlane.pointOnPlane = AABBCol.minPoint;
 
 		//if (!checkRayOnPlane(ray, downPlane))
 		//	return false;
@@ -426,12 +426,12 @@ namespace Assignment
 		if (lhs.colliderType == Collider::AABB)
 		{
 			if (rhs.colliderType == Collider::AABB)
-				if (checkAABBonAABB(static_cast<AABB const&>(lhs), static_cast<AABB const&>(rhs)))
+				if (checkAABBonAABB(static_cast<AABBCol const&>(lhs), static_cast<AABBCol const&>(rhs)))
 					return true;
 
 
 			if (rhs.colliderType == Collider::SPHERE)
-				if (checkAABBOnSphere(static_cast<AABB const&>(lhs), static_cast<SphereCollider const&>(rhs)))
+				if (checkAABBOnSphere(static_cast<AABBCol const&>(lhs), static_cast<SphereCollider const&>(rhs)))
 					return true;
 		}
 

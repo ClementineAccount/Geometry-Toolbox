@@ -2,9 +2,13 @@
 #include "Transform.h"
 #include "CollisionHelper.h"
 #include "Camera.h"
-#include "BoundingVolume.h"
-#include "Object.h"
 
+
+#include "Object.h"
+#include "BoundingVolume.h"
+
+
+#include "BoundingVolumeTree.hpp"
 #include "Tests.h"
 
 #include <fstream>
@@ -1153,7 +1157,7 @@ namespace Assignment
 		}
 	}
 
-	void RenderAABBUI(AABB& aabb, std::string const& aabbName)
+	void RenderAABBUI(AABBCol& aabb, std::string const& aabbName)
 	{
 		if (ImGui::CollapsingHeader(("Settings for " + aabbName).c_str()))
 		{
@@ -1439,7 +1443,7 @@ namespace Assignment
 			{
 				glm::vec3 point = glm::vec3(1.0f, 0.0f, 0.0f);
 
-				AABB aabb;
+				AABBCol aabb;
 				aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
@@ -1451,7 +1455,7 @@ namespace Assignment
 			{
 				glm::vec3 point = glm::vec3(1.0f, 1000.0f, 0.0f);
 
-				AABB aabb;
+				AABBCol aabb;
 				aabb.centerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
@@ -1466,7 +1470,7 @@ namespace Assignment
 				sphere.radius = 1.0f;
 
 				//Should collide
-				AABB aabb;
+				AABBCol aabb;
 				aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
 				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
@@ -1477,13 +1481,13 @@ namespace Assignment
 			}
 			void TestAABBvsAABB()
 			{
-				AABB aabb;
+				AABBCol aabb;
 				aabb.centerPos = glm::vec3(1.0f, 2.0f, 1.0f);
 				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
 				aabb.CalculatePoints();
 
-				AABB aabb2;
+				AABBCol aabb2;
 				aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
 				aabb2.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
@@ -1493,13 +1497,13 @@ namespace Assignment
 			}
 			void TestAABBvsAABB2()
 			{
-				AABB aabb;
+				AABBCol aabb;
 				aabb.centerPos = glm::vec3(1.0f, 100.0f, 1.0f);
 				aabb.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 
 				aabb.CalculatePoints();
 
-				AABB aabb2;
+				AABBCol aabb2;
 				aabb2.centerPos = glm::vec3(0.0f, 0.0f, 1.0f);
 				aabb2.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -1836,6 +1840,11 @@ namespace Assignment
 				DrawAll(drawList, currCamera);
 				drawList.clear();
 			}
+
+			virtual void LoadSceneLocal()
+			{
+				LoadScene(objectVector, "Scenes/CubeTest.txt");
+			}
 		};
 		
 		class ModelLoadScene : public BaseScene
@@ -1843,11 +1852,6 @@ namespace Assignment
 		protected:
 			BV::AABB aabbAll;
 		public:
-
-			virtual void LoadSceneLocal()
-			{
-				LoadScene(objectVector, "Scenes/CubeTest.txt");
-			}
 
 			void Init() override {
 
@@ -1872,7 +1876,7 @@ namespace Assignment
 				RenderAxis();
 				RenderObjects();
 
-				//Draw the AABB in wireframe mode
+				//Draw the AABBCol in wireframe mode
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -1909,6 +1913,46 @@ namespace Assignment
 			{
 				LoadScene(objectVector, "Scenes/StarWars.txt");
 			}
+		};
+
+
+		class TopDownScene : public BaseScene {
+		public:
+
+			BV::BoundingVolumeTree<BV::AABB> BVHTree;
+
+			void Init() override {
+
+				currCamera.pitch = -20.0f;
+				currCamera.yaw = -152.0f;
+				initCamera();
+				LoadSceneLocal();
+				//std::vector<glm::vec3> pos = GetObjectPositions(objectVector);
+
+				BVHTree.CreateTopDown(objectVector);
+			}
+
+			void Update() override {
+				currCamera.updateCamera(applicationPtr);
+			}
+
+			void Render() override
+			{
+				RenderAxis();
+				RenderObjects();
+
+				//Draw the AABBCol in wireframe mode
+				SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
+
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				DrawAll(drawList, currCamera);
+				drawList.clear();
+			}
+
+			void Clear() override {
+				objectVector.clear();
+			}
+
 		};
 
 		class AssignmentTwoScene : public BaseScene
@@ -2004,7 +2048,7 @@ namespace Assignment
 		namespace AABBVsSphere
 		{
 			SphereCollider sphere;
-			AABB box;
+			AABBCol box;
 			Kinematics boxKinematics;
 
 			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -10.0f);
@@ -2092,7 +2136,7 @@ namespace Assignment
 		{
 			//Same but I make the Sphere move instead I guess
 			SphereCollider sphere;
-			AABB box;
+			AABBCol box;
 			Kinematics sphereKinematics;
 
 			glm::vec3 boxStartPos = worldOrigin;
@@ -2264,8 +2308,8 @@ namespace Assignment
 
 		namespace AABBvsAABB
 		{
-			AABB box;
-			AABB boxTwo;
+			AABBCol box;
+			AABBCol boxTwo;
 			Kinematics boxKinematics;
 
 			glm::vec3 boxStartPos = glm::vec3(0.0f, 1.0f, -15.0f);
@@ -2432,7 +2476,7 @@ namespace Assignment
 
 		namespace PointVsAABB
 		{
-			AABB box;
+			AABBCol box;
 			Kinematics boxKinematics;
 
 			//Can use a sphere to represent it
@@ -2749,7 +2793,7 @@ namespace Assignment
 		namespace PlaneVsAABB
 		{
 			Plane plane;
-			AABB box;
+			AABBCol box;
 
 			Kinematics boxPhysics;
 			Kinematics planePhysics;
@@ -3045,7 +3089,7 @@ namespace Assignment
 		namespace RayVsAABB
 		{
 			Ray ray;
-			AABB box;
+			AABBCol box;
 
 			Kinematics rayRotations;
 			Kinematics boxKinematics;
@@ -3228,7 +3272,7 @@ namespace Assignment
 
 			float currDistanceFromPlane = -1.11f;
 
-			AABB box;
+			AABBCol box;
 			Kinematics boxKinematics;
 
 			//Can use a sphere to represent it
@@ -3278,7 +3322,7 @@ namespace Assignment
 
 			void RenderSettings()
 			{
-				ImGui::Begin("Plane vs AABB Settings");
+				ImGui::Begin("Plane vs AABBCol Settings");
 				ImGui::Spacing();
 
 				ImGui::Text(("Point nearest distance from plane: " + std::to_string(currDistanceFromPlane)).c_str());
@@ -3463,6 +3507,7 @@ namespace Assignment
 		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
 		ScenetoFunction<BunnyLoadScene>("Bunny Scene");
 		ScenetoFunction<StarWarsLoadScene>("Star Wars 1");
+		ScenetoFunction<TopDownScene>("Top Down Bounding Volume Test");
 
 	}
 }

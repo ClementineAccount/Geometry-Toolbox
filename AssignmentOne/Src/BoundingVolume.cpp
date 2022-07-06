@@ -58,7 +58,7 @@ namespace Assignment
 		//Update it based off the current position
 		void AABB::UpdateBV()
 		{
-
+			meshID = MeshNames::cube;
 			model.pos = centerPos;
 			model.scale = scale;
 		}
@@ -121,21 +121,6 @@ namespace Assignment
 				{ return lhs.distance < rhs.distance;});
 
 			return distanceSet.back().distanceID;
-		}
-
-
-		void BoundingVolumeTree::CreateTopDown(std::vector<Object>const& objListGlobal)
-		{
-			for (Object const& obj : objListGlobal)
-				objList.push_back(&obj);
-
-			treeRoot = std::make_unique<NodeBVH>();
-			TopDownBV(treeRoot, objList);
-		}
-
-		void BoundingVolumeTree::TopDownBV(std::unique_ptr<NodeBVH> &localRoot, std::vector<Object const*>& localObjectList)
-		{
-
 		}
 
 

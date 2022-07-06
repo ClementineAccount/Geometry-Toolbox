@@ -4973,7 +4973,7 @@ static void FindHoveredWindow()
         if (window->Flags & ImGuiWindowFlags_NoMouseInputs)
             continue;
 
-        // Using the clipped AABB, a child window will typically be clipped by its parent (not always)
+        // Using the clipped AABBCol, a child window will typically be clipped by its parent (not always)
         ImRect bb(window->OuterRectClipped);
         if (window->Flags & (ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
             bb.Expand(padding_regular);
@@ -11025,7 +11025,7 @@ bool ImGui::BeginDragDropSource(ImGuiDragDropFlags flags)
             }
 
             // Magic fallback to handle items with no assigned ID, e.g. Text(), Image()
-            // We build a throwaway ID based on current ID stack + relative AABB of items in window.
+            // We build a throwaway ID based on current ID stack + relative AABBCol of items in window.
             // THE IDENTIFIER WON'T SURVIVE ANY REPOSITIONING/RESIZINGG OF THE WIDGET, so if your widget moves your dragging operation will be canceled.
             // We don't need to maintain/call ClearActiveID() as releasing the button will early out this function and trigger !ActiveIdIsAlive.
             // Rely on keeping other window->LastItemXXX fields intact.

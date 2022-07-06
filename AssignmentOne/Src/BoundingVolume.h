@@ -9,7 +9,6 @@
 
 namespace Assignment
 {
-
 	namespace BV
 	{
 		struct axisOffsets
@@ -27,7 +26,7 @@ namespace Assignment
 		class BoundingVolume
 		{
 		public:
-			Transform model; //storing the transform within the AABB
+			Transform model; //storing the transform within the AABBCol
 			std::string meshID; //To Do: You could change this to use uint_32 instead eventually
 
 			bool isActive = true;
@@ -65,37 +64,14 @@ namespace Assignment
 			glm::vec3 getCenter() const override { return centerPos; };
 		};
 
-		//For BVH trees
-		struct NodeBVH
-		{
-			std::unique_ptr<NodeBVH> left;
-			std::unique_ptr<NodeBVH> right;
-
-			std::unique_ptr<BoundingVolume> boundingVolume;			
-		};
 
 		int largestSpreadAxis(std::vector<glm::vec3> const& positions);
 
 		//glm::vec3 calculateCenterMean(splitParameters bvList);
 		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions);
 
-		//BVH
-		class BoundingVolumeTree
-		{
-		public:
-			void CreateTopDown(std::vector<Object>const& objListGlobal);
-			static void TopDownBV(std::unique_ptr<NodeBVH>& localRoot, std::vector<Object const*>& localObjectList);
 
-		private:
-
-			//Global root
-			std::unique_ptr<NodeBVH> treeRoot;
-
-
-			std::vector<Object const*> objList;
-		};
-
-		//void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
+		//void CalculateAABB(std::vector<glm::vec3>& positions, AABBCol& aabbRef);
 
 
 		//glm::vec3 GetCenterObject(Object const& obj);

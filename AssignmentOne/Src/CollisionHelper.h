@@ -19,7 +19,7 @@ namespace Assignment
 	public:
 		Collider colliderType;
 
-		Transform model; //storing the transform within the AABB
+		Transform model; //storing the transform within the AABBCol
 		std::string meshID; //To Do: You could change this to use uint_32 instead eventually
 		bool isActive = true;
 	};
@@ -30,9 +30,9 @@ namespace Assignment
 
 
 	//Naive implementation using min and max first (update to use half extents if have time)
-	struct AABB : public CollisionObject
+	struct AABBCol : public CollisionObject
 	{
-		AABB(glm::vec3 setPos = defaultPosAABB, glm::vec3 setScale = defaultScaleAABB);
+		AABBCol(glm::vec3 setPos = defaultPosAABB, glm::vec3 setScale = defaultScaleAABB);
 
 		glm::vec3 centerPos;
 		glm::vec3 scale; //Allows calculation of half extents
@@ -114,13 +114,13 @@ namespace Assignment
 
 	bool collisionCheck(CollisionObject const& lhs, CollisionObject const& rhs, bool isSwap = false);
 
-	bool checkPointOnAABB(glm::vec3 const& point, AABB const& aabb);
+	bool checkPointOnAABB(glm::vec3 const& point, AABBCol const& aabb);
 
 	bool checkPointOnSphere(glm::vec3 const& point, SphereCollider const& sphere);
 
 	bool checkPlaneOnSphere(Plane const& plane, SphereCollider const& sphere);
 
-	bool checkPlaneOnAABB(Plane const& plane, AABB const& aabb);
+	bool checkPlaneOnAABB(Plane const& plane, AABBCol const& aabb);
 
 	bool checkRayOnPlane(Ray const& ray, Plane const& plane);
 
@@ -129,7 +129,7 @@ namespace Assignment
 	void getIntersectionTimesRayOnSphere(Ray const& ray, Plane const& plane, float& intersectionTimeOne, 
 		float& intersectionTimeTwo);
 
-	bool checkRayOnAABB(Ray const& ray, AABB const& AABB);
+	bool checkRayOnAABB(Ray const& ray, AABBCol const& AABB);
 
 	bool checkRayOnPlaneGoingOutwards(Ray const& ray, Plane const& plane);
 
