@@ -1,7 +1,10 @@
 #pragma once 
 
-
-namespace AssignmentTwoTests
+namespace Assignment
 {
-	void TestAll();
+	namespace Tests
+	{
+		void TestAll();
+	}
 }
+

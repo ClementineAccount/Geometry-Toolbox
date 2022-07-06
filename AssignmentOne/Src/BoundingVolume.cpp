@@ -112,13 +112,13 @@ namespace Assignment
 			//	positions.insert(positions.end(), pos.begin(), pos.end());
 			//}
 
-
-
+			std::vector<glm::vec3> positionsTemp = positions;
+			
 			auto setPos = [&](int component, float& distance) {
-				std::sort(positions.begin(), positions.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
+				std::sort(positionsTemp.begin(), positionsTemp.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
 					return lhs[component] < rhs[component]; });
 
-				distance = positions[positions.size() - 1][component] - positions[0][component];
+				distance = positionsTemp[positions.size() - 1][component] - positionsTemp[0][component];
 			};
 
 			////The glm offsets for glm::vec3
@@ -133,7 +133,7 @@ namespace Assignment
 			};
 
 			std::vector<distanceIdentity> distanceSet;
-			distanceSet.reserve(3);
+			distanceSet.resize(3);
 
 			distanceSet[z].distanceID = z;
 			distanceSet[y].distanceID = y;
@@ -143,8 +143,8 @@ namespace Assignment
 			setPos(y, distanceSet[y].distance);
 			setPos(z, distanceSet[z].distance);
 
-			std::sort(distanceSet.begin(), distanceSet.end(), [&](distanceIdentity lhs, distanceIdentity rhs) {
-				return lhs.distance < rhs.distance;});
+			std::sort(distanceSet.begin(), distanceSet.end(), [&](distanceIdentity lhs, distanceIdentity rhs) 
+				{ return lhs.distance < rhs.distance;});
 
 			return distanceSet.back().distanceID;
 		}

@@ -17,8 +17,8 @@ namespace Assignment
 		struct axisOffsets
 		{
 			static const int x = 0;
-			static const int y = 0;
-			static const int z = 0;
+			static const int y = 1;
+			static const int z = 2;
 
 			static glm::vec3 axisToDirection(int component);
 		};

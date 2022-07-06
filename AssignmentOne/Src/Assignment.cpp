@@ -3,8 +3,9 @@
 #include "CollisionHelper.h"
 #include "Camera.h"
 #include "BoundingVolume.h"
-
 #include "Object.h"
+
+#include "Tests.h"
 
 #include <fstream>
 #include <functional>
@@ -1675,13 +1676,19 @@ namespace Assignment
 			{
 				TestAABBCalculation();
 			}
+
+
 		}
+
 		void RunAllTests()
 		{
 			//AssignmentOneTests::RunTests();
-			AssignmentTwoTests::RunTests();
+			//AssignmentTwoTests::RunTests();
+
+			TestAll();
 		}
 	}
+
 
 }
 
