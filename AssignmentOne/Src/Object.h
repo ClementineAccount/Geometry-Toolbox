@@ -22,6 +22,7 @@ namespace Assignment
 	};
 
 	std::vector<glm::vec3> GetObjectPositions(Object const& obj);
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object const*> const& objectList);
 	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end);
 	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList);
 

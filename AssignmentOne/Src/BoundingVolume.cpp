@@ -9,10 +9,6 @@ namespace Assignment
 	{
 		glm::vec3 axisOffsets::axisToDirection(int component)
 		{
-			//switch (component)
-			//{
-			//case (axisOffsets::x): return worldRight;
-			//}
 
 			if (component == axisOffsets::x)
 				return worldRight;
@@ -22,11 +18,6 @@ namespace Assignment
 
 			if (component == axisOffsets::z)
 				return worldForward;
-		}
-
-		void BoundingVolume::AddObject(Object const* obj)
-		{
-			objectList.push_back(obj);
 		}
 
 		void AABB::CalculateAABB(std::vector<glm::vec3>& positions)
@@ -62,26 +53,15 @@ namespace Assignment
 			setScale(z);
 		}
 
+		//Update it based off the current position
 		void AABB::UpdateBV()
 		{
-			std::vector<glm::vec3> positions;
-			std::for_each(objectList.begin(), objectList.end(), [&](Object const* obj) {
-				std::vector<glm::vec3> objPos = GetObjectPositions(*obj);
-				positions.insert(positions.end(), objPos.begin(), objPos.end());
-				});
-
-			CalculateAABB(positions);
-			Update();
-		}
-
-		//Update it based off the current position
-		void AABB::Update()
-		{
-			//Also runs the calculation algo
 
 			model.pos = centerPos;
 			model.scale = scale;
 		}
+
+
 
 		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions)
 		{
@@ -94,24 +74,16 @@ namespace Assignment
 			return centerMean;
 		}
 
-		glm::vec3 calculateCenterMean(splitParameters bvList)
+		glm::vec3 calculateCenterMean(BoundingVolume const* bv, size_t numBV)
 		{
 			std::vector<glm::vec3> centerPosList;
-			for (size_t i = 0; i < bvList.numBV; ++i)
-				centerPosList.push_back(bvList.bv[i].getCenter());
+			for (size_t i = 0; i < numBV; ++i)
+				centerPosList.push_back(bv[i].getCenter());
 			return calculatePositionMean(centerPosList);
 		}
 
 		int largestSpreadAxis(std::vector<glm::vec3> const& positions)
 		{
-			//std::vector<glm::vec3> positions;
-			//for (Object const* obj : bvToSplit.bv->objectList)
-			//{
-			//	std::vector<glm::vec3> pos;
-			//	pos = GetObjectPositions(*obj);
-			//	positions.insert(positions.end(), pos.begin(), pos.end());
-			//}
-
 			std::vector<glm::vec3> positionsTemp = positions;
 			
 			auto setPos = [&](int component, float& distance) {
@@ -149,42 +121,63 @@ namespace Assignment
 			return distanceSet.back().distanceID;
 		}
 
-		void BoundingVolumeTree::SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight)
-		{
-			//glm::vec3 centerMean = calculateCenterMean(bvToSplit);
-			//glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(bvToSplit));
-		}
 
 
 
-		////This could be a list of BVs instead?
-		//glm::vec3 SplitPointMean(std::vector<Object*> const& objList)
+
+		//void BoundingVolumeTree::SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight)
 		//{
-		//	std::vector<glm::vec3> centerList;
-		//	for (auto const& obj : objList)
+		//	glm::vec3 centerMean = calculateCenterMean(bvToSplit);
+
+
+		//	std::vector<Object const*> totalObjectList;
+		//	//for (size_t i = 0; i < bvToSplit.numBV; ++i)
+		//	//{
+		//	//	totalObjectList.insert(totalObjectList.begin(), bvToSplit.bv[i].objectList.begin(), bvToSplit.bv[i].objectList.end());
+		//	//}
+
+		//	glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(GetObjectPositions(totalObjectList)));
+
+		//	//The split plane for this example uses the centerMean as a point on the plane and the spreadAxis as the normal
+		//	glm::vec3 splitPoint = centerMean;
+		//	glm::vec3 planeNormal = spreadAxis;
+
+		//	for (Object const* obj : totalObjectList)
 		//	{
-		//		centerList.push_back(GetCenterObject(*obj));
+
+
 		//	}
-
-		//	glm::vec3 centerPoint = glm::vec3(0.0f, 0.0f, 0.0f);
-		//	for (glm::vec3 const& point : centerList)
-		//		centerPoint += point;
-		//	centerPoint /= centerList.size();
-
-		//	return centerPoint;
 		//}
 
-		//glm::vec3 SplitPlaneAxis(glm::vec3 splitAxisNormal)
-		//{
-		//	return splitAxisNormal;
-		//}
 
-		//void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneNormal)
-		//{
-		//	auto positiveHalfSpace = [&](glm::vec3 point) {
-		//		glm::vec3 dir = point - splitPlanePoint;
-		//		return glm::dot(dir, splitPlaneNormal) > 0.0f;
-		//	};
+		//////This could be a list of BVs instead?
+		////glm::vec3 SplitPointMean(std::vector<Object*> const& objList)
+		////{
+		////	std::vector<glm::vec3> centerList;
+		////	for (auto const& obj : objList)
+		////	{
+		////		centerList.push_back(GetCenterObject(*obj));
+		////	}
+
+		////	glm::vec3 centerPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+		////	for (glm::vec3 const& point : centerList)
+		////		centerPoint += point;
+		////	centerPoint /= centerList.size();
+
+		////	return centerPoint;
+		////}
+
+		////glm::vec3 SplitPlaneAxis(glm::vec3 splitAxisNormal)
+		////{
+		////	return splitAxisNormal;
+		////}
+
+		////void SplitObjectRegions(objectSplitList objList, glm::vec3 splitPlanePoint, glm::vec3 splitPlaneNormal)
+		////{
+		////	auto positiveHalfSpace = [&](glm::vec3 point) {
+		////		glm::vec3 dir = point - splitPlanePoint;
+		////		return glm::dot(dir, splitPlaneNormal) > 0.0f;
+		////	};
 
 		//	for (auto const& obj : objList.allObjects)
 		//	{

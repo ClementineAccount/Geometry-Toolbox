@@ -21,6 +21,7 @@ namespace Assignment
 			static const int z = 2;
 
 			static glm::vec3 axisToDirection(int component);
+			static glm::vec3 axisToDirectionNormal(int component);
 		};
 
 		//To Do: Use enum to filter the expected BoundingVolume type
@@ -39,13 +40,12 @@ namespace Assignment
 			//Iterates through the objectList to update the BV
 			virtual void UpdateBV() = 0;
 
-			void AddObject(Object const* obj);
+			//void AddObject(Object const* obj);
 
 			//List of objects that inside this bounding volume, if any
-			std::vector<Object const*> objectList;
+			//std::vector<Object const*> objectList;
 
 		protected:
-
 
 		};
 
@@ -60,7 +60,6 @@ namespace Assignment
 			glm::vec3 maxPoint;
 
 			//Updates the collision points and the model
-			void Update();
 			void UpdateBV() override;
 
 			void CalculateAABB(std::vector<glm::vec3>& positions);
@@ -68,29 +67,31 @@ namespace Assignment
 			glm::vec3 getCenter() const override { return centerPos; };
 		};
 
-
-		//Prototyping using -> split point of median of BV centers + split plane 
-
-		struct splitParameters
+		//For BVH trees
+		struct NodeBVH
 		{
-			BoundingVolume const* bv;
-			size_t numBV;
+			NodeBVH* left;
+			NodeBVH* right;
+
+			std::unique_ptr<BoundingVolume> boundingVolume;
+
+
+
+			
 		};
 
 		int largestSpreadAxis(std::vector<glm::vec3> const& positions);
 
-		glm::vec3 calculateCenterMean(splitParameters bvList);
+		//glm::vec3 calculateCenterMean(splitParameters bvList);
 		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions);
 
 		//BVH
 		struct BoundingVolumeTree
 		{
-			//All possible BVs in the scene (which can be created during the split process)
-			std::vector<BoundingVolume> bv;
+			void CreateBVH(std::vector<Object>const& objList);
+			static TopDownBV(NodeBVH** localRoot, std::vector<Object const*> localObjectList);
 
-			//(Median requires geometric median and will be done later)
-			//Prototyping first by Mean of BV Centers + split plane is minimize total volume
-			void SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight);
+			std::vector<Object const*> objList;
 		};
 
 		//void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);

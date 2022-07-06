@@ -37,6 +37,17 @@ namespace Assignment
 		return GetObjectPositions(objectList, 0, objectList.size() - 1);
 	}
 
+	std::vector<glm::vec3> GetObjectPositions(std::vector<Object const*> const& objectList)
+	{
+		std::vector<glm::vec3> pos;
+		for (Object const* obj : objectList)
+		{
+			std::vector<glm::vec3> pos2 = GetObjectPositions(*obj);
+			pos.insert(pos.end(), pos2.begin(), pos2.end());
+		}
+		return pos;
+	}
+
 
 	glm::mat4 calculateModel(Transform currModel)
 	{
