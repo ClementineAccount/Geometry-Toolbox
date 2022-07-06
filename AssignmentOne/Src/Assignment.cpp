@@ -1856,16 +1856,14 @@ namespace Assignment
 				initCamera();
 
 				LoadSceneLocal();
-				std::for_each(objectVector.begin(), objectVector.end(), [&](Object const& obj) {
-					aabbAll.AddObject(&obj);
-					});
-
+				std::vector<glm::vec3> pos = GetObjectPositions(objectVector);
+				aabbAll.CalculateAABB(pos);
 				aabbAll.UpdateBV();
 				aabbAll.meshID = MeshNames::cube;
 			}
 
 			void Update() override {
-				aabbAll.Update();
+				aabbAll.UpdateBV();
 				currCamera.updateCamera(applicationPtr);
 			}
 

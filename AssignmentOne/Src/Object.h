@@ -2,7 +2,6 @@
 
 #include "Assignment.h"
 #include "mesh.h"
-#include "BoundingVolume.h"
 
 namespace Assignment
 {

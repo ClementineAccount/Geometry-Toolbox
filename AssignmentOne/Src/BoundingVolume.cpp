@@ -1,8 +1,10 @@
 #include "BoundingVolume.h"
 #include "Object.h"
-
+#include <memory>
 #include <algorithm>
 #include <numeric>
+
+
 namespace Assignment
 {
 	namespace BV
@@ -122,7 +124,19 @@ namespace Assignment
 		}
 
 
+		void BoundingVolumeTree::CreateTopDown(std::vector<Object>const& objListGlobal)
+		{
+			for (Object const& obj : objListGlobal)
+				objList.push_back(&obj);
 
+			treeRoot = std::make_unique<NodeBVH>();
+			TopDownBV(treeRoot, objList);
+		}
+
+		void BoundingVolumeTree::TopDownBV(std::unique_ptr<NodeBVH> &localRoot, std::vector<Object const*>& localObjectList)
+		{
+
+		}
 
 
 		//void BoundingVolumeTree::SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight)

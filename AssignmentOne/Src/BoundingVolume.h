@@ -4,13 +4,11 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include "Object.h"
 #include "Transform.h"
 
 namespace Assignment
 {
-	//Forward declare
-	class Object;
 
 	namespace BV
 	{
@@ -70,14 +68,10 @@ namespace Assignment
 		//For BVH trees
 		struct NodeBVH
 		{
-			NodeBVH* left;
-			NodeBVH* right;
+			std::unique_ptr<NodeBVH> left;
+			std::unique_ptr<NodeBVH> right;
 
-			std::unique_ptr<BoundingVolume> boundingVolume;
-
-
-
-			
+			std::unique_ptr<BoundingVolume> boundingVolume;			
 		};
 
 		int largestSpreadAxis(std::vector<glm::vec3> const& positions);
@@ -86,10 +80,17 @@ namespace Assignment
 		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions);
 
 		//BVH
-		struct BoundingVolumeTree
+		class BoundingVolumeTree
 		{
-			void CreateBVH(std::vector<Object>const& objList);
-			static TopDownBV(NodeBVH** localRoot, std::vector<Object const*> localObjectList);
+		public:
+			void CreateTopDown(std::vector<Object>const& objListGlobal);
+			static void TopDownBV(std::unique_ptr<NodeBVH>& localRoot, std::vector<Object const*>& localObjectList);
+
+		private:
+
+			//Global root
+			std::unique_ptr<NodeBVH> treeRoot;
+
 
 			std::vector<Object const*> objList;
 		};
