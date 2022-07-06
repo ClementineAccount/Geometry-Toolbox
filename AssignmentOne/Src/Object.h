@@ -2,6 +2,7 @@
 
 #include "Assignment.h"
 #include "mesh.h"
+#include "BoundingVolume.h"
 
 namespace Assignment
 {
@@ -18,7 +19,10 @@ namespace Assignment
 		//If using the color shader --> what color to draw this with?
 		glm::vec3 color; 
 
+		BV::AABB* bvPrimitive;
 	};
+
+
 
 	std::vector<glm::vec3> GetObjectPositions(Object const& obj);
 	std::vector<glm::vec3> GetObjectPositions(std::vector<Object const*> const& objectList);

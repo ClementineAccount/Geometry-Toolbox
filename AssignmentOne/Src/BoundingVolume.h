@@ -4,11 +4,13 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "Object.h"
+//#include "Object.h"
 #include "Transform.h"
 
 namespace Assignment
 {
+	class Object;
+
 	namespace BV
 	{
 		struct axisOffsets
@@ -59,6 +61,7 @@ namespace Assignment
 			//Updates the collision points and the model
 			void UpdateBV() override;
 
+			void CalculateAABB(Object const& obj);
 			void CalculateAABB(std::vector<glm::vec3>& positions);
 
 			glm::vec3 getCenter() const override { return centerPos; };

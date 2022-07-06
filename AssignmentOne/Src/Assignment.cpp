@@ -4,9 +4,9 @@
 #include "Camera.h"
 
 
-#include "Object.h"
-#include "BoundingVolume.h"
 
+#include "BoundingVolume.h"
+#include "Object.h"
 
 #include "BoundingVolumeTree.hpp"
 #include "Tests.h"
@@ -1920,6 +1920,7 @@ namespace Assignment
 		public:
 
 			BV::BoundingVolumeTree<BV::AABB> BVHTree;
+			std::vector<BV::AABB> bvPrimitives;
 
 			void Init() override {
 
@@ -1927,7 +1928,14 @@ namespace Assignment
 				currCamera.yaw = -152.0f;
 				initCamera();
 				LoadSceneLocal();
-				//std::vector<glm::vec3> pos = GetObjectPositions(objectVector);
+
+				std::for_each(objectVector.begin(), objectVector.end(), [&](Object& obj) {
+					BV::AABB bv;
+					bv.CalculateAABB(obj);
+					bv.UpdateBV();
+					obj.bvPrimitive = &bv;
+					bvPrimitives.push_back(bv);
+					});
 
 				BVHTree.CreateTopDown(objectVector);
 			}
@@ -1942,7 +1950,9 @@ namespace Assignment
 				RenderObjects();
 
 				//Draw the AABBCol in wireframe mode
-				SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
+				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
+
+				SubmitDraw(BVHTree.treeRoot->left->boundingVolume->model, BVHTree.treeRoot->left->boundingVolume->meshID);
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				DrawAll(drawList, currCamera);

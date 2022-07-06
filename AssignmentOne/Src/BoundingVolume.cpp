@@ -22,6 +22,12 @@ namespace Assignment
 				return worldForward;
 		}
 
+		void AABB::CalculateAABB(Object const& obj)
+		{
+			std::vector<glm::vec3> pos = GetObjectPositions(obj);
+			CalculateAABB(pos);
+		}
+
 		void AABB::CalculateAABB(std::vector<glm::vec3>& positions)
 		{
 			auto setPos = [&](int component) {
@@ -69,6 +75,8 @@ namespace Assignment
 		{
 			glm::vec3 centerMean = glm::vec3(0.0f, 0.0f, 0.0f);
 
+
+			
 			for (glm::vec3 const& p : positions)
 				centerMean += p;
 			centerMean /= positions.size();
