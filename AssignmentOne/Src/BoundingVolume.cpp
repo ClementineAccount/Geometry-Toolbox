@@ -49,8 +49,10 @@ namespace Assignment
 			model.scale = scale;
 		}
 
+		//This could be a list of BVs instead?
 		glm::vec3 SplitPointMean(std::vector<Object*> const& objList)
 		{
+
 			std::vector<glm::vec3> centerList;
 			for (auto const& obj : objList)
 			{

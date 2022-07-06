@@ -19,8 +19,6 @@ namespace Assignment
 		//If using the color shader --> what color to draw this with?
 		glm::vec3 color; 
 
-		//To Do: Add the bounding volume
-		BV::BoundingVolume bv;
 	};
 
 	std::vector<glm::vec3> GetObjectPositions(std::vector<Object> const& objectList, size_t start, size_t end);

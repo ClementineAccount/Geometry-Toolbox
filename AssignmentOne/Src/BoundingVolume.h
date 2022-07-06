@@ -14,7 +14,7 @@ namespace Assignment
 
 	namespace BV
 	{
-		//base class interface
+		//base class interface (prototype similar to struct atm)
 		class BoundingVolume
 		{
 		public:
@@ -25,6 +25,8 @@ namespace Assignment
 			bool isRendering = true;
 
 			virtual glm::vec3 getCenter() const { return model.pos; };
+
+			std::vector<Object*> objectList;
 		};
 
 		class AABB : public BoundingVolume
