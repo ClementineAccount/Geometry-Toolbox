@@ -706,6 +706,7 @@ namespace Assignment
 		//That way there is a default background for every scene
 		backgroundColor = neutralBackgroundColor;
 
+		sceneMap.at(setScene).clearScene();
 		sceneMap.at(setScene).initScene();
 		currentSceneName = setScene;
 	}
@@ -1713,9 +1714,10 @@ namespace Assignment
 		virtual void Init() = 0;
 		virtual void Update() = 0;
 		virtual void Render() = 0;
+		virtual void Clear() {}; //Optional
 	};
 
-	class TestScene : Scene
+	class TestScene : public Scene
 	{
 	public:
 		void Init() override { std::cout << "Init()\n"; };
@@ -1723,7 +1725,7 @@ namespace Assignment
 		void Render() override { std::cout << "Render()\n"; };
 	};
 
-	class CubeScene : Scene
+	class CubeScene : public Scene
 	{
 	public:
 		Transform cubeModel;
@@ -1746,7 +1748,7 @@ namespace Assignment
 		}
 	};
 
-	class AssimapExample : Scene
+	class AssimapExample : public Scene
 	{
 	public:
 		std::vector<Object> objectVector;
@@ -1799,6 +1801,8 @@ namespace Assignment
 		curr.initScene = std::bind(&T::Init, scenePtr.get());
 		curr.updateScene = std::bind(&T::Update, scenePtr.get());
 		curr.renderScene = std::bind(&T::Render, scenePtr.get());
+		curr.clearScene = std::bind(&T::Clear, scenePtr.get());
+	
 
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
 	}
@@ -1806,7 +1810,7 @@ namespace Assignment
 	//Probably gonna only be one scene this time with options to toggle 
 	namespace AssignmentTwoScenes
 	{
-		class BaseScene : Scene
+		class BaseScene : public Scene
 		{
 		protected:
 			//Every scene for A2 have these functions
@@ -1839,7 +1843,6 @@ namespace Assignment
 			}
 
 			void Init() override {
-				objectVector.clear();
 
 				currCamera.pitch = -20.0f;
 				currCamera.yaw = -152.0f;
@@ -1871,6 +1874,10 @@ namespace Assignment
 				SubmitDraw(aabbAll.model, aabbAll.meshID);
 				DrawAll(drawList, currCamera);
 				drawList.clear();
+			}
+
+			void Clear() override {
+				objectVector.clear();
 			}
 		};
 

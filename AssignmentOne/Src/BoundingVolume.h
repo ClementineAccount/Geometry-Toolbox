@@ -14,8 +14,16 @@ namespace Assignment
 
 	namespace BV
 	{
-		//To Do: Use enum to filter the expected BoundingVolume type
+		struct axisOffsets
+		{
+			static const int x = 0;
+			static const int y = 0;
+			static const int z = 0;
 
+			static glm::vec3 axisToDirection(int component);
+		};
+
+		//To Do: Use enum to filter the expected BoundingVolume type
 		//base class interface (prototype similar to struct atm)
 		class BoundingVolume
 		{
@@ -33,10 +41,12 @@ namespace Assignment
 
 			void AddObject(Object const* obj);
 
-		protected:
-
 			//List of objects that inside this bounding volume, if any
 			std::vector<Object const*> objectList;
+
+		protected:
+
+
 		};
 
 		class AABB : public BoundingVolume
@@ -59,6 +69,29 @@ namespace Assignment
 		};
 
 
+		//Prototyping using -> split point of median of BV centers + split plane 
+
+		struct splitParameters
+		{
+			BoundingVolume const* bv;
+			size_t numBV;
+		};
+
+		int largestSpreadAxis(std::vector<glm::vec3> const& positions);
+
+		glm::vec3 calculateCenterMean(splitParameters bvList);
+		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions);
+
+		//BVH
+		struct BoundingVolumeTree
+		{
+			//All possible BVs in the scene (which can be created during the split process)
+			std::vector<BoundingVolume> bv;
+
+			//(Median requires geometric median and will be done later)
+			//Prototyping first by Mean of BV Centers + split plane is minimize total volume
+			void SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight);
+		};
 
 		//void CalculateAABB(std::vector<glm::vec3>& positions, AABB& aabbRef);
 

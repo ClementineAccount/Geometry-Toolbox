@@ -89,9 +89,19 @@ namespace Assignment
     using sceneFunction = std::function<void(void)>;
     struct AssignmentScene
     {
-        std::function<void(void)> initScene;
-        std::function<void(void)> updateScene;
-        std::function<void(void)> renderScene;
+        sceneFunction initScene;
+        sceneFunction updateScene;
+        sceneFunction renderScene;
+        sceneFunction clearScene;
+    };
+
+
+    //To Do: The ideal scene allows running a container of scenes in sequence which are 
+    struct SceneContainers
+    {
+        std::vector<sceneFunction> initFunctions;
+        std::vector<sceneFunction> updateFunctions;
+        std::vector<sceneFunction> rednerFunctions;
     };
 
 

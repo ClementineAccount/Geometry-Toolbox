@@ -55,6 +55,9 @@
     <Filter Include="Source\Transform">
       <UniqueIdentifier>{e6d12ba0-8241-40fb-83b2-ff5be9493829}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Tests">
+      <UniqueIdentifier>{8cc20d45-3704-42fe-bf99-8a04fa63e6c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\DiffuseShader.frag">
@@ -146,6 +149,9 @@
     <ClInclude Include="Src\Transform.h">
       <Filter>Source\Transform</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Tests.h">
+      <Filter>Source\Tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp">
@@ -204,6 +210,9 @@
     </ClCompile>
     <ClCompile Include="Src\Camera.cpp">
       <Filter>Source\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Tests.cpp">
+      <Filter>Source\Tests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

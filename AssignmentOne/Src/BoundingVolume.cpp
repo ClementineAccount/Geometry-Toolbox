@@ -7,6 +7,23 @@ namespace Assignment
 {
 	namespace BV
 	{
+		glm::vec3 axisOffsets::axisToDirection(int component)
+		{
+			//switch (component)
+			//{
+			//case (axisOffsets::x): return worldRight;
+			//}
+
+			if (component == axisOffsets::x)
+				return worldRight;
+
+			if (component == axisOffsets::y)
+				return worldUp;
+
+			if (component == axisOffsets::z)
+				return worldForward;
+		}
+
 		void BoundingVolume::AddObject(Object const* obj)
 		{
 			objectList.push_back(obj);
@@ -14,13 +31,12 @@ namespace Assignment
 
 		void AABB::CalculateAABB(std::vector<glm::vec3>& positions)
 		{
-
-			auto setPos = [&](int glmOffset) {
+			auto setPos = [&](int component) {
 				std::sort(positions.begin(), positions.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
-					return lhs[glmOffset] < rhs[glmOffset]; });
+					return lhs[component] < rhs[component]; });
 
-				maxPoint[glmOffset] = positions[positions.size() - 1][glmOffset];
-				minPoint[glmOffset] = positions[0][glmOffset];
+				maxPoint[component] = positions[positions.size() - 1][component];
+				minPoint[component] = positions[0][component];
 			};
 
 			////The glm offsets for glm::vec3
@@ -37,8 +53,8 @@ namespace Assignment
 			halfExtent = fullExtent * 0.5f;
 			centerPos = minPoint + halfExtent;
 
-			auto setScale = [&](int glmOffset) {
-				scale[glmOffset] = fullExtent[glmOffset];
+			auto setScale = [&](int component) {
+				scale[component] = fullExtent[component];
 			};
 
 			setScale(x);
@@ -67,7 +83,77 @@ namespace Assignment
 			model.scale = scale;
 		}
 
+		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions)
+		{
+			glm::vec3 centerMean = glm::vec3(0.0f, 0.0f, 0.0f);
 
+			for (glm::vec3 const& p : positions)
+				centerMean += p;
+			centerMean /= positions.size();
+
+			return centerMean;
+		}
+
+		glm::vec3 calculateCenterMean(splitParameters bvList)
+		{
+			std::vector<glm::vec3> centerPosList;
+			for (size_t i = 0; i < bvList.numBV; ++i)
+				centerPosList.push_back(bvList.bv[i].getCenter());
+			return calculatePositionMean(centerPosList);
+		}
+
+		int largestSpreadAxis(std::vector<glm::vec3> const& positions)
+		{
+			//std::vector<glm::vec3> positions;
+			//for (Object const* obj : bvToSplit.bv->objectList)
+			//{
+			//	std::vector<glm::vec3> pos;
+			//	pos = GetObjectPositions(*obj);
+			//	positions.insert(positions.end(), pos.begin(), pos.end());
+			//}
+
+
+
+			auto setPos = [&](int component, float& distance) {
+				std::sort(positions.begin(), positions.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
+					return lhs[component] < rhs[component]; });
+
+				distance = positions[positions.size() - 1][component] - positions[0][component];
+			};
+
+			////The glm offsets for glm::vec3
+			int x = 0;
+			int y = 1;
+			int z = 2;
+
+			struct distanceIdentity
+			{
+				float distance = 0.0f;
+				int distanceID = 0;
+			};
+
+			std::vector<distanceIdentity> distanceSet;
+			distanceSet.reserve(3);
+
+			distanceSet[z].distanceID = z;
+			distanceSet[y].distanceID = y;
+			distanceSet[x].distanceID = x;
+
+			setPos(x, distanceSet[x].distance);
+			setPos(y, distanceSet[y].distance);
+			setPos(z, distanceSet[z].distance);
+
+			std::sort(distanceSet.begin(), distanceSet.end(), [&](distanceIdentity lhs, distanceIdentity rhs) {
+				return lhs.distance < rhs.distance;});
+
+			return distanceSet.back().distanceID;
+		}
+
+		void BoundingVolumeTree::SplitBV(splitParameters bvToSplit, splitParameters bvLeft, splitParameters bvRight)
+		{
+			//glm::vec3 centerMean = calculateCenterMean(bvToSplit);
+			//glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(bvToSplit));
+		}
 
 
 
