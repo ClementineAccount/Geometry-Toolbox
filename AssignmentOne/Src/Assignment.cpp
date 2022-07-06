@@ -1830,6 +1830,8 @@ namespace Assignment
 			std::vector<std::string> filePaths;
 			std::string modelFolderPath = "Models/";
 
+			
+
 			void RenderObjects()
 			{
 				for (const Object& obj : objectVector)
@@ -1922,6 +1924,11 @@ namespace Assignment
 			BV::BoundingVolumeTree<BV::AABB> BVHTree;
 			std::vector<BV::AABB> bvPrimitives;
 
+			virtual void LoadSceneLocal()
+			{
+				LoadScene(objectVector, "Scenes/CubeTest2.txt");
+			}
+
 			void Init() override {
 
 				currCamera.pitch = -20.0f;
@@ -1950,10 +1957,13 @@ namespace Assignment
 				RenderObjects();
 
 				//Draw the AABBCol in wireframe mode
-				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
+				SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
 
-				SubmitDraw(BVHTree.treeRoot->left->boundingVolume->model, BVHTree.treeRoot->left->boundingVolume->meshID);
+				//SubmitDraw(BVHTree.treeRoot->left->boundingVolume->model, BVHTree.treeRoot->left->boundingVolume->meshID);
 
+				//SubmitDraw(BVHTree.treeRoot->right->boundingVolume->model, BVHTree.treeRoot->right->boundingVolume->meshID);
+
+				
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				DrawAll(drawList, currCamera);
 				drawList.clear();
@@ -1961,6 +1971,8 @@ namespace Assignment
 
 			void Clear() override {
 				objectVector.clear();
+				bvPrimitives.clear();
+
 			}
 
 		};

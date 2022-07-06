@@ -21,8 +21,11 @@ namespace Assignment
 		class BoundingVolumeTree
 		{
 		public:
+
 			void CreateTopDown(std::vector<Object>const& objListGlobal)
 			{
+				objList.clear();
+
 				for (Object const& obj : objListGlobal)
 					objList.push_back(&obj);
 
