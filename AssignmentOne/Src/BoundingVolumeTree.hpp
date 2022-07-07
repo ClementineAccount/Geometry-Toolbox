@@ -31,21 +31,17 @@ namespace Assignment
 					objList.push_back(&obj);
 
 				treeRoot = std::make_shared<NodeBVH<BV>>();
-				totalHeight = 0;
-				heightMap.insert({ totalHeight, treeRoot});
-
-				TopDownBV(treeRoot, objList);
-
+				size_t currHeight = 0;
+				heightMap.insert({ currHeight, treeRoot });
+				TopDownBV(treeRoot, objList, currHeight);
 			}
 
 
-			static void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList)
+			void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList, size_t currHeight)
 			{
 				//To Do: Add leaf node support
 				if (localObjectList.size() <= 1)
 					return;
-				
-
 
 				std::vector<glm::vec3> objPos = GetObjectPositions((localObjectList));
 				localRoot->boundingVolume = std::make_shared<BV>();
@@ -65,7 +61,6 @@ namespace Assignment
 
 				for (Object const* obj : localObjectList)
 				{
-
 					glm::vec3 bvCenter = obj->bvPrimitive.getCenter();
 					glm::vec3 dir = splitPoint - bvCenter;
 					if (glm::dot(dir, planeNormal) > 0.0f)
@@ -78,12 +73,14 @@ namespace Assignment
 					}
 				}
 
-
+				++currHeight;
 				localRoot->left = std::make_shared<NodeBVH<BV>>();
-				TopDownBV(localRoot->left, leftList);
+				heightMap.insert({ currHeight, localRoot->left });
+				TopDownBV(localRoot->left, leftList, currHeight);
 
 				localRoot->right = std::make_shared<NodeBVH<BV>>();
-				TopDownBV(localRoot->right, rightList);
+				heightMap.insert({ currHeight, localRoot->right });
+				TopDownBV(localRoot->right, rightList, currHeight);
 			}
 
 			std::shared_ptr<NodeBVH<BV>> treeRoot;
