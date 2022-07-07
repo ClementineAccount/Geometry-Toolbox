@@ -1922,7 +1922,6 @@ namespace Assignment
 		public:
 
 			BV::BoundingVolumeTree<BV::AABB> BVHTree;
-			std::vector<BV::AABB> bvPrimitives;
 
 			virtual void LoadSceneLocal()
 			{
@@ -1937,11 +1936,8 @@ namespace Assignment
 				LoadSceneLocal();
 
 				std::for_each(objectVector.begin(), objectVector.end(), [&](Object& obj) {
-					BV::AABB bv;
-					bv.CalculateAABB(obj);
-					bv.UpdateBV();
-					obj.bvPrimitive = &bv;
-					bvPrimitives.push_back(bv);
+					obj.bvPrimitive.CalculateAABB(obj);
+					obj.bvPrimitive.UpdateBV();
 					});
 
 				BVHTree.CreateTopDown(objectVector);
@@ -1971,7 +1967,6 @@ namespace Assignment
 
 			void Clear() override {
 				objectVector.clear();
-				bvPrimitives.clear();
 
 			}
 

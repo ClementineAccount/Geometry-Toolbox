@@ -19,7 +19,7 @@ namespace Assignment
 		//If using the color shader --> what color to draw this with?
 		glm::vec3 color; 
 
-		BV::AABB* bvPrimitive;
+		BV::AABB bvPrimitive;
 	};
 
 
