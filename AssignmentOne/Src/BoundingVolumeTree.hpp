@@ -61,6 +61,7 @@ namespace Assignment
 				TopDownBV(treeRoot, objList, currHeight);
 
 				std::cout << "Completed BVH Tree (Top Down)" << std::endl;
+				std::cout << "BVH Tree Max Height: " << totalHeight - 1 << std::endl;
 			}
 
 
@@ -87,14 +88,22 @@ namespace Assignment
 
 			void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList, size_t currHeight)
 			{
-				std::cout << "TopDownBVH: Height: " << currHeight << std::endl;
+				std::cout << "TopDownBVH Height: " << currHeight << std::endl;
+
+				if (localObjectList.size() <= 1)
+				{
+					if (currHeight >= totalHeight)
+						totalHeight = currHeight;
+					return;
+				}
+				if (currHeight + 1 >= maxHeight)
+					return;
 
 				if (currHeight >= totalHeight)
 					totalHeight = currHeight;
 
-				//To Do: Add leaf node support
-				if (localObjectList.size() <= 1)
-					return;
+
+
 
 				std::vector<glm::vec3> objPos = GetObjectPositions((localObjectList));
 				localRoot->boundingVolume = std::make_shared<BV>();
@@ -174,6 +183,7 @@ namespace Assignment
 		private:
 
 			int totalHeight = 0;
+			int maxHeight = 8;
 
 			//Map that stores pointers to nodes that are of a certain height
 
