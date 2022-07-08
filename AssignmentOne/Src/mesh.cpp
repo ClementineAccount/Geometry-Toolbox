@@ -75,6 +75,9 @@ namespace Assignment
 		std::vector<GLfloat> positions = verticesFromVectorList(verticeSOA.positions);
 		vertices.insert(vertices.end(), positions.begin(), positions.end());
 
+		std::vector<GLfloat> normals = verticesFromVectorList(verticeSOA.normals);
+		vertices.insert(vertices.end(), normals.begin(), normals.end());
+
 		std::vector<GLfloat> colors = verticesFromVectorList(verticeSOA.colors);
 		vertices.insert(vertices.end(), colors.begin(), colors.end());
 
@@ -96,9 +99,17 @@ namespace Assignment
 		glEnableVertexAttribArray(indexOfPosition);
 		glVertexAttribPointer(static_cast<GLuint>(indexOfPosition), static_cast<GLint>(numberPosCoordinatesPerVertex), GL_FLOAT, GL_FALSE, vertexCoordinateStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstPos));
 
-		const size_t offsetToFirstColor = positions.size(); //in index before converted to bytes (6 times 3)
+		const size_t offsetToFirstNormal = positions.size(); //in index before converted to bytes (6 times 3)
+		const size_t vertexNormalStride = 0;
+		const size_t indexOfNormal = 1; //in the fragment shader
+		const size_t numNormalsPer = 3;
+
+		glVertexAttribPointer(static_cast<GLuint>(indexOfNormal), static_cast<GLint>(numNormalsPer), GL_FLOAT, GL_FALSE, vertexNormalStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstNormal));
+		glEnableVertexAttribArray(indexOfNormal);
+
+		const size_t offsetToFirstColor = normals.size(); //in index before converted to bytes (6 times 3)
 		const size_t vertexColorStride = 0;
-		const size_t indexOfColor = 1; //in the fragment shader
+		const size_t indexOfColor = 2; //in the fragment shader
 		const size_t numberColorPerVertex = 3;
 
 		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));
@@ -127,10 +138,10 @@ namespace Assignment
 			meshVertices.positions.emplace_back(addMesh.mVertices[i].x, addMesh.mVertices[i].y, addMesh.mVertices[i].z);
 
 			//Add if there are normals
-			//if (addMesh.HasNormals())
-			//{
-			//	mesh.meshVertices.normals.emplace_back(glm::vec3(addMesh.mNormals[i].x, addMesh.mNormals[i].y, addMesh.mNormals[i].z));
-			//}
+			if (addMesh.HasNormals())
+			{
+				meshVertices.normals.emplace_back(glm::vec3(addMesh.mNormals[i].x, addMesh.mNormals[i].y, addMesh.mNormals[i].z));
+			}
 
 			//if (addMesh.HasTextureCoords(0))
 			//{

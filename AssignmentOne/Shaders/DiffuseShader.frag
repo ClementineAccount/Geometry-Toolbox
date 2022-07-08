@@ -1,3 +1,5 @@
+#version 410 core
+
 
 in VS_OUT
 {

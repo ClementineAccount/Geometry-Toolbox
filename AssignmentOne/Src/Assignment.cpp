@@ -34,11 +34,11 @@ namespace Assignment
 {
 	const std::string shaderFolderPath = "Shaders/";
 
-	static std::string vertexShaderPath = shaderFolderPath + "VertexShader.vert";
-	static std::string fragShaderPath = shaderFolderPath + "FragShader.frag";
+	static std::string vertexShaderPath = shaderFolderPath + "DiffuseShader.vert";
+	static std::string fragShaderPath = shaderFolderPath + "DiffuseShader.frag";
 
 	static shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
-	static shaderFilePath colorShader{ shaderFolderPath + "UniformColor.vert", shaderFolderPath + "UniformColor.frag", "colorShader" };
+	static shaderFilePath colorShader{ shaderFolderPath + "DiffuseShader.vert", shaderFolderPath + "DiffuseShader.frag", "colorShader" };
 
 	static bool wireFrameMode = false;
 
@@ -638,11 +638,13 @@ namespace Assignment
 
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
 
-			if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
-			{
-				GLint colorLoc = glGetUniformLocation(programID, "setColor");
-				glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
-			}
+			//if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
+			//{
+			//	GLint colorLoc = glGetUniformLocation(programID, "setColor");
+			//	glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
+			//}
+
+
 
 			glBindVertexArray(currMesh.VAO);
 
@@ -3431,126 +3433,8 @@ namespace Assignment
 
 	void InitScenes()
 	{
-		currentSceneName = SceneNames::defaultScene;
-
-		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::defaultScene,
-			AssignmentScene{ Assignment::AssignmentOneScenes::Default::Init,
-			Assignment::AssignmentOneScenes::Default::Render,  Assignment::AssignmentOneScenes::Default::Update }));
-
-
-		//Previous way of adding scenes to the scene container. 
-		//Replaced with a more polymorphic approach that is only one function call and therefore less error prone
-
-#ifdef ASSIGNMENT_ONE
-
-		{
-			//AssignmentScene cubeScene;
-			//cubeScene.initScene = Assignment::AssignmentOneScenes::Cube::Init;
-			//cubeScene.renderScene = Assignment::AssignmentOneScenes::Cube::Render;
-			//cubeScene.updateScene = Assignment::AssignmentOneScenes::Cube::Update;
-			//sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneCube, AssignmentScene(cubeScene)));
-
-
-			AssignmentScene sphereScene;
-			sphereScene.initScene = Assignment::AssignmentScenes::Sphere::Init;
-			sphereScene.renderScene = Assignment::AssignmentScenes::Sphere::Render;
-			sphereScene.updateScene = Assignment::AssignmentScenes::Sphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::TestSceneSphere, AssignmentScene(sphereScene)));
-
-			AssignmentScene sphereSceneTwo;
-			sphereSceneTwo.initScene = AssignmentScenes::SphereVsSphere::Init;
-			sphereSceneTwo.renderScene = AssignmentScenes::SphereVsSphere::Render;
-			sphereSceneTwo.updateScene = AssignmentScenes::SphereVsSphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsSphere, AssignmentScene(sphereSceneTwo)));
-
-			AssignmentScene AABB_vs_Sphere;
-			AABB_vs_Sphere.initScene = AssignmentScenes::AABBVsSphere::Init;
-			AABB_vs_Sphere.renderScene = AssignmentScenes::AABBVsSphere::Render;
-			AABB_vs_Sphere.updateScene = AssignmentScenes::AABBVsSphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsSphere, AssignmentScene(AABB_vs_Sphere)));
-
-			AssignmentScene SphereVsAABB;
-			SphereVsAABB.initScene = AssignmentScenes::SphereVsAABB::Init;
-			SphereVsAABB.renderScene = AssignmentScenes::SphereVsAABB::Render;
-			SphereVsAABB.updateScene = AssignmentScenes::SphereVsAABB::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::SphereVsAABB, AssignmentScene(SphereVsAABB)));
-
-			AssignmentScene AABBVsAABB;
-			AABBVsAABB.initScene = AssignmentScenes::AABBvsAABB::Init;
-			AABBVsAABB.renderScene = AssignmentScenes::AABBvsAABB::Render;
-			AABBVsAABB.updateScene = AssignmentScenes::AABBvsAABB::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::AABBVsAABB, AssignmentScene(AABBVsAABB)));
-
-			AssignmentScene PointVsAABB;
-			PointVsAABB.initScene = AssignmentScenes::PointVsAABB::Init;
-			PointVsAABB.renderScene = AssignmentScenes::PointVsAABB::Render;
-			PointVsAABB.updateScene = AssignmentScenes::PointVsAABB::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsAABB, AssignmentScene(PointVsAABB)));
-
-			AssignmentScene PointVsSphere;
-			PointVsSphere.initScene = AssignmentScenes::PointVsSphere::Init;
-			PointVsSphere.renderScene = AssignmentScenes::PointVsSphere::Render;
-			PointVsSphere.updateScene = AssignmentScenes::PointVsSphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsSphere, AssignmentScene(PointVsSphere)));
-
-			AssignmentScene PointVsPlane;
-			PointVsPlane.initScene = AssignmentScenes::PointVsPlane::Init;
-			PointVsPlane.renderScene = AssignmentScenes::PointVsPlane::Render;
-			PointVsPlane.updateScene = AssignmentScenes::PointVsPlane::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsPlane, AssignmentScene(PointVsPlane)));
-
-			AssignmentScene PlaneVsSphere;
-			PlaneVsSphere.initScene = AssignmentScenes::PlaneVsSphere::Init;
-			PlaneVsSphere.renderScene = AssignmentScenes::PlaneVsSphere::Render;
-			PlaneVsSphere.updateScene = AssignmentScenes::PlaneVsSphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsSphere, AssignmentScene(PlaneVsSphere)));
-
-			AssignmentScene RayVsPlane;
-			RayVsPlane.initScene = AssignmentScenes::RayVsPlane::Init;
-			RayVsPlane.renderScene = AssignmentScenes::RayVsPlane::Render;
-			RayVsPlane.updateScene = AssignmentScenes::RayVsPlane::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsPlane, AssignmentScene(RayVsPlane)));
-
-			AssignmentScene RayVsSphere;
-			RayVsSphere.initScene = AssignmentScenes::RayVsSphere::Init;
-			RayVsSphere.renderScene = AssignmentScenes::RayVsSphere::Render;
-			RayVsSphere.updateScene = AssignmentScenes::RayVsSphere::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsSphere, AssignmentScene(RayVsSphere)));
-
-			AssignmentScene RayVsAABB;
-			RayVsAABB.initScene = AssignmentScenes::RayVsAABB::Init;
-			RayVsAABB.renderScene = AssignmentScenes::RayVsAABB::Render;
-			RayVsAABB.updateScene = AssignmentScenes::RayVsAABB::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::RayVsAABB, AssignmentScene(RayVsAABB)));
-
-
-			AssignmentScene PlaneVsAABB;
-			PlaneVsAABB.initScene = AssignmentScenes::PlaneVsAABB::Init;
-			PlaneVsAABB.renderScene = AssignmentScenes::PlaneVsAABB::Render;
-			PlaneVsAABB.updateScene = AssignmentScenes::PlaneVsAABB::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PlaneVsAABB, AssignmentScene(PlaneVsAABB)));
-
-			AssignmentScene PointVsTriangle;
-			PointVsTriangle.initScene = AssignmentScenes::PointVsTriangle::Init;
-			PointVsTriangle.renderScene = AssignmentScenes::PointVsTriangle::Render;
-			PointVsTriangle.updateScene = AssignmentScenes::PointVsTriangle::Update;
-			sceneMap.insert(std::make_pair<std::string, AssignmentScene>(SceneNames::PointVsTriangle, AssignmentScene(PointVsTriangle)));
-		}
-
-#endif // ASSIGNMENT_ONE
-
-
-		//Only one line. So much better :)
-		using namespace AssignmentOneScenes;
-		ScenetoFunction<CubeScene>(SceneNames::TestSceneCube);
-		ScenetoFunction<AssimapExample>(SceneNames::AssimapExample);
-
-		using namespace AssignmentTwoScenes;
-		ScenetoFunction<CubeLoadScene>(SceneNames::CubeSceneTest);
-		ScenetoFunction<BunnyLoadScene>("Bunny Scene");
-		ScenetoFunction<StarWarsLoadScene>("Star Wars 1");
-		ScenetoFunction<TopDownScene>("Top Down Bounding Volume Test");
-
+		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
+		currentSceneName = "Top Down BVH";
 	}
 }
 
@@ -3616,7 +3500,6 @@ namespace Assignment
 		modelMap.insert(std::make_pair<std::string, Transform>(ModelNames::defaultModel, Transform(model)));
 
 		InitScenes();
-		currentSceneName = SceneNames::CubeSceneTest;
 		SetScene(currentSceneName);
 
 		return 0;
