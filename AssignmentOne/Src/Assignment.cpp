@@ -43,7 +43,8 @@ namespace Assignment
 
 
 	static bool wireFrameMode = false;
-	static bool showPrims = true;
+	static bool showAABB = true;
+	static bool showSphere = true;
 
 	static glm::vec3 niceOrangeColor{ 1.0f, 0.341f, 0.2f };
 	static glm::vec3 coolPurpleColor{ 0.565f, 0.046f, 0.243f };
@@ -1130,10 +1131,11 @@ namespace Assignment
 	}
 
 
-	void DearImguiBVH(int& showHeight, int const maxHeight)
+	void DearImguiBVH(int& showHeight, bool& showTree, std::string settingsName, int const maxHeight)
 	{
-		ImGui::Begin("BVH Tree Settings");
+		ImGui::Begin(settingsName.c_str());
 		ImGui::SliderInt("Height Settings", &showHeight, 0, maxHeight);
+		ImGui::Checkbox("Visible", &showTree);
 		ImGui::End();
 	}
 
@@ -1149,7 +1151,8 @@ namespace Assignment
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
-		ImGui::Checkbox("Show Primitives", &showPrims);
+		ImGui::Checkbox("Show AABB", &showAABB);
+		ImGui::Checkbox("Show Sphere", &showSphere);
 		ImGui::Checkbox("Show Axis", &showAxis);
 		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
 
@@ -1911,7 +1914,7 @@ namespace Assignment
 		};
 
 
-		class RittersExample : public BaseScene
+		class PrimExample : public BaseScene
 		{
 		public:
 		
@@ -1919,6 +1922,8 @@ namespace Assignment
 			{
 				LoadScene(objectVector, "Scenes/Bunny.txt");
 				LoadScene(objectVector, "Scenes/StarWars.txt");
+				LoadScene(objectVector, "Scenes/Lucy.txt");
+				LoadScene(objectVector, "Scenes/4Sphere.txt");
 			}
 
 			void Init() override {
@@ -1929,6 +1934,9 @@ namespace Assignment
 					std::vector<glm::vec3> pos = GetObjectPositions(obj);
 					obj.bvPrimitiveSphere.CalculateRitters(pos);
 					obj.bvPrimitiveSphere.UpdateBV();
+
+					obj.bvPrimitiveAABB.CalculateBV(pos);
+					obj.bvPrimitiveAABB.UpdateBV();
 					});
 			}
 
@@ -1940,8 +1948,12 @@ namespace Assignment
 			{
 				RenderAxis();
 				RenderObjects();
-				if (showPrims)
+
+				if (showSphere)
 					RenderBVSphere();
+				if (showAABB)
+					RenderAABB();
+
 				drawList.clear();
 			}
 
@@ -1950,9 +1962,13 @@ namespace Assignment
 		class TopDownScene : public BaseScene {
 		public:
 
+			BV::BoundingVolumeTree<BV::Sphere> BVHTree_Sphere;
 			BV::BoundingVolumeTree<BV::AABB> BVHTree;
 			int showHeight = 0;
+			int showHeight_Sphere = 0;
 			bool showBV = true;
+			bool showBVH_AABB;
+			bool showBVH_Sphere = true;
 
 			glm::vec3 bvhColor[7] = { coolOrange, coolPurpleColor, greenscreenGreen, maroonColor , glm::vec3(1.0f, 0.0f, 0.0f) , grayish};
 
@@ -1965,44 +1981,81 @@ namespace Assignment
 				initCamera();
 				LoadSceneLocal();
 
+				showAABB = false;
+				showSphere = false;
+
 				std::for_each(objectVector.begin(), objectVector.end(), [&](Object& obj) {
 					obj.bvPrimitiveAABB.CalculateAABB(obj);
+					obj.bvPrimitiveSphere.CalculateBV(obj);
 					obj.bvPrimitiveAABB.UpdateBV();
+					obj.bvPrimitiveSphere.UpdateBV();
+
 					});
 
 				BVHTree.CreateTopDown(objectVector);
+				BVHTree_Sphere.CreateTopDown(objectVector);
 
 				int height = BVHTree.GetHeight();
-				for (int i = 0; i < height; ++i)
+				for (int i = 0; i < BVHTree.GetHeight(); ++i)
 				{
 					BVHTree.SetColorHeight(i, bvhColor[i]);
 				}
+
+				for (int i = 0; i < BVHTree_Sphere.GetHeight(); ++i)
+				{
+					BVHTree_Sphere.SetColorHeight(i, bvhColor[i]);
+				}
+
 			}
 
 			void Update() override {
 				currCamera.updateCameraMovement(applicationPtr);
 				currCamera.updateCamera(applicationPtr);
 
-				DearImguiBVH(showHeight, BVHTree.GetHeight());
+				DearImguiBVH(showHeight, showBVH_AABB, "BVH Tree (AABB)", BVHTree.GetHeight());
+				DearImguiBVH(showHeight_Sphere, showBVH_Sphere, "BVH Tree (Sphere)", BVHTree_Sphere.GetHeight());
 			}
 
 			void Render() override
 			{
 				RenderAxis();
 				RenderObjects();
-				if (showPrims)
+
+				if (showAABB)
+				{
 					RenderAABB();
+				}
+				if (showSphere)
+				{
+					RenderBVSphere();
+				}
+					
 
 				//Draw the AABBCol in wireframe mode
 				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
 
-				for (auto const& bvNode : BVHTree.heightMap[showHeight].nodes)
+				if (showBVH_Sphere)
 				{
-					if (bvNode->boundingVolume != nullptr)
+					for (auto const& bvNode : BVHTree_Sphere.heightMap[showHeight_Sphere].nodes)
 					{
-						SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID, colorShader.shaderName);
+						if (bvNode->boundingVolume != nullptr)
+						{
+							SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID, colorShader.shaderName);
+						}
 					}
 				}
+	
+				if (showBVH_AABB)
+				{
+					for (auto const& bvNode : BVHTree.heightMap[showHeight].nodes)
+					{
+						if (bvNode->boundingVolume != nullptr)
+						{
+							SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID, colorShader.shaderName);
+						}
+					}
+				}
+
 
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				DrawAll(drawList, currCamera);
@@ -3429,9 +3482,9 @@ namespace Assignment
 
 	void InitScenes()
 	{
-		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH (AABB)");
-		ScenetoFunction<AssignmentTwoScenes::RittersExample>("Ritters Example");
-		currentSceneName = "Ritters Example";
+		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
+		ScenetoFunction<AssignmentTwoScenes::PrimExample>("Ritters & AABB");
+		currentSceneName = "Ritters & AABB";
 	}
 }
 

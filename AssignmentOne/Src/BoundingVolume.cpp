@@ -61,6 +61,16 @@ namespace Assignment
 			setScale(z);
 		}
 
+		void AABB::CalculateBV(Object const& obj)
+		{
+			CalculateAABB(obj);
+		}
+
+		void AABB::CalculateBV(std::vector<glm::vec3>& positions)
+		{
+			CalculateAABB(positions);
+		}
+
 		//Update it based off the current position
 		void AABB::UpdateBV()
 		{
@@ -75,6 +85,19 @@ namespace Assignment
 			model.pos = centerPos;
 			model.scale = glm::vec3(radius, radius, radius);
 		}
+
+
+		void Sphere::CalculateBV(Object const& obj)
+		{
+			std::vector<glm::vec3> pos = GetObjectPositions(obj);
+			CalculateRitters(pos);
+		}
+
+		void Sphere::CalculateBV(std::vector<glm::vec3>& positions)
+		{
+			CalculateRitters(positions);
+		}
+
 
 		void Sphere::CalculateRitters(std::vector<glm::vec3>& positions)
 		{

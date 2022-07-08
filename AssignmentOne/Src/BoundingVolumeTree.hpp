@@ -64,28 +64,6 @@ namespace Assignment
 				std::cout << "BVH Tree Max Height: " << totalHeight - 1 << std::endl;
 			}
 
-
-			//std::vector<glm::vec3> GetObjectPositionsMeta(std::vector<Object const*>& localObjectList)
-			//{
-			//	std::vector<glm::vec3> objPos;
-
-			//	for (auto const& obj : localObjectList)
-			//	{
-			//		if (metaList.count(*obj) == 0)
-			//		{
-			//			std::vector<glm::vec3> pos;
-			//			pos = GetObjectPositions(*obj);
-			//			objPos.insert(objPos.end(), pos.begin(), pos.end());
-			//		}
-			//		else
-			//		{
-			//			objPos.push_back(metaList.at(*obj).maxPoint);
-			//			objPos.push_back(metaList.at(*obj).minPoint);
-			//		}
-			//	}
-
-			//}
-
 			void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList, size_t currHeight)
 			{
 				std::cout << "TopDownBVH Height: " << currHeight << std::endl;
@@ -107,7 +85,7 @@ namespace Assignment
 
 				std::vector<glm::vec3> objPos = GetObjectPositions((localObjectList));
 				localRoot->boundingVolume = std::make_shared<BV>();
-				localRoot->boundingVolume->CalculateAABB(objPos);
+				localRoot->boundingVolume->CalculateBV(objPos);
 				localRoot->boundingVolume->UpdateBV();
 
 				std::cout << "Number Object Positions: " << objPos.size() << std::endl;
@@ -188,9 +166,6 @@ namespace Assignment
 			//Map that stores pointers to nodes that are of a certain height
 
 			std::vector<Object const*> objList;
-
-
-
 			//std::unordered_map<Object const*, std::vector<glm::vec3>> objListPosCache; 
 		};
 

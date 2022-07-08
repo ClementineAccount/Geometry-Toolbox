@@ -34,10 +34,14 @@ namespace Assignment
 			bool isActive = true;
 			bool isRendering = true;
 
+			glm::vec3 centerPos;
+
 			virtual glm::vec3 getCenter() const { return model.pos; };
 
 			//Iterates through the objectList to update the BV
-			virtual void UpdateBV() = 0;
+			virtual void UpdateBV() {};
+			virtual void CalculateBV(Object const& obj) {};
+			virtual void CalculateBV(std::vector<glm::vec3>& positions) {};
 
 			//void AddObject(Object const* obj);
 
@@ -51,7 +55,7 @@ namespace Assignment
 		{
 		public:
 			glm::vec3 halfExtent;
-			glm::vec3 centerPos;
+
 			glm::vec3 scale; //Allows calculation of half extents
 
 			glm::vec3 minPoint;
@@ -59,6 +63,8 @@ namespace Assignment
 
 			//Updates the collision points and the model
 			void UpdateBV() override;
+			void CalculateBV(Object const& obj) override;
+			void CalculateBV(std::vector<glm::vec3>& positions) override;
 
 			void CalculateAABB(Object const& obj);
 			void CalculateAABB(std::vector<glm::vec3>& positions);
@@ -70,10 +76,11 @@ namespace Assignment
 		{
 
 		public:
-			glm::vec3 centerPos;
 			float radius;
 
 			void UpdateBV() override;
+			void CalculateBV(Object const& obj) override;
+			void CalculateBV(std::vector<glm::vec3>& positions) override;
 
 			void CalculateRitters(std::vector<glm::vec3>& positions);
 			glm::vec3 getCenter() const override { return centerPos; };
