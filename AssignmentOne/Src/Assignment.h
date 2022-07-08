@@ -111,7 +111,8 @@ namespace Assignment
     //void SubmitDraw(std::string const modelName, std::string const meshName, std::string const shaderName = defaultShader.shaderName);
 
     //Draws all 
-    void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera);
+    void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera, glm::vec3 lightPos = glm::vec3(0.0f, 2.0f, 0.0f),
+        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 lightDir = glm::vec3(1.0f, -1.0f, 0.0f));
 
     MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 

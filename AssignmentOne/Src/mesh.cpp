@@ -93,7 +93,7 @@ namespace Assignment
 
 		const size_t offsetToFirstPos = 0; //in index before converted to bytes
 		const size_t vertexCoordinateStride = 0;
-		const size_t indexOfPosition = 0; //in the fragment shader
+		const size_t indexOfPosition = 0; //in the vertex shader
 		const size_t numberPosCoordinatesPerVertex = 3;
 
 		glEnableVertexAttribArray(indexOfPosition);
@@ -101,15 +101,15 @@ namespace Assignment
 
 		const size_t offsetToFirstNormal = positions.size(); //in index before converted to bytes (6 times 3)
 		const size_t vertexNormalStride = 0;
-		const size_t indexOfNormal = 1; //in the fragment shader
+		const size_t indexOfNormal = 1; //in the vertex shader
 		const size_t numNormalsPer = 3;
 
 		glVertexAttribPointer(static_cast<GLuint>(indexOfNormal), static_cast<GLint>(numNormalsPer), GL_FLOAT, GL_FALSE, vertexNormalStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstNormal));
 		glEnableVertexAttribArray(indexOfNormal);
 
-		const size_t offsetToFirstColor = normals.size(); //in index before converted to bytes (6 times 3)
+		const size_t offsetToFirstColor = normals.size() + positions.size(); //in index before converted to bytes (6 times 3)
 		const size_t vertexColorStride = 0;
-		const size_t indexOfColor = 2; //in the fragment shader
+		const size_t indexOfColor = 2; //in the vertex shader
 		const size_t numberColorPerVertex = 3;
 
 		glVertexAttribPointer(static_cast<GLuint>(indexOfColor), static_cast<GLint>(numberColorPerVertex), GL_FLOAT, GL_FALSE, vertexColorStride * sizeof(float), (void*)(sizeof(float) * offsetToFirstColor));

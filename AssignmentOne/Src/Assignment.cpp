@@ -34,11 +34,13 @@ namespace Assignment
 {
 	const std::string shaderFolderPath = "Shaders/";
 
-	static std::string vertexShaderPath = shaderFolderPath + "DiffuseShader.vert";
-	static std::string fragShaderPath = shaderFolderPath + "DiffuseShader.frag";
+	static std::string vertexShaderPath = shaderFolderPath + "VertexShader.vert";
+	static std::string fragShaderPath = shaderFolderPath + "FragShader.frag";
 
 	static shaderFilePath defaultShader{ vertexShaderPath, fragShaderPath, "defaultShader" };
-	static shaderFilePath colorShader{ shaderFolderPath + "DiffuseShader.vert", shaderFolderPath + "DiffuseShader.frag", "colorShader" };
+	static shaderFilePath colorShader{ shaderFolderPath + "UniformColor.vert", shaderFolderPath + "UniformColor.frag", "colorShader" };
+	static shaderFilePath diffuseShader{ shaderFolderPath + "DiffuseShader.vert", shaderFolderPath + "DiffuseShader.frag", "diffuseShader" };
+
 
 	static bool wireFrameMode = false;
 
@@ -96,7 +98,7 @@ namespace Assignment
 	//should be based off aspect ratio
 	glm::vec2 scaleTopRightViewportPercent = { 0.25f, 0.25f };
 
-
+	glm::vec3 globalLightPos = glm::vec3(0.0f, 2.0f, 0.0f);
 
 	//To Do: Can allow dynamic model names here too, of course
 	namespace ModelNames
@@ -592,7 +594,8 @@ namespace Assignment
 
 
 
-	void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera)
+	void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera, glm::vec3 lightPos,
+		glm::vec3 lightColor, glm::vec3 lightDir)
 	{
 
 
@@ -635,14 +638,28 @@ namespace Assignment
 			MeshBuffers const& currMesh = currDraw.mesh;
 
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
-
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
 
-			//if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
-			//{
-			//	GLint colorLoc = glGetUniformLocation(programID, "setColor");
-			//	glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
-			//}
+			if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
+			{
+				GLint colorLoc = glGetUniformLocation(programID, "setColor");
+				glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
+			}
+
+			if (currDraw.shaderID == assignmentShaders.getShaderID(diffuseShader.shaderName))
+			{
+				GLint vTransformLoc = glGetUniformLocation(programID, "modelTransform");
+				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &modelMat[0][0]);
+
+				GLint lightPosLoc = glGetUniformLocation(programID, "lightPos");
+				glUniform3fv(lightPosLoc, 1, (float*)&lightPos);
+
+				GLint lightColorLoc = glGetUniformLocation(programID, "lightColor");
+				glUniform3fv(lightColorLoc, 1, (float*)&lightColor);
+
+				GLint viewPosLoc = glGetUniformLocation(programID, "viewPos");
+				glUniform3fv(viewPosLoc, 1, (float*)&drawCamera.pos);
+			}
 
 
 
@@ -1119,24 +1136,14 @@ namespace Assignment
 	void RenderDearImguiDefault()
 	{
 		ImGui::Begin("Settings");
-
-		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
-
+		ImGui::DragFloat3("Light Position", (float*)&globalLightPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
-		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
-		if (!changeBackGroundOnCollision)
-			collidedBackgroundColor = backgroundColor;
-		else
-			collidedBackgroundColor = basicBlue;
-
-
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
-		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
 		ImGui::Checkbox("Show Axis", &showAxis);
 		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
 
@@ -1843,10 +1850,10 @@ namespace Assignment
 				for (const Object& obj : objectVector)
 				{
 
-					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer);
+					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer, diffuseShader.shaderName);
 				}
 
-				DrawAll(drawList, currCamera);
+				DrawAll(drawList, currCamera, globalLightPos);
 
 				drawList.clear();
 			}
@@ -1938,7 +1945,7 @@ namespace Assignment
 
 			virtual void LoadSceneLocal()
 			{
-				LoadScene(objectVector, "Scenes/BunnyTest.txt");
+				LoadScene(objectVector, "Scenes/Bunny.txt");
 			}
 
 			void Init() override {
@@ -3480,6 +3487,7 @@ namespace Assignment
 	{
 		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
 		assignmentShaders.loadShader(colorShader.shaderName, colorShader);
+		assignmentShaders.loadShader(diffuseShader.shaderName, diffuseShader);
 
 		std::cout << "Assignment Shaders Loaded\n";
 
