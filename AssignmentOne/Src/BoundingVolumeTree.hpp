@@ -16,29 +16,45 @@ namespace Assignment
 			std::shared_ptr<BV> boundingVolume;
 		};
 
+		//List of nodes per height
+		template <typename BV>
+		struct nodeList
+		{
+			std::vector<std::shared_ptr<NodeBVH<BV>>> nodes;
+		};
+
 		//BVH
 		template <typename BV>
 		class BoundingVolumeTree
 		{
 		public:
 
+			void Clear()
+			{
+				heightMap.clear();
+				objList.clear();
+			}
+
 			void CreateTopDown(std::vector<Object>const& objListGlobal)
 			{
-
-				objList.clear();
+				Clear();
 
 				for (Object const& obj : objListGlobal)
 					objList.push_back(&obj);
 
 				treeRoot = std::make_shared<NodeBVH<BV>>();
 				size_t currHeight = 0;
-				heightMap.insert({ currHeight, treeRoot });
+				AddToHeight(currHeight, treeRoot);
+				//heightMap.insert({ currHeight, treeRoot });
 				TopDownBV(treeRoot, objList, currHeight);
 			}
 
 
 			void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList, size_t currHeight)
 			{
+				if (currHeight >= totalHeight)
+					totalHeight = currHeight;
+
 				//To Do: Add leaf node support
 				if (localObjectList.size() <= 1)
 					return;
@@ -72,25 +88,57 @@ namespace Assignment
 						rightList.push_back(obj);
 					}
 				}
-
 				++currHeight;
+
 				localRoot->left = std::make_shared<NodeBVH<BV>>();
-				heightMap.insert({ currHeight, localRoot->left });
+
+				AddToHeight(currHeight, localRoot->left);
 				TopDownBV(localRoot->left, leftList, currHeight);
 
 				localRoot->right = std::make_shared<NodeBVH<BV>>();
-				heightMap.insert({ currHeight, localRoot->right });
+				AddToHeight(currHeight, localRoot->right);
 				TopDownBV(localRoot->right, rightList, currHeight);
 			}
 
+			void AddToHeight(size_t height, std::shared_ptr<NodeBVH<BV>>& node)
+			{
+				if (heightMap.count(height) == 0)
+				{
+					nodeList<BV> nl;
+					heightMap.insert({ height, nl });
+				}
+				heightMap.at(height).nodes.push_back(node);
+			}
+
 			std::shared_ptr<NodeBVH<BV>> treeRoot;
+			std::unordered_map<size_t, nodeList<BV>> heightMap;
+
+			int GetHeight()
+			{
+				//Last height doesn't have BVHs
+				return totalHeight - 1;
+			}
+
+			void SetColorHeight(int height, glm::vec3 const& color)
+			{
+				if (heightMap.count(height) == 0)
+					return;
+
+				for (auto& bv : heightMap.at(height).nodes)
+				{
+					if (bv->boundingVolume != nullptr)
+					{
+						bv->boundingVolume->model.color = color;
+					}
+				}
+			}
 
 		private:
 
-			size_t totalHeight = 0;
+			int totalHeight = 0;
 
 			//Map that stores pointers to nodes that are of a certain height
-			std::unordered_map<size_t, std::shared_ptr <NodeBVH<BV>>> heightMap;
+
 			std::vector<Object const*> objList;
 		};
 

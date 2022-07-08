@@ -865,7 +865,6 @@ namespace Assignment
 		testCube.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 		testCube.rotDegrees.y += applicationPtr->getDeltaTime() * 10.0f;
 
-
 		DrawAll(drawList, currCamera);
 
 	}
@@ -1033,34 +1032,9 @@ namespace Assignment
 namespace Assignment
 {
 
-	//Has to be different per thing later
-	void RenderDearImguiDefault()
+	//Old one, not usedn now
+	void RenderCameraDearImgui()
 	{
-		ImGui::Begin("Settings");
-
-		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
-
-		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
-		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
-
-
-
-		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
-		if (!changeBackGroundOnCollision)
-			collidedBackgroundColor = backgroundColor;
-		else
-			collidedBackgroundColor = basicBlue;
-
-
-		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
-		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
-		ImGui::Checkbox("Show Axis", &showAxis);
-		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
-
-		ImGui::End();
 
 		ImGui::Begin("Simple Camera Controls");
 
@@ -1088,8 +1062,6 @@ namespace Assignment
 			MoveCameraAligned(topDownCamera, moveDirection * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
 			MoveCameraAligned(currCamera, moveDirection * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
 		};
-
-
 
 		ImGui::Button("Right");
 		if (ImGui::IsItemActive())
@@ -1131,9 +1103,44 @@ namespace Assignment
 			MoveCameraAligned(currCamera, -worldUp * cameraMoveSpeed * static_cast<float>(applicationPtr->getDeltaTime()));
 		}
 
+		ImGui::End();
+	}
 
+
+	void DearImguiBVH(int& showHeight, int const maxHeight)
+	{
+		ImGui::Begin("BVH Tree Settings");
+		ImGui::SliderInt("Height Settings", &showHeight, 0, maxHeight);
+		ImGui::End();
+	}
+
+	//Has to be different per thing later
+	void RenderDearImguiDefault()
+	{
+		ImGui::Begin("Settings");
+
+		ImGui::Text(collisionDetected ? "Collision" : "No Collision");
+
+		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
+		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
+
+		ImGui::Checkbox("Background Color Change on Collision", &changeBackGroundOnCollision);
+		if (!changeBackGroundOnCollision)
+			collidedBackgroundColor = backgroundColor;
+		else
+			collidedBackgroundColor = basicBlue;
+
+
+		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
+		ImGui::Checkbox("Wireframe Picture in Picture", &wireFramePictureInPicture);
+		ImGui::Checkbox("Show Axis", &showAxis);
+		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
 
 		ImGui::End();
+
 
 		ImGui::Begin("Scenes");
 		ImGui::Text(("Current Scene: " + currentSceneName).c_str());
@@ -1830,16 +1837,19 @@ namespace Assignment
 			std::vector<std::string> filePaths;
 			std::string modelFolderPath = "Models/";
 
-			
-
-			void RenderObjects()
+			void RenderObjects(bool showBV = false)
 			{
 				for (const Object& obj : objectVector)
 				{
 					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer);
+					if (showBV)
+					{
+						SubmitDraw(obj.bvPrimitive.model, obj.bvPrimitive.meshID);
+					}
 				}
 
 				DrawAll(drawList, currCamera);
+
 				drawList.clear();
 			}
 
@@ -1922,6 +1932,10 @@ namespace Assignment
 		public:
 
 			BV::BoundingVolumeTree<BV::AABB> BVHTree;
+			int showHeight = 0;
+			bool showBV = true;
+
+			glm::vec3 bvhColor[7] = { coolOrange, coolPurpleColor, basicBlue, coolOrange , coolOrange , coolOrange };
 
 			virtual void LoadSceneLocal()
 			{
@@ -1941,23 +1955,35 @@ namespace Assignment
 					});
 
 				BVHTree.CreateTopDown(objectVector);
+
+				int height = BVHTree.GetHeight();
+				for (int i = 0; i < height; ++i)
+				{
+					BVHTree.SetColorHeight(i, bvhColor[i]);
+				}
 			}
 
 			void Update() override {
 				currCamera.updateCamera(applicationPtr);
+				DearImguiBVH(showHeight, BVHTree.GetHeight());
 			}
 
 			void Render() override
 			{
 				RenderAxis();
-				RenderObjects();
+				RenderObjects(showBV);
 
 				//Draw the AABBCol in wireframe mode
-				SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
+				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
 
-				//SubmitDraw(BVHTree.treeRoot->left->boundingVolume->model, BVHTree.treeRoot->left->boundingVolume->meshID);
+				for (auto const& bvNode : BVHTree.heightMap[showHeight].nodes)
+				{
+					if (bvNode->boundingVolume != nullptr)
+					{
+						SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID);
+					}
+				}
 
-				//SubmitDraw(BVHTree.treeRoot->right->boundingVolume->model, BVHTree.treeRoot->right->boundingVolume->meshID);
 
 				
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
