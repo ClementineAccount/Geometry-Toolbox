@@ -17,8 +17,8 @@ namespace Assignment
 
         float FOV{ defaultFOV };
 
-        float yaw = 0.0f;
-        float pitch = 0.0f;
+        float yaw = -32.0f;
+        float pitch = -43.0f;
         int lastX;
         int lastY;
 

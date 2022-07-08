@@ -2,7 +2,6 @@
 
 namespace Assignment
 {
-
 	std::vector<glm::vec3> GetObjectPositions(Object const& obj)
 	{
 		std::vector<glm::vec3> positions;

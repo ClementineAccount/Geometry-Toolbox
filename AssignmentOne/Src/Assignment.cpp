@@ -52,6 +52,7 @@ namespace Assignment
 	static glm::vec3 skyBlue{ 0.149f,0.902f,1.0f };
 	static glm::vec3 greenscreenGreen{ 0.0f, 1.0f, 0.f };
 	static glm::vec3 blackish{ 0.1f, 0.05f, 0.0f };
+	static glm::vec3 grayish{ 0.8f, 1.0f, 1.0f };
 
 	static glm::vec3 defaultRingColor = greenscreenGreen;
 	static glm::vec3 defaultSphereColor = greenscreenGreen;
@@ -60,9 +61,9 @@ namespace Assignment
 
 	static glm::vec3 collidedBackgroundColor = basicBlue;
 	static glm::vec3 prevBackGround;
-	static glm::vec3 neutralBackgroundColor = blackish;
+	static glm::vec3 neutralBackgroundColor = skyBlue;
 
-	static glm::vec3 backgroundColor = blackish;
+	static glm::vec3 backgroundColor = skyBlue;
 
 	static bool changeBackGroundOnCollision = true;
 
@@ -997,6 +998,8 @@ namespace Assignment
 		std::ifstream sceneFile;
 		sceneFile.open(scenePath);
 
+		std::cout << "Loading Scene: " << scenePath << std::endl;
+
 		//Should do proper error handling if reusing outside Assignment 2 
 		if (!sceneFile.is_open())
 		{
@@ -1013,6 +1016,7 @@ namespace Assignment
 				std::string filePath = modelFolderPath + buffer;
 				if (loadedMeshMap.count(filePath) == 0)
 				{
+					std::cout << "Loading Model: " << filePath << std::endl;
 					Mesh m;
 					m.loadOBJ(filePath);
 					loadedMeshMap.insert(std::make_pair(filePath, m));
@@ -1138,8 +1142,8 @@ namespace Assignment
 		ImGui::Begin("Settings");
 		ImGui::DragFloat3("Light Position", (float*)&globalLightPos, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Camera Position", (float*)&currCamera.pos, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("Camera Pitch", (float*)&currCamera.pitch, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("Camera Yaw", (float*)&currCamera.yaw, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat("FOV", (float*)&currCamera.FOV, 0.01f, 1.0f, 110.0f);
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
@@ -1719,6 +1723,10 @@ namespace Assignment
 	void initCamera()
 	{
 		currCamera.pos = defaultCameraPos;
+
+		currCamera.yaw = -32.0f;
+		currCamera.pitch = -43.0f;
+
 		currCamera.updateCameraVectors();
 	}
 	void initBackground()
@@ -1945,13 +1953,10 @@ namespace Assignment
 
 			virtual void LoadSceneLocal()
 			{
-				LoadScene(objectVector, "Scenes/Bunny.txt");
+				LoadScene(objectVector, "Scenes/BVH.txt");
 			}
 
 			void Init() override {
-
-				currCamera.pitch = -20.0f;
-				currCamera.yaw = -152.0f;
 				initCamera();
 				LoadSceneLocal();
 

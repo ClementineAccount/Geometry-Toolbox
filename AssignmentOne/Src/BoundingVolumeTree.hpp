@@ -2,6 +2,8 @@
 #include "BoundingVolume.h"
 #include "Object.h"
 
+#include <iostream>
+
 namespace Assignment
 {
 	namespace BV
@@ -22,6 +24,14 @@ namespace Assignment
 		{
 			std::vector<std::shared_ptr<NodeBVH<BV>>> nodes;
 		};
+
+		//To speed up the amount of time it takes to do each layer, we should cache important infomation
+		//Use this infomation for the axis separation after we have it
+		//struct ObjectMeta
+		//{
+		//	glm::vec3 maxPoint;
+		//	glm::vec3 minPoint;
+		//};
 
 		//BVH
 		template <typename BV>
@@ -46,12 +56,39 @@ namespace Assignment
 				size_t currHeight = 0;
 				AddToHeight(currHeight, treeRoot);
 				//heightMap.insert({ currHeight, treeRoot });
+
+				std::cout << "Constructing BVH Tree (Top Down)" << std::endl;
 				TopDownBV(treeRoot, objList, currHeight);
+
+				std::cout << "Completed BVH Tree (Top Down)" << std::endl;
 			}
 
 
+			//std::vector<glm::vec3> GetObjectPositionsMeta(std::vector<Object const*>& localObjectList)
+			//{
+			//	std::vector<glm::vec3> objPos;
+
+			//	for (auto const& obj : localObjectList)
+			//	{
+			//		if (metaList.count(*obj) == 0)
+			//		{
+			//			std::vector<glm::vec3> pos;
+			//			pos = GetObjectPositions(*obj);
+			//			objPos.insert(objPos.end(), pos.begin(), pos.end());
+			//		}
+			//		else
+			//		{
+			//			objPos.push_back(metaList.at(*obj).maxPoint);
+			//			objPos.push_back(metaList.at(*obj).minPoint);
+			//		}
+			//	}
+
+			//}
+
 			void TopDownBV(std::shared_ptr<NodeBVH<BV>>& localRoot, std::vector<Object const*>& localObjectList, size_t currHeight)
 			{
+				std::cout << "TopDownBVH: Height: " << currHeight << std::endl;
+
 				if (currHeight >= totalHeight)
 					totalHeight = currHeight;
 
@@ -64,8 +101,9 @@ namespace Assignment
 				localRoot->boundingVolume->CalculateAABB(objPos);
 				localRoot->boundingVolume->UpdateBV();
 
-				glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(GetObjectPositions(localObjectList)));
-				
+				std::cout << "Number Object Positions: " << objPos.size() << std::endl;
+
+				glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(objPos));
 				glm::vec3 centerMean = calculatePositionMean(objPos);
 				
 				//The split plane for this example uses the centerMean as a point on the plane and the spreadAxis as the normal
@@ -140,6 +178,10 @@ namespace Assignment
 			//Map that stores pointers to nodes that are of a certain height
 
 			std::vector<Object const*> objList;
+
+
+
+			//std::unordered_map<Object const*, std::vector<glm::vec3>> objListPosCache; 
 		};
 
 	}

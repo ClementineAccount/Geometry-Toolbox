@@ -67,7 +67,7 @@ namespace Assignment
         //glm::vec3 normAccelerationVector = glm::vec3(0.0f, 0.0f, 0.0f);
     };
 
-    constexpr glm::vec3 defaultCameraPos = { 5.0f, 5.0f, 3.0f };
+    constexpr glm::vec3 defaultCameraPos = { -1.602, 1.794, 1.950 };
 
     //Viewports can be treated like 2D plane model transformations
     struct ViewportModel

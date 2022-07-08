@@ -31,7 +31,7 @@ namespace Assignment
 		void AABB::CalculateAABB(std::vector<glm::vec3>& positions)
 		{
 			auto setPos = [&](int component) {
-				std::sort(positions.begin(), positions.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
+				std::sort(positions.begin(), positions.end(), [&](glm::vec3 const& lhs, glm::vec3 const& rhs) {
 					return lhs[component] < rhs[component]; });
 
 				maxPoint[component] = positions[positions.size() - 1][component];
@@ -95,7 +95,7 @@ namespace Assignment
 			std::vector<glm::vec3> positionsTemp = positions;
 			
 			auto setPos = [&](int component, float& distance) {
-				std::sort(positionsTemp.begin(), positionsTemp.end(), [&](glm::vec3 lhs, glm::vec3 rhs) {
+				std::sort(positionsTemp.begin(), positionsTemp.end(), [&](glm::vec3 const& lhs, glm::vec3 const& rhs) {
 					return lhs[component] < rhs[component]; });
 
 				distance = positionsTemp[positions.size() - 1][component] - positionsTemp[0][component];
