@@ -28,7 +28,11 @@ namespace Assignment
         bool firstMouse = true;
         float sens = 0.002f;
 
+        float cameraSpeed = 2.0f;
+
         void updateCamera(GeometryToolbox::GLApplication const* app);
+
+        void updateCameraMovement(GeometryToolbox::GLApplication const* app);
 
         void updateCameraVectors();
         //glm::mat4 getViewMatrix();

@@ -908,7 +908,6 @@ namespace Assignment
 		RotateTriangleLines(triangle);
 	}
 
-
 	//Limitation of gimbal lock rotation. Applie rotation by the same order as in the mvp for now
 	void RotatePlane(Plane& plane, float rotateRightDegrees, float rotateUpDegrees, float rotateForwardDegrees)
 	{
@@ -1837,15 +1836,12 @@ namespace Assignment
 			std::vector<std::string> filePaths;
 			std::string modelFolderPath = "Models/";
 
-			void RenderObjects(bool showBV = false)
+			void RenderObjects()
 			{
 				for (const Object& obj : objectVector)
 				{
+
 					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer);
-					if (showBV)
-					{
-						SubmitDraw(obj.bvPrimitive.model, obj.bvPrimitive.meshID);
-					}
 				}
 
 				DrawAll(drawList, currCamera);
@@ -1880,6 +1876,7 @@ namespace Assignment
 
 			void Update() override {
 				aabbAll.UpdateBV();
+				currCamera.updateCameraMovement(applicationPtr);
 				currCamera.updateCamera(applicationPtr);
 			}
 
@@ -1939,7 +1936,7 @@ namespace Assignment
 
 			virtual void LoadSceneLocal()
 			{
-				LoadScene(objectVector, "Scenes/CubeTest2.txt");
+				LoadScene(objectVector, "Scenes/BunnyTest.txt");
 			}
 
 			void Init() override {
@@ -1964,14 +1961,16 @@ namespace Assignment
 			}
 
 			void Update() override {
+				currCamera.updateCameraMovement(applicationPtr);
 				currCamera.updateCamera(applicationPtr);
+
 				DearImguiBVH(showHeight, BVHTree.GetHeight());
 			}
 
 			void Render() override
 			{
 				RenderAxis();
-				RenderObjects(showBV);
+				RenderObjects();
 
 				//Draw the AABBCol in wireframe mode
 				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
@@ -1980,7 +1979,7 @@ namespace Assignment
 				{
 					if (bvNode->boundingVolume != nullptr)
 					{
-						SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID);
+						SubmitDraw(bvNode->boundingVolume->model, bvNode->boundingVolume->meshID, colorShader.shaderName);
 					}
 				}
 

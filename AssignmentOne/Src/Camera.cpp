@@ -13,6 +13,7 @@ namespace Assignment
 			//lastX = app->gWindowWidth / 2.0f;
 			//lastY = app->gWindowHeight / 2.0f;
 			firstMouse = true;
+			updateCameraVectors();
 			return;
 		}
 		
@@ -42,6 +43,36 @@ namespace Assignment
 			pitch = -89.0f;
 
 		updateCameraVectors();
+
+	}
+
+	void Camera ::updateCameraMovement(GeometryToolbox::GLApplication const* app)
+	{
+
+		float cameraSpeedFinal = cameraSpeed * app->gDeltaTime;
+
+		if (glfwGetKey(app->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		{
+			cameraSpeedFinal *= 4.0f;
+		}
+
+		if (glfwGetKey(app->window, GLFW_KEY_W) == GLFW_PRESS)
+		{
+			pos += cameraSpeedFinal * forward;
+		}
+
+		if (glfwGetKey(app->window, GLFW_KEY_S) == GLFW_PRESS)
+			pos -= cameraSpeedFinal * forward;
+		if (glfwGetKey(app->window, GLFW_KEY_A) == GLFW_PRESS)
+			pos -= glm::normalize(glm::cross(forward, up)) * cameraSpeedFinal;
+		if (glfwGetKey(app->window, GLFW_KEY_D) == GLFW_PRESS)
+			pos += glm::normalize(glm::cross(forward, up)) * cameraSpeedFinal;
+
+		if (glfwGetKey(app->window, GLFW_KEY_Q) == GLFW_PRESS)
+			pos += glm::normalize(glm::cross(forward, right)) * cameraSpeedFinal;
+		if (glfwGetKey(app->window, GLFW_KEY_E) == GLFW_PRESS)
+			pos -= glm::normalize(glm::cross(forward, right)) * cameraSpeedFinal;
+
 	}
 
 	void Camera::updateCameraVectors()
