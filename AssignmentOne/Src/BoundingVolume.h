@@ -45,7 +45,6 @@ namespace Assignment
 			//std::vector<Object const*> objectList;
 
 		protected:
-
 		};
 
 		class AABB : public BoundingVolume
@@ -64,6 +63,19 @@ namespace Assignment
 			void CalculateAABB(Object const& obj);
 			void CalculateAABB(std::vector<glm::vec3>& positions);
 
+			glm::vec3 getCenter() const override { return centerPos; };
+		};
+
+		class Sphere : public BoundingVolume
+		{
+
+		public:
+			glm::vec3 centerPos;
+			float radius;
+
+			void UpdateBV() override;
+
+			void CalculateRitters(std::vector<glm::vec3>& positions);
 			glm::vec3 getCenter() const override { return centerPos; };
 		};
 

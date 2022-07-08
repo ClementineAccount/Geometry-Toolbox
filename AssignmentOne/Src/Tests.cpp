@@ -37,10 +37,30 @@ namespace Assignment
 			assert(expected == result);
 		}
 
+
+		void TestRitters()
+		{
+			BV::Sphere sphereBV;
+			std::vector<glm::vec3> posVector;
+			posVector.push_back(glm::vec3(-2.0f, 0.0f, 0.0f));
+			posVector.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+			posVector.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
+			posVector.push_back(glm::vec3(2.0f, 0.0f, 0.0f));
+
+			sphereBV.CalculateRitters(posVector);
+
+			glm::vec3 expectedCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+			float expectedRadius = 2.0f;
+
+			assert(expectedCenter == sphereBV.centerPos);
+			assert(expectedRadius == sphereBV.radius);
+		}
+
 		void TestAll()
 		{
 			TestPosMean();
 			TestLargestSpread();
+			TestRitters();
 		}
 
 	}

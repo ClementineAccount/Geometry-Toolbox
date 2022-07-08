@@ -1,5 +1,5 @@
-starwars1.obj
-4 0 0
+lucy_princeton.obj
+0 0 0
 0.01 0.01 0.01
 0 0 0
 0.816 0.949 0.992

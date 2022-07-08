@@ -3,7 +3,7 @@
 #include <memory>
 #include <algorithm>
 #include <numeric>
-
+#include <iostream>
 
 namespace Assignment
 {
@@ -69,6 +69,73 @@ namespace Assignment
 			model.scale = scale;
 		}
 
+		void Sphere::UpdateBV()
+		{
+			meshID = MeshNames::sphere;
+			model.pos = centerPos;
+			model.scale = glm::vec3(radius, radius, radius);
+		}
+
+		void Sphere::CalculateRitters(std::vector<glm::vec3>& positions)
+		{
+			std::cout << "Caulcating Ritters\n";
+			glm::vec3 startPoint = positions[0];
+			
+			//Get furthest point from here
+			using ptDistancePair = std::pair<float, glm::vec3>;
+
+			auto findFarPoint = [&](glm::vec3 const& referencePoint, std::vector<glm::vec3> const& posList)
+			{
+				ptDistancePair furthestPoint({ 0.0f, referencePoint });
+				for (auto const& pos : posList)
+				{
+					glm::vec3 dirVector = referencePoint - pos;
+					if (glm::dot(dirVector, dirVector) > furthestPoint.first)
+					{
+						//Note: this is the distance squared so square it after you are done with everything
+						furthestPoint.first = glm::dot(dirVector, dirVector);
+						furthestPoint.second = pos;
+					}
+				}
+				return furthestPoint.second;
+			};
+
+			glm::vec3 secondPt = findFarPoint(startPoint, positions);
+			glm::vec3 thirdPt = findFarPoint(secondPt, positions);
+			glm::vec3 dir = (thirdPt - secondPt) * 0.5f;
+
+
+			centerPos = secondPt + dir;
+			radius = glm::length(dir);
+			auto allPointsOutside = [&]()
+			{
+				std::vector<glm::vec3> outsidePoints;
+				for (auto const& pos : positions)
+				{
+					if (glm::distance(pos, centerPos) > radius)
+						outsidePoints.push_back(pos);
+				}
+				return outsidePoints;
+			};
+
+			std::vector<glm::vec3> outsidePoints = allPointsOutside();
+			//outsidePoints.clear();
+
+			//Something is wrong with my second pass. Will have to investigate why
+			while (!outsidePoints.empty())
+			{
+				glm::vec3 farOutsidePoint = findFarPoint(centerPos, outsidePoints);
+				glm::vec3 dir = glm::normalize(farOutsidePoint - centerPos);
+				glm::vec3 furthestPointEdge = centerPos - (dir * radius);
+
+				glm::vec3 diameterVector = (farOutsidePoint - furthestPointEdge);
+				radius = glm::length(diameterVector) * 0.51f; //have to add a slight buffer to prevent infinite loop sometimes
+				centerPos = furthestPointEdge + diameterVector * 0.5f;
+
+				outsidePoints.clear();
+				outsidePoints = allPointsOutside();
+			}
+		}
 
 
 		glm::vec3 calculatePositionMean(std::vector<glm::vec3> const& positions)

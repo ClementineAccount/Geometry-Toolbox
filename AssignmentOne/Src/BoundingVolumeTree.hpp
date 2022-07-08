@@ -124,7 +124,7 @@ namespace Assignment
 
 				for (Object const* obj : localObjectList)
 				{
-					glm::vec3 bvCenter = obj->bvPrimitive.getCenter();
+					glm::vec3 bvCenter = obj->bvPrimitiveAABB.getCenter();
 					glm::vec3 dir = splitPoint - bvCenter;
 					if (glm::dot(dir, planeNormal) > 0.0f)
 					{

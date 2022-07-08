@@ -43,6 +43,7 @@ namespace Assignment
 
 
 	static bool wireFrameMode = false;
+	static bool showPrims = true;
 
 	static glm::vec3 niceOrangeColor{ 1.0f, 0.341f, 0.2f };
 	static glm::vec3 coolPurpleColor{ 0.565f, 0.046f, 0.243f };
@@ -1148,6 +1149,7 @@ namespace Assignment
 		ImGui::DragFloat3("Background Color", (float*)&backgroundColor, 0.001f, 0.0f, 1.0f);
 
 		ImGui::Checkbox("Wireframe Mode", &wireFrameMode);
+		ImGui::Checkbox("Show Primitives", &showPrims);
 		ImGui::Checkbox("Show Axis", &showAxis);
 		ImGui::Checkbox("Enable Depth Testing", &enableDepthTest);
 
@@ -1846,10 +1848,15 @@ namespace Assignment
 	{
 		class BaseScene : public Scene
 		{
+		public:
+
+			void Clear() override {
+				objectVector.clear();
+			}
+
 		protected:
 			//Every scene for A2 have these functions
 			std::vector<Object> objectVector;
-
 			std::vector<std::string> filePaths;
 			std::string modelFolderPath = "Models/";
 
@@ -1857,90 +1864,88 @@ namespace Assignment
 			{
 				for (const Object& obj : objectVector)
 				{
-
 					SubmitDraw(obj.transform, obj.objectMesh->meshBuffer, diffuseShader.shaderName);
 				}
 
 				DrawAll(drawList, currCamera, globalLightPos);
-
 				drawList.clear();
+			}
+
+			void RenderAABB()
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				for (const Object& obj : objectVector)
+				{
+					SubmitDraw(obj.bvPrimitiveAABB.model, obj.bvPrimitiveAABB.meshID);
+				}
+
+				DrawAll(drawList, currCamera, globalLightPos);
+				drawList.clear();
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+
+			void RenderBVSphere()
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				for (const Object& obj : objectVector)
+				{
+					SubmitDraw(obj.bvPrimitiveSphere.model, obj.bvPrimitiveSphere.meshID);
+				}
+
+				DrawAll(drawList, currCamera, globalLightPos);
+				drawList.clear();
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+
+			void UpdateCamera()
+			{
+				currCamera.updateCameraMovement(applicationPtr);
+				currCamera.updateCamera(applicationPtr);
 			}
 
 			virtual void LoadSceneLocal()
 			{
 				LoadScene(objectVector, "Scenes/CubeTest.txt");
 			}
+
 		};
-		
-		class ModelLoadScene : public BaseScene
+
+
+		class RittersExample : public BaseScene
 		{
-		protected:
-			BV::AABB aabbAll;
 		public:
+		
+			virtual void LoadSceneLocal()
+			{
+				LoadScene(objectVector, "Scenes/Bunny.txt");
+				LoadScene(objectVector, "Scenes/StarWars.txt");
+			}
 
 			void Init() override {
-
-				currCamera.pitch = -20.0f;
-				currCamera.yaw = -152.0f;
 				initCamera();
-
 				LoadSceneLocal();
-				std::vector<glm::vec3> pos = GetObjectPositions(objectVector);
-				aabbAll.CalculateAABB(pos);
-				aabbAll.UpdateBV();
-				aabbAll.meshID = MeshNames::cube;
+
+				std::for_each(objectVector.begin(), objectVector.end(), [&](Object& obj) {
+					std::vector<glm::vec3> pos = GetObjectPositions(obj);
+					obj.bvPrimitiveSphere.CalculateRitters(pos);
+					obj.bvPrimitiveSphere.UpdateBV();
+					});
 			}
 
 			void Update() override {
-				aabbAll.UpdateBV();
-				currCamera.updateCameraMovement(applicationPtr);
-				currCamera.updateCamera(applicationPtr);
+				UpdateCamera();
 			}
 
 			void Render() override
 			{
 				RenderAxis();
 				RenderObjects();
-
-				//Draw the AABBCol in wireframe mode
-
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-				SubmitDraw(aabbAll.model, aabbAll.meshID);
-				DrawAll(drawList, currCamera);
+				if (showPrims)
+					RenderBVSphere();
 				drawList.clear();
 			}
 
-			void Clear() override {
-				objectVector.clear();
-			}
 		};
-
-		class CubeLoadScene : public ModelLoadScene
-		{
-			void LoadSceneLocal() override
-			{
-				LoadScene(objectVector, "Scenes/CubeTest.txt");
-			}
-		};
-
-		class BunnyLoadScene : public ModelLoadScene
-		{
-			
-			void LoadSceneLocal() override
-			{
-				LoadScene(objectVector, "Scenes/Bunny.txt");
-			}
-		};
-
-		class StarWarsLoadScene : public ModelLoadScene
-		{
-			void LoadSceneLocal() override
-			{
-				LoadScene(objectVector, "Scenes/StarWars.txt");
-			}
-		};
-
 
 		class TopDownScene : public BaseScene {
 		public:
@@ -1949,7 +1954,7 @@ namespace Assignment
 			int showHeight = 0;
 			bool showBV = true;
 
-			glm::vec3 bvhColor[7] = { coolOrange, coolPurpleColor, basicBlue, coolOrange , coolOrange , coolOrange };
+			glm::vec3 bvhColor[7] = { coolOrange, coolPurpleColor, greenscreenGreen, maroonColor , glm::vec3(1.0f, 0.0f, 0.0f) , grayish};
 
 			virtual void LoadSceneLocal()
 			{
@@ -1961,8 +1966,8 @@ namespace Assignment
 				LoadSceneLocal();
 
 				std::for_each(objectVector.begin(), objectVector.end(), [&](Object& obj) {
-					obj.bvPrimitive.CalculateAABB(obj);
-					obj.bvPrimitive.UpdateBV();
+					obj.bvPrimitiveAABB.CalculateAABB(obj);
+					obj.bvPrimitiveAABB.UpdateBV();
 					});
 
 				BVHTree.CreateTopDown(objectVector);
@@ -1985,6 +1990,8 @@ namespace Assignment
 			{
 				RenderAxis();
 				RenderObjects();
+				if (showPrims)
+					RenderAABB();
 
 				//Draw the AABBCol in wireframe mode
 				//SubmitDraw(BVHTree.treeRoot->boundingVolume->model, BVHTree.treeRoot->boundingVolume->meshID);
@@ -1997,35 +2004,12 @@ namespace Assignment
 					}
 				}
 
-
-				
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				DrawAll(drawList, currCamera);
 				drawList.clear();
 			}
 
-			void Clear() override {
-				objectVector.clear();
 
-			}
-
-		};
-
-		class AssignmentTwoScene : public BaseScene
-		{
-		public:
-			void Init() override {
-
-			}
-
-			void Update() override {
-
-			}
-
-			void Render() override
-			{
-
-			}
 
 		};
 	}
@@ -3445,8 +3429,9 @@ namespace Assignment
 
 	void InitScenes()
 	{
-		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
-		currentSceneName = "Top Down BVH";
+		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH (AABB)");
+		ScenetoFunction<AssignmentTwoScenes::RittersExample>("Ritters Example");
+		currentSceneName = "Ritters Example";
 	}
 }
 
