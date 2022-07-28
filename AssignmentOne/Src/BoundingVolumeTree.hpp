@@ -92,7 +92,7 @@ namespace Assignment
 
 				glm::vec3 spreadAxis = axisOffsets::axisToDirection(largestSpreadAxis(objPos));
 				glm::vec3 centerMean = calculatePositionMean(objPos);
-				
+					
 				//The split plane for this example uses the centerMean as a point on the plane and the spreadAxis as the normal
 				glm::vec3 splitPoint = centerMean;
 				glm::vec3 planeNormal = spreadAxis;

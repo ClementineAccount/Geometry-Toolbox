@@ -39,7 +39,7 @@
 constexpr unsigned int startWindowWidth = 1280;
 constexpr unsigned int startWindowHeight = 800;
 
-std::string windowTitle = "Clementine Shamaney | Assignment 1 | ";
+std::string windowTitle = "Clementine Shamaney | Assignment 2 | ";
 
 double GeometryToolbox::GLApplication::getDeltaTime()
 {

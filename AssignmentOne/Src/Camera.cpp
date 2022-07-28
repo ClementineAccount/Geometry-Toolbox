@@ -8,10 +8,8 @@ namespace Assignment
 	{
 		//glfwSetInputMode(app->window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
 		int state = glfwGetMouseButton(app->window, GLFW_MOUSE_BUTTON_RIGHT);
-		if (state == GLFW_RELEASE)
+		if (state == GLFW_RELEASE && (glfwGetKey(app->window, GLFW_KEY_V) != GLFW_PRESS))
 		{
-			//lastX = app->gWindowWidth / 2.0f;
-			//lastY = app->gWindowHeight / 2.0f;
 			firstMouse = true;
 			updateCameraVectors();
 			return;
