@@ -1875,7 +1875,7 @@ namespace Assignment
 	namespace AssignmentThreeScenes
 	{
 		//Has an example Triangle soup
-		class SoupScene : public Scene
+		class SoupScene : public Scene 
 		{
 		public:
 
@@ -1927,10 +1927,52 @@ namespace Assignment
 			}
 		};
 
-		class OctTree : public SoupScene
+		class OctTreeScene : public Scene
 		{
+			OctTree::Tree tree;
+		public:
+			void Init() override {
+				initCamera();
+				tree.Init(worldOrigin, 10.0f);
+			}
+
+			void UpdateCamera()
+			{
+				currCamera.updateCameraMovement(applicationPtr);
+				currCamera.updateCamera(applicationPtr);
+			}
+
+			void Update() override {
+				UpdateCamera();
+			}
+
+			void RenderTree(OctTree::Tree const& tree)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				
+				SubmitDraw(tree.rootNode.transform, MeshNames::cube);
+				DrawAll(drawList, currCamera, globalLightPos);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				
+				drawList.clear();
+			}
+
+			void Render() override
+			{
+				//To Do: Make a render function for th
+				RenderTree(tree);
+
+				RenderAxis();
+				DrawAll(drawList, currCamera, globalLightPos);
 
 
+				
+			}
+
+			void Clear() override
+			{
+
+			}
 		};
 	}
 
@@ -3572,11 +3614,12 @@ namespace Assignment
 
 	void InitScenes()
 	{
-		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
-		ScenetoFunction<AssignmentTwoScenes::PrimExample>("Ritters & AABB");
+		//ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
+		//ScenetoFunction<AssignmentTwoScenes::PrimExample>("Ritters & AABB");
 
-		ScenetoFunction<AssignmentThreeScenes::SoupScene>("Assignment 3");
-		currentSceneName = "Assignment 3";
+		ScenetoFunction<AssignmentThreeScenes::SoupScene>("Triangles");
+		ScenetoFunction<AssignmentThreeScenes::OctTreeScene>("Octree Scene");
+		currentSceneName = "Octree Scene";
 	}
 }
 

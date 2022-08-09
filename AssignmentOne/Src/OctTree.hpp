@@ -2,7 +2,8 @@
 #include <glm/glm.hpp>
 #include <vector> 
 #include <memory>
-
+#include "Transform.h"
+#include "mesh.h"
 #include "TriangleSoup.h"
 
 namespace Assignment
@@ -19,6 +20,13 @@ namespace Assignment
 		{
 		public:
 			//Similar concept as AABB as we store each region as a uniform box
+			void Init(glm::vec3 const& _centerPos, float _halfLength)
+			{
+				centerPos = _centerPos;
+				halfLength = _halfLength;
+				transform.pos = centerPos; //pivot center
+				transform.scale = glm::vec3(halfLength * 2.0f, halfLength * 2.0f, halfLength * 2.0f);
+			}
 
 			glm::vec3 centerPos;
 			float halfLength; //Uniform box and cube so all sides must be equal by definition (can be called radius)
@@ -27,6 +35,12 @@ namespace Assignment
 
 			//Node* parent; //read only ptr
 			std::vector<Node> children;
+
+			//For rendering
+			bool isRendering = true;
+
+			Transform transform;
+			//Mesh* boxMesh; //Should be an aabb so cube
 		};
 
 		class Tree
@@ -43,6 +57,8 @@ namespace Assignment
 				//To Do: Make this constructor or init()
 				rootNode.centerPos = centerPos;
 				rootNode.halfLength = fullLength * 0.5f;
+				rootNode.transform.pos = centerPos;
+
 			}
 
 			//Split into the four quadrants and assign them as children
