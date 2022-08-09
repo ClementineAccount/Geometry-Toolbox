@@ -2021,14 +2021,60 @@ namespace Assignment
 			}
 		};
 
-		class OctTreeScene : public Scene
+		class OctTreeSceneExampleOne : public Scene
 		{
 			OctTree::Tree tree;
+
+			/*TriangleA3 triOne;
+			TriangleA3 triTwo;*/
+
+			TriangleA3 triList[4];
+
+			TriangleSoup triSoup;
+
+
 		public:
 			void Init() override {
 				initCamera();
-				tree.Init(worldOrigin, 5.0f);
-				tree.SplitCell(tree.rootNode);
+				tree.Init(worldOrigin, 15.0f);
+				//tree.SplitCell(tree.rootNode);
+
+				currCamera.pos.x = 0.465f;
+				currCamera.pos.y = 0.670f;
+				currCamera.pos.z = 13.299f;
+
+				currCamera.yaw = -90.0f;
+				currCamera.pitch = -3.0f;
+
+				triList[0].color = coolPurpleColor;
+				triList[0].ptA = glm::vec3(1.0f, 1.0f, 0.0f);
+				triList[0].ptB = glm::vec3(1.0f, 5.0f, 0.0f);
+				triList[0].ptC = glm::vec3(5.0f, 1.0f, 0.0f);
+
+				triList[1].color = coolPurpleColor;
+				triList[1].ptA = glm::vec3(1.0f, -1.0f, 0.0f);
+				triList[1].ptB = glm::vec3(1.0f, -5.0f, 0.0f);
+				triList[1].ptC = glm::vec3(5.0f, -1.0f, 0.0f);
+
+				triList[2].color = coolPurpleColor;
+				triList[2].ptA = glm::vec3(1.0f - 5.0f, 1.0f, 0.0f);
+				triList[2].ptB = glm::vec3(1.0f - 5.0f, 3.0f, 0.0f);
+				triList[2].ptC = glm::vec3(3.0f - 5.0f, 1.0f, 0.0f);
+
+				triList[3].color = coolPurpleColor;
+				triList[3].ptA = glm::vec3(1.0f - 7.0f, 1.0f + 2.0f, 0.0f);
+				triList[3].ptB = glm::vec3(1.0f - 7.0f, 3.0f + 2.0f, 0.0f);
+				triList[3].ptC = glm::vec3(3.0f - 7.0f, 1.0f + 2.0f, 0.0f);
+
+				for (auto& tri : triList)
+				{
+					triSoup.triangleList.push_back(tri);
+					tree.Insert(&tri);
+				}
+					
+
+				triSoup.UpdateBuffers();
+				
 			}
 
 			void UpdateCamera()
@@ -2053,6 +2099,8 @@ namespace Assignment
 				//To Do: Make a render function for th
 				RenderTree(tree);
 				RenderAxis();
+
+				DrawSoup(triSoup, currCamera);
 				DrawAll(drawList, currCamera, globalLightPos);
 
 				drawList.clear();
@@ -3708,8 +3756,8 @@ namespace Assignment
 		//ScenetoFunction<AssignmentTwoScenes::PrimExample>("Ritters & AABB");
 
 		ScenetoFunction<AssignmentThreeScenes::SoupScene>("Triangles");
-		ScenetoFunction<AssignmentThreeScenes::OctTreeScene>("Octree Scene");
-		currentSceneName = "Octree Scene";
+		ScenetoFunction<AssignmentThreeScenes::OctTreeSceneExampleOne>("Octree Scene: Triangles");
+		currentSceneName = "Octree Scene: Triangles";
 	}
 }
 

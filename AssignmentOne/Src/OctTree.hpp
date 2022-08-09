@@ -6,6 +6,10 @@
 #include "mesh.h"
 #include "TriangleSoup.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
+
+
 namespace Assignment
 {
 	namespace OctTree
@@ -41,6 +45,8 @@ namespace Assignment
 			std::vector<TriangleA3*> triangleVector;
 
 			//Node* parent; //read only ptr
+
+			std::unordered_map<glm::vec3, Node> childMap;
 			std::vector<Node> children;
 
 			//For rendering
@@ -60,7 +66,7 @@ namespace Assignment
 
 
 			//How many objects per cell before we perform a split
-			size_t maxObjectCell;
+			size_t maxObjectCell = 5;
 
 			//Makes the root
 			void Init(glm::vec3 const& centerPos, float const fullLength)
@@ -82,38 +88,56 @@ namespace Assignment
 					child.Init(center, parentCell.halfLength);
 					child.transform.color = glm::vec3(0.0f, 0.0f, 1.0f);
 
-					return child;
+					parentCell.childMap.emplace(cellDir, child );
+					allNodes.push_back(&parentCell.childMap.at(cellDir));
 				};
 
-				parentCell.children.emplace_back(makeChild(upRightQuad));
-				//parentCell.children.emplace_back(makeChild(upLeftQuad));
 
-				parentCell.children.emplace_back(makeChild(downLeftQuad));
-				//parentCell.children.emplace_back(makeChild(downRightQuad));
-
-				for (auto& cell : parentCell.children)
-					allNodes.emplace_back(&cell);
+				makeChild(upRightQuad);
+				makeChild(upLeftQuad);
+				makeChild(upRightQuadMirror);
+				makeChild(upLeftQuadMirror);
+				makeChild(downLeftQuad);
+				makeChild(downRightQuad);
+				makeChild(downLeftQuadMirror);
+				makeChild(downRightQuadMirror);
 			}
 
 			void Insert(TriangleA3* tri)
 			{
-				//Case 1: No children can instant insert into the root
-				if (rootNode.children.empty())
+				Node* currNode = &rootNode;
+				if (!currNode->children.empty())
 				{
-					rootNode.triangleVector.push_back(tri);
+					glm::vec3 offsetDir = whichOct(currNode->centerPos, tri->ptA);
+					currNode->childMap.at(offsetDir).triangleVector.push_back(tri);
+				}
 
-					//Perform our first split once we reach max objects here
-					if (rootNode.triangleVector.size() == maxObjectCell)
+				//Case 1: No children can instant insert into the root
+				if (currNode->children.empty())
+				{
+					currNode->triangleVector.push_back(tri);
+
+					//Perform split once we reach max objects here
+					if (currNode->triangleVector.size() == maxObjectCell)
 					{
-						//Divide into four quadrants
-						//SplitCell(rootNode);
+						//Divide into the eight
+						SplitCell(rootNode);
+
+
+						std::vector<TriangleA3*> triVectorCopy;
+						//triVectorCopy.assign(rootNode.triangleVector.begin(), rootNode.triangleVector.end());
+						rootNode.triangleVector.clear();
+
+
+						for (auto& tri : triVectorCopy)
+							Insert(tri);
 					}
 				}
 			}
 
 
 			//Check which quadrant relative to this parent
-			glm::vec3 whichQuad(glm::vec3 const& cellCenter, glm::vec3 const& ptA)
+			glm::vec3 whichOct(glm::vec3 const& cellCenter, glm::vec3 const& ptA)
 			{
 				/*
 				The idea (made myself):

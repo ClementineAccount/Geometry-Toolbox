@@ -77,6 +77,8 @@ namespace Assignment
 			assert(tree.rootNode.triangleVector.front() == &triA);
 		}
 
+		//To Do: Rewrite it to use Quad
+
 		void TestOctTreeCell()
 		{
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -91,11 +93,11 @@ namespace Assignment
 			glm::vec3 ptD = glm::vec3(-5.0f, 5.0f, 0.0f);
 			glm::vec3 ptE = glm::vec3(5.0f, -5.0f, 0.0f);
 
-			assert(tree.whichQuad(tree.rootNode.centerPos, ptA) == OctTree::upRightQuad);
-			assert(tree.whichQuad(tree.rootNode.centerPos, ptB) == OctTree::upRightQuad);
-			assert(tree.whichQuad(tree.rootNode.centerPos, ptC) == OctTree::downLeftQuad);
-			assert(tree.whichQuad(tree.rootNode.centerPos, ptD) == OctTree::upLeftQuad);
-			assert(tree.whichQuad(tree.rootNode.centerPos, ptE) == OctTree::downRightQuad);
+			assert(tree.whichOct(tree.rootNode.centerPos, ptA) == OctTree::upRightQuad);
+			assert(tree.whichOct(tree.rootNode.centerPos, ptB) == OctTree::upRightQuad);
+			assert(tree.whichOct(tree.rootNode.centerPos, ptC) == OctTree::downLeftQuad);
+			assert(tree.whichOct(tree.rootNode.centerPos, ptD) == OctTree::upLeftQuad);
+			assert(tree.whichOct(tree.rootNode.centerPos, ptE) == OctTree::downRightQuad);
 		}
 
 		void TestOctTreeSplit()
@@ -138,7 +140,7 @@ namespace Assignment
 
 		void TestA3()
 		{
-			TestOctTree2D();
+			//TestOctTree2D();
 			//TestOctTreeCell();
 			//TestOctTreeSplit();
 		}
