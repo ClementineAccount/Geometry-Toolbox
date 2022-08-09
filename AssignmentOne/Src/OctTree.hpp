@@ -10,11 +10,17 @@ namespace Assignment
 {
 	namespace OctTree
 	{
-		//Test in 2D first
 		constexpr glm::vec3 upRightQuad = glm::vec3(1.0f, 1.0f, 1.0f);
 		constexpr glm::vec3 upLeftQuad = glm::vec3(-1.0f, 1.0f, 1.0f);
+
+		constexpr glm::vec3 upRightQuadMirror = glm::vec3(1.0f, 1.0f, -1.0f);
+		constexpr glm::vec3 upLeftQuadMirror = glm::vec3(-1.0f, 1.0f, -1.0f);
+
 		constexpr glm::vec3 downLeftQuad = glm::vec3(-1.0f, -1.0f, -1.0f);
 		constexpr glm::vec3 downRightQuad = glm::vec3(1.0f, -1.0f, -1.0f);
+
+		constexpr glm::vec3 downLeftQuadMirror = glm::vec3(-1.0f, -1.0f, 1.0f);
+		constexpr glm::vec3 downRightQuadMirror = glm::vec3(1.0f, -1.0f, 1.0f);
 
 		class Node
 		{
@@ -79,10 +85,10 @@ namespace Assignment
 					return child;
 				};
 
-				//parentCell.children.emplace_back(makeChild(upRightQuad));
+				parentCell.children.emplace_back(makeChild(upRightQuad));
 				//parentCell.children.emplace_back(makeChild(upLeftQuad));
 
-				//parentCell.children.emplace_back(makeChild(downLeftQuad));
+				parentCell.children.emplace_back(makeChild(downLeftQuad));
 				//parentCell.children.emplace_back(makeChild(downRightQuad));
 
 				for (auto& cell : parentCell.children)
