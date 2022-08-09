@@ -1,5 +1,6 @@
 #include "Tests.h"
 #include "BoundingVolume.h"
+#include "OctTree.hpp"
 
 namespace Assignment
 {
@@ -56,11 +57,35 @@ namespace Assignment
 			assert(expectedRadius == sphereBV.radius);
 		}
 
+
+		void TestOctTree2D()
+		{
+			// Test in 2D first
+			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+			float fullLength = 10.0f;
+
+			OctTree::Tree<glm::vec3> tree;
+			tree.Init(pos, fullLength);
+
+			glm::vec3 ptA = glm::vec3(5.0f, 5.0f, 0.0f);
+			tree.Insert(ptA);
+
+			assert(tree.rootNode->objectVector.front() == ptA);
+		}
+
+
+		void TestA3()
+		{
+			TestOctTree2D();
+		}
+
 		void TestAll()
 		{
 			TestPosMean();
 			TestLargestSpread();
 			TestRitters();
+
+			TestA3();
 		}
 
 	}

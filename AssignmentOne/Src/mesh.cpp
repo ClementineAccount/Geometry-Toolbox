@@ -25,7 +25,6 @@ namespace Assignment
 			vertices.push_back(point.y);
 			vertices.push_back(point.z);
 		}
-
 		return vertices;
 	}
 

@@ -171,11 +171,13 @@
     <ClInclude Include="Src\GLApplication.h" />
     <ClInclude Include="Src\mesh.h" />
     <ClInclude Include="Src\Object.h" />
+    <ClInclude Include="Src\OctTree.hpp" />
     <ClInclude Include="Src\Scene.h" />
     <ClInclude Include="Src\SceneManager.h" />
     <ClInclude Include="Src\shader.hpp" />
     <ClInclude Include="Src\Tests.h" />
     <ClInclude Include="Src\Transform.h" />
+    <ClInclude Include="Src\TriangleSoup.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp" />
@@ -198,6 +200,7 @@
     <ClCompile Include="Src\SceneManager.cpp" />
     <ClCompile Include="Src\shader.cpp" />
     <ClCompile Include="Src\Tests.cpp" />
+    <ClCompile Include="Src\TriangleSoup.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

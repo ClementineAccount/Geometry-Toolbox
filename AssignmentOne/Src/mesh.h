@@ -32,7 +32,6 @@ namespace Assignment
 		unsigned int VBO = 0;
 
 		unsigned int arrayCount;
-
 		unsigned char drawType = GL_TRIANGLES;
 
 		bool isDrawElements = false;

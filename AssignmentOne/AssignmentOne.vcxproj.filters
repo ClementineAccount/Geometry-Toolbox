@@ -58,6 +58,15 @@
     <Filter Include="Source\Tests">
       <UniqueIdentifier>{8cc20d45-3704-42fe-bf99-8a04fa63e6c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\TriangleSoup">
+      <UniqueIdentifier>{c7fa0f6e-5ea2-4ccc-995d-70036127e01d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assignment3">
+      <UniqueIdentifier>{c2d0785e-8419-4791-a0c4-234a96c64753}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assignment3\OctTree">
+      <UniqueIdentifier>{b78bf111-9a41-4aa8-9d39-9ea7206e5963}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\DiffuseShader.frag">
@@ -155,6 +164,12 @@
     <ClInclude Include="Src\BoundingVolumeTree.hpp">
       <Filter>Source\BoundingVolume</Filter>
     </ClInclude>
+    <ClInclude Include="Src\TriangleSoup.h">
+      <Filter>Source\TriangleSoup</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\OctTree.hpp">
+      <Filter>Source\Assignment3\OctTree</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dependencies\imgui\imgui.cpp">
@@ -216,6 +231,9 @@
     </ClCompile>
     <ClCompile Include="Src\Tests.cpp">
       <Filter>Source\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\TriangleSoup.cpp">
+      <Filter>Source\TriangleSoup</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

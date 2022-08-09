@@ -13,12 +13,15 @@
 #include <GLFW/glfw3.h>
 #include "shader.hpp"
 #include "mesh.h"
-
+#include "TriangleSoup.h"
 
 #include "Transform.h"
 #include "AssignmentOneSettings.h"
 
 #include "CollisionHelper.h"
+
+#include "OctTree.hpp"
+
 
 namespace Assignment
 {
@@ -114,6 +117,9 @@ namespace Assignment
     void DrawAll(std::vector<drawCall>& drawList, Camera const& drawCamera, glm::vec3 lightPos = glm::vec3(0.0f, 2.0f, 0.0f),
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 lightDir = glm::vec3(1.0f, -1.0f, 0.0f));
 
+    void DrawSoup(TriangleSoup const& soup, Camera const& drawCamera, glm::vec3 lightPos = glm::vec3(0.0f, 2.0f, 0.0f),
+        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 lightDir = glm::vec3(1.0f, -1.0f, 0.0f));
+
     MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale = 0.5f);
 
     //I only wanna create meshes once so..
@@ -188,7 +194,6 @@ namespace Assignment
         const char PlaneVsSphere[] = "(13) Plane vs Sphere";
         const char PointVsTriangle[] = "(07 + 12) Point and Ray vs Triangle";
 
-
         const char CubeSceneTest[] = "CubeSceneTest";
         const char AssignmentTwo[] = "Assignment Two";
         const char AssimapExample[] = "AssimapExample";
@@ -196,6 +201,8 @@ namespace Assignment
 
     //Load the scene from a text file
     void LoadScene(std::vector<Object>& objectVectorRef, std::string const& scenePath);
+
+
 
 
 }

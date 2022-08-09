@@ -11,6 +11,8 @@
 #include "BoundingVolumeTree.hpp"
 #include "Tests.h"
 
+#include "TriangleSoup.h"
+
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -617,12 +619,8 @@ namespace Assignment
 			//	continue;
 
 			glm::mat4 modelMat = calculateModel(currDraw.model);
-
 			glm::mat4 viewMat = glm::mat4(1.0f);
-
-
 			viewMat = glm::lookAt(drawCamera.pos, drawCamera.targetVector, drawCamera.up);
-
 			glm::mat4 perspectiveMat = glm::mat4(1.0f);
 			GLfloat fov = drawCamera.FOV;
 			GLfloat aspectRatio = static_cast<GLfloat>(applicationPtr->getAspectRatio());
@@ -639,7 +637,6 @@ namespace Assignment
 			glUseProgram(currDraw.shaderID);
 
 			MeshBuffers const& currMesh = currDraw.mesh;
-
 			GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
 
@@ -664,8 +661,6 @@ namespace Assignment
 				glUniform3fv(viewPosLoc, 1, (float*)&drawCamera.pos);
 			}
 
-
-
 			glBindVertexArray(currMesh.VAO);
 
 			if (currMesh.isDrawElements)
@@ -677,6 +672,39 @@ namespace Assignment
 			else
 				glDrawArrays(currMesh.drawType, 0, currMesh.arrayCount);
 		}
+	}
+
+
+	void DrawSoup(TriangleSoup const& soup, Camera const& drawCamera, glm::vec3 lightPos, glm::vec3 lightColor, glm::vec3 lightDir)
+	{
+		//Soup does not have model projection by definition
+		glm::mat4 modelMat = glm::mat4(1.0f);
+
+		glm::mat4 viewMat = glm::mat4(1.0f);
+
+		viewMat = glm::lookAt(drawCamera.pos, drawCamera.targetVector, drawCamera.up);
+		
+		glm::mat4 perspectiveMat = glm::mat4(1.0f);
+		GLfloat fov = drawCamera.FOV;
+		GLfloat aspectRatio = static_cast<GLfloat>(applicationPtr->getAspectRatio());
+		GLfloat nearPlanePoint = 0.1f;
+		GLfloat farPlanePoint = 100.0f;
+
+		perspectiveMat = glm::perspective(glm::radians(drawCamera.FOV), aspectRatio, nearPlanePoint, farPlanePoint);
+
+		glm::mat4 mvpMat = glm::mat4(1.0f);
+		mvpMat = perspectiveMat * viewMat * modelMat;
+
+		unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
+		glUseProgram(programID);
+
+		MeshBuffers const& currMesh = soup.meshBuffers;
+		GLint vTransformLoc = glGetUniformLocation(programID, "vertexTransform");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &mvpMat[0][0]);
+
+		glBindVertexArray(currMesh.VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currMesh.EBO);
+		glDrawElements(currMesh.drawType, currMesh.elementCount, GL_UNSIGNED_INT, 0);
 	}
 
 	void InitMeshes()
@@ -1716,8 +1744,6 @@ namespace Assignment
 			TestAll();
 		}
 	}
-
-
 }
 
 
@@ -1844,6 +1870,68 @@ namespace Assignment
 	
 
 		sceneMap.insert(std::make_pair<std::string, AssignmentScene>(sceneName.c_str(), AssignmentScene(curr)));
+	}
+
+	namespace AssignmentThreeScenes
+	{
+		//Has an example Triangle soup
+		class SoupScene : public Scene
+		{
+		public:
+
+			TriangleA3 triOne;
+			TriangleA3 triTwo;
+			TriangleSoup triSoup;
+
+
+			void Init() override {
+				initCamera();
+
+				triOne.color = coolOrange;
+				triOne.ptA = glm::vec3(0.0f, 0.0f, 0.0f);
+				triOne.ptB = glm::vec3(0.0f, 1.0f, 0.0f);
+				triOne.ptC = glm::vec3(1.0f, 0.0f, 0.0f);
+
+				triTwo.color = basicBlue;
+				triTwo.ptA = glm::vec3(0.0f, 0.0f, 2.0f);
+				triTwo.ptB = glm::vec3(0.0f, 1.0f, 2.0f);
+				triTwo.ptC = glm::vec3(1.0f, 0.0f, 2.0f);
+
+				triSoup.triangleList.push_back(triOne);
+				triSoup.triangleList.push_back(triTwo);
+				triSoup.UpdateBuffers();
+			}
+
+			void UpdateCamera()
+			{
+				currCamera.updateCameraMovement(applicationPtr);
+				currCamera.updateCamera(applicationPtr);
+			}
+
+			void Update() override {
+				UpdateCamera();
+			}
+
+			void Render() override
+			{
+				RenderAxis();
+				DrawAll(drawList, currCamera, globalLightPos);
+				DrawSoup(triSoup, currCamera);
+
+				drawList.clear();
+			}
+
+			void Clear() override
+			{
+				triSoup.ClearBuffers();
+			}
+		};
+
+		class OctTree : public SoupScene
+		{
+
+
+		};
 	}
 
 	//Probably gonna only be one scene this time with options to toggle 
@@ -3480,11 +3568,15 @@ namespace Assignment
 		  */
 	}
 
+
+
 	void InitScenes()
 	{
 		ScenetoFunction<AssignmentTwoScenes::TopDownScene>("Top Down BVH");
 		ScenetoFunction<AssignmentTwoScenes::PrimExample>("Ritters & AABB");
-		currentSceneName = "Ritters & AABB";
+
+		ScenetoFunction<AssignmentThreeScenes::SoupScene>("Assignment 3");
+		currentSceneName = "Assignment 3";
 	}
 }
 
