@@ -11,10 +11,10 @@ namespace Assignment
 	namespace OctTree
 	{
 		//Test in 2D first
-		constexpr glm::vec3 upRightQuad = glm::vec3(1.0f, 1.0f, 0.0f);
-		constexpr glm::vec3 upLeftQuad = glm::vec3(-1.0f, 1.0f, 0.0f);
-		constexpr glm::vec3 downLeftQuad = glm::vec3(-1.0f, -1.0f, 0.0f);
-		constexpr glm::vec3 downRightQuad = glm::vec3(1.0f, -1.0f, 0.0f);
+		constexpr glm::vec3 upRightQuad = glm::vec3(1.0f, 1.0f, 1.0f);
+		constexpr glm::vec3 upLeftQuad = glm::vec3(-1.0f, 1.0f, 1.0f);
+		constexpr glm::vec3 downLeftQuad = glm::vec3(-1.0f, -1.0f, -1.0f);
+		constexpr glm::vec3 downRightQuad = glm::vec3(1.0f, -1.0f, -1.0f);
 
 		class Node
 		{
@@ -74,15 +74,16 @@ namespace Assignment
 					Node child;
 					glm::vec3 center = parentCell.centerPos + parentCell.halfLength * 0.5f * cellDir;
 					child.Init(center, parentCell.halfLength);
-					
+					child.transform.color = glm::vec3(0.0f, 0.0f, 1.0f);
+
 					return child;
 				};
 
-				parentCell.children.emplace_back(makeChild(upRightQuad));
-				parentCell.children.emplace_back(makeChild(upLeftQuad));
+				//parentCell.children.emplace_back(makeChild(upRightQuad));
+				//parentCell.children.emplace_back(makeChild(upLeftQuad));
 
-				parentCell.children.emplace_back(makeChild(downLeftQuad));
-				parentCell.children.emplace_back(makeChild(downRightQuad));
+				//parentCell.children.emplace_back(makeChild(downLeftQuad));
+				//parentCell.children.emplace_back(makeChild(downRightQuad));
 
 				for (auto& cell : parentCell.children)
 					allNodes.emplace_back(&cell);
@@ -135,7 +136,7 @@ namespace Assignment
 				auto getSign = [&](glm::vec3 axisCheck) {
 					return glm::dot(centerToA, axisCheck) >= 0.0f ? 1.0f : -1.0f;
 				};
-				return glm::vec3(getSign(worldRight), getSign(worldUp), 0.0f);
+				return glm::vec3(getSign(worldRight), getSign(worldUp), getSign(worldRight));
 			}
 		};
 	}

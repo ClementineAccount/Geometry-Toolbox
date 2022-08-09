@@ -139,8 +139,8 @@ namespace Assignment
 		void TestA3()
 		{
 			TestOctTree2D();
-			TestOctTreeCell();
-			TestOctTreeSplit();
+			//TestOctTreeCell();
+			//TestOctTreeSplit();
 		}
 
 		void TestAll()
