@@ -37,6 +37,9 @@ namespace Assignment
 			using nodeType = Node<Object>;
 			nodeType rootNode;
 
+			//How many objects per cell before we perform a split
+			size_t maxObjectCell;
+
 			//Makes the root
 			void Init(glm::vec3 const& centerPos, float const fullLength)
 			{
@@ -45,20 +48,44 @@ namespace Assignment
 				rootNode.halfLength = fullLength * 0.5f;
 			}
 
+			//Split into the four quadrants and assign them as children
+			static void SplitCell(nodeType& parentCell)
+			{
+				auto makeChild = [&](glm::vec3 cellDir)
+				{
+					nodeType child;
+					child.halfLength = parentCell.halfLength * 0.5f;
+					child.centerPos = parentCell.centerPos + child.halfLength * cellDir;
+
+					return child;
+				};
+
+				parentCell.children.emplace_back(makeChild(upRightQuad));
+				parentCell.children.emplace_back(makeChild(upLeftQuad));
+
+				parentCell.children.emplace_back(makeChild(downLeftQuad));
+				parentCell.children.emplace_back(makeChild(downRightQuad));
+			}
+
 			void Insert(Object obj)
 			{
 				//Case 1: No children can instant insert into the root
 				if (rootNode.children.empty())
 				{
 					rootNode.objectVector.push_back(obj);
+
+					//Perform our first split once we reach max objects here
+					if (rootNode.objectVector.size() == maxObjectCell)
+					{
+						//Divide into four quadrants
+						//SplitCell(rootNode);
+					}
 				}
-				//push_back as you can make a tree that stores pointers rather than references
-				
 			}
 
 
-			//Check if in the same cell using a dot product check
-			glm::vec3 whichCell(glm::vec3 const& cellCenter, glm::vec3 const& ptA)
+			//Check which quadrant relative to this parent
+			glm::vec3 whichQuad(glm::vec3 const& cellCenter, glm::vec3 const& ptA)
 			{
 				/*
 				The idea (made myself):

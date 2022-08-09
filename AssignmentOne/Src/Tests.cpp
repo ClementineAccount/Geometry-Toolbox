@@ -2,6 +2,8 @@
 #include "BoundingVolume.h"
 #include "OctTree.hpp"
 
+#include <limits>
+
 namespace Assignment
 {
 	namespace Tests
@@ -87,12 +89,48 @@ namespace Assignment
 			glm::vec3 ptD = glm::vec3(-5.0f, 5.0f, 0.0f);
 			glm::vec3 ptE = glm::vec3(5.0f, -5.0f, 0.0f);
 
-			assert(tree.whichCell(tree.rootNode.centerPos, ptA) == OctTree::upRightQuad);
-			assert(tree.whichCell(tree.rootNode.centerPos, ptB) == OctTree::upRightQuad);
-			assert(tree.whichCell(tree.rootNode.centerPos, ptC) == OctTree::downLeftQuad);
-			assert(tree.whichCell(tree.rootNode.centerPos, ptD) == OctTree::upLeftQuad);
-			assert(tree.whichCell(tree.rootNode.centerPos, ptE) == OctTree::downRightQuad);
+			assert(tree.whichQuad(tree.rootNode.centerPos, ptA) == OctTree::upRightQuad);
+			assert(tree.whichQuad(tree.rootNode.centerPos, ptB) == OctTree::upRightQuad);
+			assert(tree.whichQuad(tree.rootNode.centerPos, ptC) == OctTree::downLeftQuad);
+			assert(tree.whichQuad(tree.rootNode.centerPos, ptD) == OctTree::upLeftQuad);
+			assert(tree.whichQuad(tree.rootNode.centerPos, ptE) == OctTree::downRightQuad);
+		}
 
+		void TestOctTreeSplit()
+		{
+			//Test if the split is correct
+			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+			float fullLength = 10.0f;
+
+			OctTree::Tree<glm::vec3> tree;
+			tree.Init(pos, fullLength);
+
+			tree.SplitCell(tree.rootNode);
+
+			//Assumption is that we split in an anti-clockwise manner
+			
+			glm::vec3 topRightPos = glm::vec3(2.5f, 2.5f, 0.0f);
+			glm::vec3 topLeftPos = glm::vec3(-2.5f, 2.5f, 0.0f);
+			glm::vec3 bottomleftPos = glm::vec3(-2.5f, -2.5f, 0.0f);
+			glm::vec3 bottomRightPos = glm::vec3(2.5f, -2.5f, 0.0f);
+
+
+			//This tests that the children both exist and are created as expected
+
+			assert(std::fabs(glm::length(tree.rootNode.children[0].centerPos - topRightPos)) < std::numeric_limits<float>::epsilon());
+			assert(std::fabs(glm::length(tree.rootNode.children[1].centerPos - topLeftPos)) < std::numeric_limits<float>::epsilon());
+			assert(std::fabs(glm::length(tree.rootNode.children[2].centerPos - bottomleftPos)) < std::numeric_limits<float>::epsilon());
+			assert(std::fabs(glm::length(tree.rootNode.children[3].centerPos - bottomRightPos)) < std::numeric_limits<float>::epsilon());
+
+			for (size_t i = 0; i < 4; ++i)
+				assert(std::fabs(tree.rootNode.children[i].halfLength - tree.rootNode.halfLength * 0.5f) < std::numeric_limits<float>::epsilon());
+
+			//Check if the recursion is accurate (on only one)
+
+			//The top right is split again
+			tree.SplitCell(tree.rootNode.children[0]);
+			glm::vec3 topRightChild = glm::vec3(3.75f, 3.75f, 0.0f);
+			assert(std::fabs(glm::length(tree.rootNode.children[0].children[0].centerPos - topRightChild)) < std::numeric_limits<float>::epsilon());
 		}
 
 
@@ -100,6 +138,7 @@ namespace Assignment
 		{
 			TestOctTree2D();
 			TestOctTreeCell();
+			TestOctTreeSplit();
 		}
 
 		void TestAll()
