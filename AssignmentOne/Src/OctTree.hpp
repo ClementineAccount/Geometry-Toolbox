@@ -3,6 +3,8 @@
 #include <vector> 
 #include <memory>
 
+#include "TriangleSoup.h"
+
 namespace Assignment
 {
 	namespace OctTree
@@ -13,8 +15,6 @@ namespace Assignment
 		constexpr glm::vec3 downLeftQuad = glm::vec3(-1.0f, -1.0f, 0.0f);
 		constexpr glm::vec3 downRightQuad = glm::vec3(1.0f, -1.0f, 0.0f);
 
-		//Coordinates in worldPos
-		template <typename Object>
 		class Node
 		{
 		public:
@@ -23,19 +23,16 @@ namespace Assignment
 			glm::vec3 centerPos;
 			float halfLength; //Uniform box and cube so all sides must be equal by definition (can be called radius)
 
-			//Can pass in pointers too
-			std::vector<Object> objectVector;
+			std::vector<TriangleA3*> triangleVector;
 
 			//Node* parent; //read only ptr
 			std::vector<Node> children;
 		};
 
-		template <typename Object>
 		class Tree
 		{
 		public:
-			using nodeType = Node<Object>;
-			nodeType rootNode;
+			Node rootNode;
 
 			//How many objects per cell before we perform a split
 			size_t maxObjectCell;
@@ -49,11 +46,11 @@ namespace Assignment
 			}
 
 			//Split into the four quadrants and assign them as children
-			static void SplitCell(nodeType& parentCell)
+			static void SplitCell(Node& parentCell)
 			{
 				auto makeChild = [&](glm::vec3 cellDir)
 				{
-					nodeType child;
+					Node child;
 					child.halfLength = parentCell.halfLength * 0.5f;
 					child.centerPos = parentCell.centerPos + child.halfLength * cellDir;
 
@@ -67,15 +64,15 @@ namespace Assignment
 				parentCell.children.emplace_back(makeChild(downRightQuad));
 			}
 
-			void Insert(Object obj)
+			void Insert(TriangleA3* tri)
 			{
 				//Case 1: No children can instant insert into the root
 				if (rootNode.children.empty())
 				{
-					rootNode.objectVector.push_back(obj);
+					rootNode.triangleVector.push_back(tri);
 
 					//Perform our first split once we reach max objects here
-					if (rootNode.objectVector.size() == maxObjectCell)
+					if (rootNode.triangleVector.size() == maxObjectCell)
 					{
 						//Divide into four quadrants
 						//SplitCell(rootNode);

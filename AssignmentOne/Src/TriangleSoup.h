@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include "mesh.h"
 #include "Transform.h"
 
 namespace Assignment

@@ -1,6 +1,7 @@
 #include "Tests.h"
 #include "BoundingVolume.h"
 #include "OctTree.hpp"
+#include "TriangleSoup.h"
 
 #include <limits>
 
@@ -66,13 +67,14 @@ namespace Assignment
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
 			float fullLength = 10.0f;
 
-			OctTree::Tree<glm::vec3> tree;
+			OctTree::Tree tree;
 			tree.Init(pos, fullLength);
 
-			glm::vec3 ptA = glm::vec3(5.0f, 5.0f, 0.0f);
-			tree.Insert(ptA);
+			TriangleA3 triA;
+			//triA.ptA = glm::vec3(5.0f, 5.0f, 0.0f)
+			tree.Insert(&triA);
 
-			assert(tree.rootNode.objectVector.front() == ptA);
+			assert(tree.rootNode.triangleVector.front() == &triA);
 		}
 
 		void TestOctTreeCell()
@@ -80,7 +82,7 @@ namespace Assignment
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
 			float fullLength = 10.0f;
 
-			OctTree::Tree<glm::vec3> tree;
+			OctTree::Tree tree;
 			tree.Init(pos, fullLength);
 
 			glm::vec3 ptA = glm::vec3(5.0f, 5.0f, 0.0f);
@@ -102,7 +104,7 @@ namespace Assignment
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
 			float fullLength = 10.0f;
 
-			OctTree::Tree<glm::vec3> tree;
+			OctTree::Tree tree;
 			tree.Init(pos, fullLength);
 
 			tree.SplitCell(tree.rootNode);
