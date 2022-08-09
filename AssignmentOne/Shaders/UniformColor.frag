@@ -1,9 +1,10 @@
 #version 410 core
 
-in vec3 fragColor;
+in vec4 fragColor;
+in float fragAlpha;
 
 // Output data
-out vec3 color;
+out vec4 color;
 
 void main()
 {

@@ -485,7 +485,6 @@ namespace Assignment
 		glm::vec3 relativeRight;
 
 		std::vector<GLfloat> buffer;
-
 		std::vector<GLfloat> posBuffer;
 
 		auto makeFace = [&posBuffer](glm::vec3 bottomLeft, glm::vec3 relativeUp, glm::vec3 relativeRight)
@@ -531,6 +530,97 @@ namespace Assignment
 		cubeMesh.drawType = GL_TRIANGLES;
 		return cubeMesh;
 	}
+
+
+	MeshBuffers initCubeMeshLines(glm::vec3 cubeColor = defaultCubeColor, float cubeScale = 0.5f)
+	{
+		glm::vec3 relativeUp;
+		glm::vec3 relativeRight;
+
+
+		std::vector<glm::vec3> posList;
+
+		posList.push_back(glm::vec3(-1.0f, -1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(-1.0f, -1.0f, 1.0f) * cubeScale);
+
+
+		posList.push_back(glm::vec3(-1.0f, 1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(-1.0f, 1.0f, 1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(1.0f, -1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, -1.0f, 1.0f) * cubeScale);
+
+
+		posList.push_back(glm::vec3(1.0f, 1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, 1.0f, 1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(-1.0f, -1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, -1.0f, -1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(-1.0f, 1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, 1.0f, -1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(-1.0f, 1.0f, 1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, 1.0f, 1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(-1.0f, -1.0f, 1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, -1.0f, 1.0f) * cubeScale);
+
+
+		posList.push_back(glm::vec3(-1.0f, -1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(-1.0f, 1.0f, -1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(-1.0f, -1.0f, 1.0f) * cubeScale);
+		posList.push_back(glm::vec3(-1.0f, 1.0f,  1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(1.0f, -1.0f, -1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, 1.0f, -1.0f) * cubeScale);
+
+		posList.push_back(glm::vec3(1.0f, -1.0f, 1.0f) * cubeScale);
+		posList.push_back(glm::vec3(1.0f, 1.0f, 1.0f) * cubeScale);
+
+
+		std::vector<GLfloat> colorBuffer;
+		for (auto const& v : posList)
+		{
+			colorBuffer.push_back(1.0f);
+			colorBuffer.push_back(0.0f);
+			colorBuffer.push_back(0.0f);
+		}
+
+		MeshBuffers cubeMesh = initVBO(verticesFromVectorList(posList), colorBuffer);
+		cubeMesh.drawType = GL_LINES;
+		return cubeMesh;
+	}
+	//Without the middle triangle (to be drawn with GL_Lines)
+	//MeshBuffers initWireBox(float boxScale = 0.5f)
+	//{
+	//	glm::vec3 topLeftBack = glm::vec3(-1.0f, 1.0f, -1.0f);
+	//	glm::vec3 topRightBack = glm::vec3(1.0f, 1.0f, -1.0f);
+	//	glm::vec3 topLeftForward = glm::vec3(-1.0f, 1.0f, 1.0f);
+	//	glm::vec3 topRightForward = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	//	glm::vec3 bottomLeftBack = glm::vec3(-1.0f, -1.0f, -1.0f);
+	//	glm::vec3 bottomRightBack = glm::vec3(1.0f, -1.0f, -1.0f);
+	//	glm::vec3 bottomLeftForward = glm::vec3(-1.0f, -1.0f, 1.0f);
+	//	glm::vec3 bottomRightForward = glm::vec3(1.0f, -1.0f, 1.0f);
+
+
+	//	std::vector<glm::vec3> vectorList;
+
+
+	//	//Face Back
+	//	vectorList.push_back(topLeftBack - topRightBack);
+	//	vectorList.push_back(topLeftBack - bottomLeftBack);
+	//	vectorList.push_back(bottomLeftBack - bottomRightBack);
+	//	vectorList.push_back(topRightBack - bottomRightBack);
+
+	//	//Face 
+
+
+	//	verticesFromVectorList
+
+	//}
 
 	MeshBuffers InitQuadMesh(std::vector<GLfloat>& quadPositions, float quadScale)
 	{
@@ -643,7 +733,10 @@ namespace Assignment
 			if (currDraw.shaderID == assignmentShaders.getShaderID(colorShader.shaderName))
 			{
 				GLint colorLoc = glGetUniformLocation(programID, "setColor");
-				glUniform3fv(colorLoc, 1, (float*)&currDraw.model.color);
+
+				glm::vec4 colorAlpha = glm::vec4(currDraw.model.color.x, currDraw.model.color.y, currDraw.model.color.z, 0.1f);
+
+				glUniform4fv(colorLoc, 1, (float*)&colorAlpha);
 			}
 
 			if (currDraw.shaderID == assignmentShaders.getShaderID(diffuseShader.shaderName))
@@ -732,6 +825,7 @@ namespace Assignment
 		meshMap.emplace(MeshNames::axis, InitAxis());
 		meshMap.emplace(MeshNames::axisInverted, InitAxis(-worldRight, -worldUp, -worldForward));
 		meshMap.emplace(MeshNames::cube, initCubeMesh());
+		meshMap.emplace(MeshNames::cubeWire, initCubeMeshLines());
 
 		meshMap.emplace(MeshNames::rayUp, InitWorldLine(worldUp));
 		meshMap.emplace(MeshNames::rayRight, InitWorldLine(worldRight));
@@ -1933,7 +2027,8 @@ namespace Assignment
 		public:
 			void Init() override {
 				initCamera();
-				tree.Init(worldOrigin, 10.0f);
+				tree.Init(worldOrigin, 5.0f);
+				tree.SplitCell(tree.rootNode);
 			}
 
 			void UpdateCamera()
@@ -1948,24 +2043,19 @@ namespace Assignment
 
 			void RenderTree(OctTree::Tree const& tree)
 			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				for (auto const& node : tree.allNodes)
+					SubmitDraw(node->transform, MeshNames::cubeWire, colorShader.shaderName);
 				
-				SubmitDraw(tree.rootNode.transform, MeshNames::cube);
-				DrawAll(drawList, currCamera, globalLightPos);
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				
-				drawList.clear();
 			}
 
 			void Render() override
 			{
 				//To Do: Make a render function for th
 				RenderTree(tree);
-
 				RenderAxis();
 				DrawAll(drawList, currCamera, globalLightPos);
 
-
+				drawList.clear();
 				
 			}
 
@@ -3637,19 +3727,35 @@ namespace Assignment
 	{
 		glViewport(0.0f, 0.0f, applicationPtr->getWindowWidth(), applicationPtr->getWindowHeight());
 
+
+
+
+
 		RenderDearImguiDefault();
-		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_CULL_FACE);
-		if (enableDepthTest)
-		{
-			glEnable(GL_DEPTH_TEST);
-		}
-		else
-		{
-			glDisable(GL_DEPTH_TEST);
-		}
+
+		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
+
+		//
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glEnable(GL_DEPTH_TEST);
+
+
+		//glDisable(GL_CULL_FACE);
+		//if (enableDepthTest)
+		//{
+		//	
+		//}
+		//else
+		//{
+		//	glDisable(GL_DEPTH_TEST);
+		//}
 
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -3658,11 +3764,16 @@ namespace Assignment
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
+	
+
 		sceneMap.at(currentSceneName).renderScene();
 	}
 
 	int InitAssignment()
 	{
+
+
+
 		assignmentShaders.loadShader(defaultShader.shaderName, defaultShader);
 		assignmentShaders.loadShader(colorShader.shaderName, colorShader);
 		assignmentShaders.loadShader(diffuseShader.shaderName, diffuseShader);

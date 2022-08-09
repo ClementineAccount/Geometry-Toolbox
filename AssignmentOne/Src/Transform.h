@@ -15,7 +15,7 @@ namespace Assignment
         glm::vec3 pivotPercent{ defaultPivotPercent };
 
         //Can be inserted into the shader if wanted
-        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
+        glm::vec3 color{ 1.0f, 1.0f, 1.0f};
     };
 
 

@@ -130,9 +130,9 @@ namespace Assignment
 			//Check if the recursion is accurate (on only one)
 
 			//The top right is split again
-			tree.SplitCell(tree.rootNode.children[0]);
-			glm::vec3 topRightChild = glm::vec3(3.75f, 3.75f, 0.0f);
-			assert(std::fabs(glm::length(tree.rootNode.children[0].children[0].centerPos - topRightChild)) < std::numeric_limits<float>::epsilon());
+			//tree.SplitCell(tree.rootNode.children[0]);
+			//glm::vec3 topRightChild = glm::vec3(3.75f, 3.75f, 0.0f);
+			//assert(std::fabs(glm::length(tree.rootNode.children[0].children[0].centerPos - topRightChild)) < std::numeric_limits<float>::epsilon());
 		}
 
 

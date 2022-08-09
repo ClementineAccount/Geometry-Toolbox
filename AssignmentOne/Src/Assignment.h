@@ -153,6 +153,7 @@ namespace Assignment
         static const char quadNormalRight[] = "quadRight";
         
         static const char cube[] = "cube";
+        static const char cubeWire[] = "cubeWire";
         static const char ring[] = "ring";
         static const char sphere[] = "sphere";
 

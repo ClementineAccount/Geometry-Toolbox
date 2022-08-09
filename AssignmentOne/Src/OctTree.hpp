@@ -20,12 +20,13 @@ namespace Assignment
 		{
 		public:
 			//Similar concept as AABB as we store each region as a uniform box
-			void Init(glm::vec3 const& _centerPos, float _halfLength)
+			void Init(glm::vec3 const& _centerPos, float fullLength)
 			{
 				centerPos = _centerPos;
-				halfLength = _halfLength;
+				halfLength = fullLength * 0.5f;
 				transform.pos = centerPos; //pivot center
-				transform.scale = glm::vec3(halfLength * 2.0f, halfLength * 2.0f, halfLength * 2.0f);
+				transform.scale = glm::vec3(fullLength, fullLength, fullLength);
+				transform.color = glm::vec3(1.0f, 0.0f, 0.0f);
 			}
 
 			glm::vec3 centerPos;
@@ -48,6 +49,10 @@ namespace Assignment
 		public:
 			Node rootNode;
 
+			//For easy rendering. Allows O(n) rendering at cost of O(n) space complexity
+			std::vector<Node*> allNodes; 
+
+
 			//How many objects per cell before we perform a split
 			size_t maxObjectCell;
 
@@ -56,20 +61,20 @@ namespace Assignment
 			{
 				//To Do: Make this constructor or init()
 				rootNode.centerPos = centerPos;
-				rootNode.halfLength = fullLength * 0.5f;
-				rootNode.transform.pos = centerPos;
 
+				rootNode.Init(centerPos, fullLength);
+				allNodes.emplace_back(&rootNode);
 			}
 
 			//Split into the four quadrants and assign them as children
-			static void SplitCell(Node& parentCell)
+			void SplitCell(Node& parentCell)
 			{
 				auto makeChild = [&](glm::vec3 cellDir)
 				{
 					Node child;
-					child.halfLength = parentCell.halfLength * 0.5f;
-					child.centerPos = parentCell.centerPos + child.halfLength * cellDir;
-
+					glm::vec3 center = parentCell.centerPos + parentCell.halfLength * 0.5f * cellDir;
+					child.Init(center, parentCell.halfLength);
+					
 					return child;
 				};
 
@@ -78,6 +83,9 @@ namespace Assignment
 
 				parentCell.children.emplace_back(makeChild(downLeftQuad));
 				parentCell.children.emplace_back(makeChild(downRightQuad));
+
+				for (auto& cell : parentCell.children)
+					allNodes.emplace_back(&cell);
 			}
 
 			void Insert(TriangleA3* tri)

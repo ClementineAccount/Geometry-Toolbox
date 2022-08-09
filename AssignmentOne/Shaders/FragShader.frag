@@ -7,9 +7,9 @@
 in vec3 fragColor;
 
 // Output data
-out vec3 color;
+out vec4 color;
 
 void main()
 {
-	color = fragColor;
+	color = vec4(fragColor.x, fragColor.y, fragColor.z, 1.0f);
 }
