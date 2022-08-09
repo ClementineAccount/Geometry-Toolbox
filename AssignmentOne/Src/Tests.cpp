@@ -70,13 +70,36 @@ namespace Assignment
 			glm::vec3 ptA = glm::vec3(5.0f, 5.0f, 0.0f);
 			tree.Insert(ptA);
 
-			assert(tree.rootNode->objectVector.front() == ptA);
+			assert(tree.rootNode.objectVector.front() == ptA);
+		}
+
+		void TestOctTreeCell()
+		{
+			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+			float fullLength = 10.0f;
+
+			OctTree::Tree<glm::vec3> tree;
+			tree.Init(pos, fullLength);
+
+			glm::vec3 ptA = glm::vec3(5.0f, 5.0f, 0.0f);
+			glm::vec3 ptB = glm::vec3(4.0f, 4.0f, 0.0f);
+			glm::vec3 ptC = glm::vec3(-5.0f, -5.0f, 0.0f);
+			glm::vec3 ptD = glm::vec3(-5.0f, 5.0f, 0.0f);
+			glm::vec3 ptE = glm::vec3(5.0f, -5.0f, 0.0f);
+
+			assert(tree.whichCell(tree.rootNode.centerPos, ptA) == OctTree::upRightQuad);
+			assert(tree.whichCell(tree.rootNode.centerPos, ptB) == OctTree::upRightQuad);
+			assert(tree.whichCell(tree.rootNode.centerPos, ptC) == OctTree::downLeftQuad);
+			assert(tree.whichCell(tree.rootNode.centerPos, ptD) == OctTree::upLeftQuad);
+			assert(tree.whichCell(tree.rootNode.centerPos, ptE) == OctTree::downRightQuad);
+
 		}
 
 
 		void TestA3()
 		{
 			TestOctTree2D();
+			TestOctTreeCell();
 		}
 
 		void TestAll()
