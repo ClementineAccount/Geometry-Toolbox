@@ -41,6 +41,12 @@ namespace Assignment
 				transform.color = glm::vec3(1.0f, 0.0f, 0.0f);
 			}
 
+			void Clear()
+			{
+				//Does not remove memory
+				triangleVector.clear();
+			}
+
 			glm::vec3 centerPos;
 			float halfLength; //Uniform box and cube so all sides must be equal by definition (can be called radius)
 
@@ -49,7 +55,7 @@ namespace Assignment
 			//Node* parent; //read only ptr
 
 			std::unordered_map<glm::vec3, Node> childMap;
-			std::vector<Node> children;
+			//std::vector<Node> children;
 
 			//For rendering
 			bool isRendering = true;
@@ -80,12 +86,15 @@ namespace Assignment
 			size_t maxObjectCell = 2;
 
 			//Makes the root
-			void Init(glm::vec3 const& centerPos, float const fullLength)
+			void Init(glm::vec3 const& centerPos, float const fullLength, size_t _maxObjectCell = 1)
 			{
+				currLevel = 0;
+
 				//To Do: Make this constructor or init()
 				rootNode.centerPos = centerPos;
 				rootNode.level = 0;
 				currLevel = 0;
+				maxObjectCell = _maxObjectCell;
 
 				rootNode.Init(centerPos, fullLength);
 				nodesRenderMap.emplace(0, std::vector<Node*>());
@@ -131,34 +140,45 @@ namespace Assignment
 			void Insert(TriangleA3* tri)
 			{
 				Node* currNode = &rootNode;
-				if (!currNode->children.empty())
+				while (!currNode->childMap.empty())
 				{
 					glm::vec3 offsetDir = whichOct(currNode->centerPos, tri->ptA);
-					//tri->color = colorLevelMap[currNode->level];
-					currNode->childMap.at(offsetDir).triangleVector.push_back(tri);
+					currNode = &currNode->childMap.at(offsetDir);
 				}
 
-				//Case 1: No children can instant insert into the root
-				if (currNode->children.empty())
+				if (currNode->childMap.empty())
 				{
 					currNode->triangleVector.push_back(tri);
 
 					//Perform split once we reach max objects here
-					if (currNode->triangleVector.size() == maxObjectCell)
+					if (currNode->triangleVector.size() >= maxObjectCell)
 					{
 						//Divide into the eight
-						SplitCell(rootNode);
+						SplitCell(*currNode);
 
 
 						std::vector<TriangleA3*> triVectorCopy;
-						//triVectorCopy.assign(rootNode.triangleVector.begin(), rootNode.triangleVector.end());
-						rootNode.triangleVector.clear();
+						triVectorCopy.assign(currNode->triangleVector.begin(), currNode->triangleVector.end());
+						currNode->triangleVector.clear();
 
 
 						for (auto& tri : triVectorCopy)
 							Insert(tri);
 					}
 				}
+			}
+
+
+			//For resetting the tree. No dynamic memory allocation
+			void Clear()
+			{
+				for (size_t i = 0; i <= currLevel; ++i)
+					for (auto& node : nodesRenderMap.at(i))
+						node->Clear();
+				nodesRenderMap.clear();
+				colorLevelMap.clear();
+
+				currLevel = 0;
 			}
 
 

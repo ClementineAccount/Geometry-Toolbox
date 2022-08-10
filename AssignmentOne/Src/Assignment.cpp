@@ -114,6 +114,8 @@ namespace Assignment
 	}
 
 	constexpr bool runDebugTests = true;
+
+
 }
 
 
@@ -2035,10 +2037,16 @@ namespace Assignment
 			int showLevel = 0;
 			bool showAllLevels = false;
 
+			int objectsCellMax = 1;
+
+
+
 		public:
 			void Init() override {
 				initCamera();
-				tree.Init(worldOrigin, 15.0f);
+
+				tree.maxObjectCell = objectsCellMax;
+				tree.Init(worldOrigin, 15.0f, objectsCellMax);
 				//tree.SplitCell(tree.rootNode);
 
 				currCamera.pos.x = 0.465f;
@@ -2098,15 +2106,35 @@ namespace Assignment
 			{
 				ImGui::Begin("Octree Settings");
 
+				if (ImGui::Button("Reset Tree"))
+				{
+					ResetTree();
+					ImGui::End();
+					return;
+				}
+
 				ImGui::Checkbox("Show All Levels", &showAllLevels);
 				ImGui::DragInt("Octreee Level", &showLevel, 1.0f, 0, tree.currLevel);
-				ImGui::End();
+				ImGui::DragInt("Octreee Max Object (Require Reset)", &objectsCellMax, 1.0f, 1, 30);
 
+				ImGui::End();
 			}
 
-			void RenderTree(OctTree::Tree const& tree, size_t showLevel = 0)
+			void ResetTree()
 			{
-				for (auto const& node : tree.nodesRenderMap.at(showLevel))
+				tree.Clear();
+				tree.maxObjectCell = objectsCellMax;
+				tree.Init(worldOrigin, 15.0f, objectsCellMax);
+
+				for (auto& tri : triSoup.triangleList)
+				{
+					tree.Insert(&tri);
+				}
+			}
+
+			void RenderTree(OctTree::Tree const& tree, size_t currLevel = 0)
+			{
+				for (auto const& node : tree.nodesRenderMap.at(currLevel))
 					SubmitDraw(node->transform, MeshNames::cubeWire, colorShader.shaderName);
 				
 			}
