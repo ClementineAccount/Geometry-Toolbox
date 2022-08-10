@@ -26,6 +26,8 @@ namespace Assignment
 		constexpr glm::vec3 downLeftQuadMirror = glm::vec3(-1.0f, -1.0f, 1.0f);
 		constexpr glm::vec3 downRightQuadMirror = glm::vec3(1.0f, -1.0f, 1.0f);
 
+
+
 		class Node
 		{
 		public:
@@ -52,6 +54,8 @@ namespace Assignment
 			//For rendering
 			bool isRendering = true;
 
+			size_t level;
+
 			Transform transform;
 			//Mesh* boxMesh; //Should be an aabb so cube
 		};
@@ -61,35 +65,56 @@ namespace Assignment
 		public:
 			Node rootNode;
 
+			size_t currLevel = 0;
+
 			//For easy rendering. Allows O(n) rendering at cost of O(n) space complexity
-			std::vector<Node*> allNodes; 
+			//std::vector<Node*> allNodes; 
+
+			//For displaying the nodes
+			std::unordered_map <size_t, std::vector<Node*>> nodesRenderMap;
+
+			std::unordered_map<size_t, glm::vec3> colorLevelMap;
 
 
 			//How many objects per cell before we perform a split
-			size_t maxObjectCell = 5;
+			size_t maxObjectCell = 2;
 
 			//Makes the root
 			void Init(glm::vec3 const& centerPos, float const fullLength)
 			{
 				//To Do: Make this constructor or init()
 				rootNode.centerPos = centerPos;
+				rootNode.level = 0;
+				currLevel = 0;
 
 				rootNode.Init(centerPos, fullLength);
-				allNodes.emplace_back(&rootNode);
+				nodesRenderMap.emplace(0, std::vector<Node*>());
+				nodesRenderMap.at(0).push_back(&rootNode);
+
+				colorLevelMap.emplace(0, glm::vec3(1.0f, 0.0f, 0.0f));
+				colorLevelMap.emplace(1, glm::vec3(0.0f, 1.0f, 0.0f));
+				colorLevelMap.emplace(2, glm::vec3(0.0f, 0.0f, 1.0f));
+				colorLevelMap.emplace(3, glm::vec3(0.0f, 1.0f, 1.0f));
+
 			}
 
 			//Split into the four quadrants and assign them as children
 			void SplitCell(Node& parentCell)
 			{
+				size_t level = parentCell.level + 1;
+				currLevel = level;
+				nodesRenderMap.emplace(level, std::vector<Node*>());
+
 				auto makeChild = [&](glm::vec3 cellDir)
 				{
 					Node child;
+					child.level = level;
 					glm::vec3 center = parentCell.centerPos + parentCell.halfLength * 0.5f * cellDir;
 					child.Init(center, parentCell.halfLength);
-					child.transform.color = glm::vec3(0.0f, 0.0f, 1.0f);
+					child.transform.color = colorLevelMap[child.level];
 
 					parentCell.childMap.emplace(cellDir, child );
-					allNodes.push_back(&parentCell.childMap.at(cellDir));
+					nodesRenderMap.at(level).push_back(&parentCell.childMap.at(cellDir));
 				};
 
 
@@ -109,6 +134,7 @@ namespace Assignment
 				if (!currNode->children.empty())
 				{
 					glm::vec3 offsetDir = whichOct(currNode->centerPos, tri->ptA);
+					//tri->color = colorLevelMap[currNode->level];
 					currNode->childMap.at(offsetDir).triangleVector.push_back(tri);
 				}
 

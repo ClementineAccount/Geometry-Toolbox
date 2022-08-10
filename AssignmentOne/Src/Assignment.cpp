@@ -2032,6 +2032,8 @@ namespace Assignment
 
 			TriangleSoup triSoup;
 
+			int showLevel = 0;
+			bool showAllLevels = false;
 
 		public:
 			void Init() override {
@@ -2042,6 +2044,8 @@ namespace Assignment
 				currCamera.pos.x = 0.465f;
 				currCamera.pos.y = 0.670f;
 				currCamera.pos.z = 13.299f;
+
+				showAxis = false;
 
 				currCamera.yaw = -90.0f;
 				currCamera.pitch = -3.0f;
@@ -2084,20 +2088,40 @@ namespace Assignment
 			}
 
 			void Update() override {
+
+				ShowTreeUI();
 				UpdateCamera();
 			}
 
-			void RenderTree(OctTree::Tree const& tree)
+
+			void ShowTreeUI()
 			{
-				for (auto const& node : tree.allNodes)
+				ImGui::Begin("Octree Settings");
+
+				ImGui::Checkbox("Show All Levels", &showAllLevels);
+				ImGui::DragInt("Octreee Level", &showLevel, 1.0f, 0, tree.currLevel);
+				ImGui::End();
+
+			}
+
+			void RenderTree(OctTree::Tree const& tree, size_t showLevel = 0)
+			{
+				for (auto const& node : tree.nodesRenderMap.at(showLevel))
 					SubmitDraw(node->transform, MeshNames::cubeWire, colorShader.shaderName);
 				
 			}
 
+			void RenderTreeAll(OctTree::Tree const& tree)
+			{
+				for (size_t i = 0; i <= tree.currLevel; ++i)
+					RenderTree(tree, i);
+			}
+
 			void Render() override
 			{
-				//To Do: Make a render function for th
-				RenderTree(tree);
+				RenderTree(tree, showLevel);
+				if (showAllLevels)
+					RenderTreeAll(tree);
 				RenderAxis();
 
 				DrawSoup(triSoup, currCamera);
