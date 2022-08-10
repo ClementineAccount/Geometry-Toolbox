@@ -77,16 +77,32 @@ namespace Assignment
 			//std::vector<Node*> allNodes; 
 
 			//For displaying the nodes
-			std::unordered_map <size_t, std::vector<Node*>> nodesRenderMap;
-
+			std::unordered_map <size_t, std::vector<Node*>> nodesMap;
 			std::unordered_map<size_t, glm::vec3> colorLevelMap;
+
+
+			Node* GetNodeWithObj(TriangleA3* tri)
+			{
+				for (size_t i = 0; i <= currLevel; ++i)
+				{
+					for (Node* node : nodesMap[i])
+					{
+						for (auto const& triCheck : node->triangleVector)
+						{
+							if (triCheck == tri)
+								return node;
+						}
+					}
+				}
+				return nullptr;
+			}
 
 
 			//How many objects per cell before we perform a split
 			size_t maxObjectCell = 2;
 
 			//Makes the root
-			void Init(glm::vec3 const& centerPos, float const fullLength, size_t _maxObjectCell = 1)
+			void Init(glm::vec3 const& centerPos, float const fullLength, size_t _maxObjectCell = 2)
 			{
 				currLevel = 0;
 
@@ -97,8 +113,8 @@ namespace Assignment
 				maxObjectCell = _maxObjectCell;
 
 				rootNode.Init(centerPos, fullLength);
-				nodesRenderMap.emplace(0, std::vector<Node*>());
-				nodesRenderMap.at(0).push_back(&rootNode);
+				nodesMap.emplace(0, std::vector<Node*>());
+				nodesMap.at(0).push_back(&rootNode);
 
 				colorLevelMap.emplace(0, glm::vec3(1.0f, 0.0f, 0.0f));
 				colorLevelMap.emplace(1, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -112,7 +128,7 @@ namespace Assignment
 			{
 				size_t level = parentCell.level + 1;
 				currLevel = level;
-				nodesRenderMap.emplace(level, std::vector<Node*>());
+				nodesMap.emplace(level, std::vector<Node*>());
 
 				auto makeChild = [&](glm::vec3 cellDir)
 				{
@@ -123,7 +139,7 @@ namespace Assignment
 					child.transform.color = colorLevelMap[child.level];
 
 					parentCell.childMap.emplace(cellDir, child );
-					nodesRenderMap.at(level).push_back(&parentCell.childMap.at(cellDir));
+					nodesMap.at(level).push_back(&parentCell.childMap.at(cellDir));
 				};
 
 
@@ -151,11 +167,10 @@ namespace Assignment
 					currNode->triangleVector.push_back(tri);
 
 					//Perform split once we reach max objects here
-					if (currNode->triangleVector.size() >= maxObjectCell)
+					if (currNode->triangleVector.size() > maxObjectCell)
 					{
 						//Divide into the eight
 						SplitCell(*currNode);
-
 
 						std::vector<TriangleA3*> triVectorCopy;
 						triVectorCopy.assign(currNode->triangleVector.begin(), currNode->triangleVector.end());
@@ -173,9 +188,9 @@ namespace Assignment
 			void Clear()
 			{
 				for (size_t i = 0; i <= currLevel; ++i)
-					for (auto& node : nodesRenderMap.at(i))
+					for (auto& node : nodesMap.at(i))
 						node->Clear();
-				nodesRenderMap.clear();
+				nodesMap.clear();
 				colorLevelMap.clear();
 
 				currLevel = 0;
@@ -212,7 +227,7 @@ namespace Assignment
 				auto getSign = [&](glm::vec3 axisCheck) {
 					return glm::dot(centerToA, axisCheck) >= 0.0f ? 1.0f : -1.0f;
 				};
-				return glm::vec3(getSign(worldRight), getSign(worldUp), getSign(worldRight));
+				return glm::vec3(getSign(worldRight), getSign(worldUp), -getSign(worldForward));
 			}
 		};
 	}

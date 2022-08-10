@@ -104,37 +104,107 @@ namespace Assignment
 		{
 			//Test if the split is correct
 			glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-			float fullLength = 10.0f;
+			float fullLength = 100.0f;
+
+			size_t maxSize = 3;
 
 			OctTree::Tree tree;
-			tree.Init(pos, fullLength);
+			tree.Init(pos, fullLength, maxSize);
 
-			tree.SplitCell(tree.rootNode);
+			TriangleA3 A;
+			A.ptA = glm::vec3(30, 30, 0.0f);
 
-			//Assumption is that we split in an anti-clockwise manner
-			
-			glm::vec3 topRightPos = glm::vec3(2.5f, 2.5f, 0.0f);
-			glm::vec3 topLeftPos = glm::vec3(-2.5f, 2.5f, 0.0f);
-			glm::vec3 bottomleftPos = glm::vec3(-2.5f, -2.5f, 0.0f);
-			glm::vec3 bottomRightPos = glm::vec3(2.5f, -2.5f, 0.0f);
+			TriangleA3 B;
+			B.ptA = glm::vec3(30.0f, -30.0f, 0.0f);
+
+			TriangleA3 C;
+			C.ptA = glm::vec3(40.0f, -25.0f, 0.0f);
+
+			tree.Insert(&A);
+			tree.Insert(&B);
+			tree.Insert(&C);
+
+			//Check that there was NO split 
+			assert(tree.rootNode.childMap.empty());
+			assert(tree.currLevel == 0);
 
 
-			//This tests that the children both exist and are created as expected
+			auto checkAdded = [&](TriangleA3& tri)
+			{
+				return (tree.GetNodeWithObj(&tri) != nullptr);
+			};
 
-			//assert(std::fabs(glm::length(tree.rootNode.children[0].centerPos - topRightPos)) < std::numeric_limits<float>::epsilon());
-			//assert(std::fabs(glm::length(tree.rootNode.children[1].centerPos - topLeftPos)) < std::numeric_limits<float>::epsilon());
-			//assert(std::fabs(glm::length(tree.rootNode.children[2].centerPos - bottomleftPos)) < std::numeric_limits<float>::epsilon());
-			//assert(std::fabs(glm::length(tree.rootNode.children[3].centerPos - bottomRightPos)) < std::numeric_limits<float>::epsilon());
+			//Check that the nodes were added
+			assert(checkAdded(A));
+			assert(checkAdded(B));
+			assert(checkAdded(C));
 
-			//for (size_t i = 0; i < 4; ++i)
-			//	assert(std::fabs(tree.rootNode.children[i].halfLength - tree.rootNode.halfLength * 0.5f) < std::numeric_limits<float>::epsilon());
+			TriangleA3 D;
+			D.ptA = glm::vec3(-30.0f, 30.0f, 0.0f);
 
-			//Check if the recursion is accurate (on only one)
+			tree.Insert(&D);
 
-			//The top right is split again
-			//tree.SplitCell(tree.rootNode.children[0]);
-			//glm::vec3 topRightChild = glm::vec3(3.75f, 3.75f, 0.0f);
-			//assert(std::fabs(glm::length(tree.rootNode.children[0].children[0].centerPos - topRightChild)) < std::numeric_limits<float>::epsilon());
+			//Check that a split happened
+			assert(tree.currLevel == 1);
+			assert(tree.rootNode.childMap.size() == 8);
+
+			//Check that the nodes were still here and added after a split
+			assert(checkAdded(A));
+			assert(checkAdded(B));
+			assert(checkAdded(C));
+			assert(checkAdded(D));
+
+			TriangleA3 E;
+			E.ptA = glm::vec3(-30.0f, -30.0f, 0.0f);
+
+			tree.Insert(&E);
+
+			//Check that a split did NOT happen
+			assert(tree.currLevel == 1);
+			assert(tree.rootNode.childMap.size() == 8);
+
+			assert(checkAdded(A));
+			assert(checkAdded(B));
+			assert(checkAdded(C));
+			assert(checkAdded(D));
+			assert(checkAdded(E));
+
+			TriangleA3 F;
+			F.ptA = glm::vec3(33.0f, -33.0f, 0.0f); //Should be next to B
+
+			tree.Insert(&F);
+
+			//Check that a split did NOT happen
+			assert(tree.currLevel == 1);
+			assert(tree.rootNode.childMap.size() == 8);
+
+			assert(checkAdded(A));
+			assert(checkAdded(B));
+			assert(checkAdded(C));
+			assert(checkAdded(D));
+			assert(checkAdded(E));
+			assert(checkAdded(F));
+
+
+			TriangleA3 G;
+			G.ptA = glm::vec3(33.0f, -50.0f, 0.0f); 
+
+			tree.Insert(&G);
+
+			//Check that a split did happen
+			assert(tree.currLevel == 2);
+			assert(tree.rootNode.childMap.size() == 8);
+
+			assert(checkAdded(A));
+			assert(checkAdded(B));
+			assert(checkAdded(C));
+			assert(checkAdded(D));
+			assert(checkAdded(E));
+			assert(checkAdded(F));
+			assert(checkAdded(G));
+
+			//These two should share the same node
+			assert(tree.GetNodeWithObj(&B) == tree.GetNodeWithObj(&F));
 		}
 
 
@@ -142,7 +212,7 @@ namespace Assignment
 		{
 			//TestOctTree2D();
 			//TestOctTreeCell();
-			//TestOctTreeSplit();
+			TestOctTreeSplit();
 		}
 
 		void TestAll()

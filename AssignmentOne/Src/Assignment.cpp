@@ -790,7 +790,7 @@ namespace Assignment
 		glm::mat4 mvpMat = glm::mat4(1.0f);
 		mvpMat = perspectiveMat * viewMat * modelMat;
 
-		unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
+		unsigned int programID = assignmentShaders.getShaderID(colorShader.shaderName);
 		glUseProgram(programID);
 
 		MeshBuffers const& currMesh = soup.meshBuffers;
@@ -2030,14 +2030,13 @@ namespace Assignment
 			/*TriangleA3 triOne;
 			TriangleA3 triTwo;*/
 
-			TriangleA3 triList[4];
-
+			std::vector<TriangleA3> triVector;
 			TriangleSoup triSoup;
 
 			int showLevel = 0;
 			bool showAllLevels = false;
 
-			int objectsCellMax = 1;
+			int objectsCellMax = 3;
 
 
 
@@ -2046,44 +2045,50 @@ namespace Assignment
 				initCamera();
 
 				tree.maxObjectCell = objectsCellMax;
-				tree.Init(worldOrigin, 15.0f, objectsCellMax);
+				tree.Init(worldOrigin, 30.0f, objectsCellMax);
 				//tree.SplitCell(tree.rootNode);
 
 				currCamera.pos.x = 0.465f;
 				currCamera.pos.y = 0.670f;
-				currCamera.pos.z = 13.299f;
+				currCamera.pos.z = 50.299f;
 
 				showAxis = false;
 
 				currCamera.yaw = -90.0f;
 				currCamera.pitch = -3.0f;
 
-				triList[0].color = coolPurpleColor;
-				triList[0].ptA = glm::vec3(1.0f, 1.0f, 0.0f);
-				triList[0].ptB = glm::vec3(1.0f, 5.0f, 0.0f);
-				triList[0].ptC = glm::vec3(5.0f, 1.0f, 0.0f);
+				glm::vec3 triOneA = glm::vec3(1.0f, 1.0f, 0.0f);
+				glm::vec3 triOneB = glm::vec3(1.0f, 5.0f, 0.0f);
+				glm::vec3 triOneC = glm::vec3(5.0f, 1.0f, 0.0f);
 
-				triList[1].color = coolPurpleColor;
-				triList[1].ptA = glm::vec3(1.0f, -1.0f, 0.0f);
-				triList[1].ptB = glm::vec3(1.0f, -5.0f, 0.0f);
-				triList[1].ptC = glm::vec3(5.0f, -1.0f, 0.0f);
 
-				triList[2].color = coolPurpleColor;
-				triList[2].ptA = glm::vec3(1.0f - 5.0f, 1.0f, 0.0f);
-				triList[2].ptB = glm::vec3(1.0f - 5.0f, 3.0f, 0.0f);
-				triList[2].ptC = glm::vec3(3.0f - 5.0f, 1.0f, 0.0f);
+				triVector.clear();
+				auto addTri = [&](glm::vec3 ptA, glm::vec3 ptB, glm::vec3 ptC)
+				{
 
-				triList[3].color = coolPurpleColor;
-				triList[3].ptA = glm::vec3(1.0f - 7.0f, 1.0f + 2.0f, 0.0f);
-				triList[3].ptB = glm::vec3(1.0f - 7.0f, 3.0f + 2.0f, 0.0f);
-				triList[3].ptC = glm::vec3(3.0f - 7.0f, 1.0f + 2.0f, 0.0f);
+					triVector.emplace_back();
+					triVector.back().color = coolPurpleColor;
+					triVector.back().ptA = ptA;
+					triVector.back().ptB = ptB;
+					triVector.back().ptC = ptC;
+				};
 
-				for (auto& tri : triList)
+				auto addTriRelative = [&](glm::vec3 offset)
+				{
+					addTri(triOneA + offset, triOneB + offset, triOneC + offset);
+				};
+
+				addTri(triOneA, triOneB, triOneC);
+				addTriRelative(glm::vec3(-10.0f, -10.0f, 0.0f));
+				addTriRelative(glm::vec3(0.0f, -10.0f, 0.0f));
+				addTriRelative(glm::vec3(-10.0f, 10.0f, 0.0f));
+
+
+				for (auto& tri : triVector)
 				{
 					triSoup.triangleList.push_back(tri);
 					tree.Insert(&tri);
 				}
-					
 
 				triSoup.UpdateBuffers();
 				
@@ -2134,7 +2139,7 @@ namespace Assignment
 
 			void RenderTree(OctTree::Tree const& tree, size_t currLevel = 0)
 			{
-				for (auto const& node : tree.nodesRenderMap.at(currLevel))
+				for (auto const& node : tree.nodesMap.at(currLevel))
 					SubmitDraw(node->transform, MeshNames::cubeWire, colorShader.shaderName);
 				
 			}
