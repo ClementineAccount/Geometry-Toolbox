@@ -190,8 +190,6 @@ namespace Assignment
 			G.ptA = glm::vec3(33.0f, -50.0f, 0.0f); 
 
 			tree.Insert(&G);
-
-			//Check that a split did happen
 			assert(tree.currLevel == 2);
 			assert(tree.rootNode.childMap.size() == 8);
 
@@ -204,7 +202,7 @@ namespace Assignment
 			assert(checkAdded(G));
 
 			//These two should share the same node
-			assert(tree.GetNodeWithObj(&B) == tree.GetNodeWithObj(&F));
+			assert(tree.GetNodeWithObj(&F) == tree.GetNodeWithObj(&B));
 		}
 
 

@@ -7,6 +7,9 @@ namespace Assignment
 	//To Do: Add check if the buffer doesn't exist yet to not delete
 	void TriangleSoup::ClearBuffers()
 	{
+		if (!triangleList.empty())
+			triangleList.clear();
+
 		glDeleteVertexArrays(1, &meshBuffers.VAO);
 		glDeleteBuffers(1, &meshBuffers.VBO);
 		glDeleteBuffers(1, &meshBuffers.EBO);

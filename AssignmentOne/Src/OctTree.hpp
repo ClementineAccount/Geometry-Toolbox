@@ -54,7 +54,7 @@ namespace Assignment
 
 			//Node* parent; //read only ptr
 
-			std::unordered_map<glm::vec3, Node> childMap;
+			std::unordered_map<glm::vec3, Node*> childMap;
 			//std::vector<Node> children;
 
 			//For rendering
@@ -69,6 +69,12 @@ namespace Assignment
 		class Tree
 		{
 		public:
+
+			~Tree() 
+			{
+
+			}
+
 			Node rootNode;
 
 			size_t currLevel = 0;
@@ -132,14 +138,14 @@ namespace Assignment
 
 				auto makeChild = [&](glm::vec3 cellDir)
 				{
-					Node child;
-					child.level = level;
+					Node* child = new Node();
+					child->level = level;
 					glm::vec3 center = parentCell.centerPos + parentCell.halfLength * 0.5f * cellDir;
-					child.Init(center, parentCell.halfLength);
-					child.transform.color = colorLevelMap[child.level];
+					child->Init(center, parentCell.halfLength);
+					child->transform.color = colorLevelMap[child->level];
 
 					parentCell.childMap.emplace(cellDir, child );
-					nodesMap.at(level).push_back(&parentCell.childMap.at(cellDir));
+					nodesMap.at(level).push_back(parentCell.childMap.at(cellDir));
 				};
 
 
@@ -159,26 +165,27 @@ namespace Assignment
 				while (!currNode->childMap.empty())
 				{
 					glm::vec3 offsetDir = whichOct(currNode->centerPos, tri->ptA);
-					currNode = &currNode->childMap.at(offsetDir);
+					currNode = currNode->childMap.at(offsetDir);
 				}
 
 				if (currNode->childMap.empty())
 				{
-					currNode->triangleVector.push_back(tri);
+					tri->color = colorLevelMap[currNode->level];
 
-					//Perform split once we reach max objects here
-					if (currNode->triangleVector.size() > maxObjectCell)
+					//Perform split once we reach max objects here (count from 0)
+					if (currNode->triangleVector.size() + 1 > maxObjectCell)
 					{
 						//Divide into the eight
 						SplitCell(*currNode);
+						for (auto& triAddAgain : currNode->triangleVector)
+							Insert(triAddAgain);
 
-						std::vector<TriangleA3*> triVectorCopy;
-						triVectorCopy.assign(currNode->triangleVector.begin(), currNode->triangleVector.end());
 						currNode->triangleVector.clear();
-
-
-						for (auto& tri : triVectorCopy)
-							Insert(tri);
+						Insert(tri);
+					}
+					else
+					{
+						currNode->triangleVector.push_back(tri);
 					}
 				}
 			}
@@ -187,13 +194,38 @@ namespace Assignment
 			//For resetting the tree. No dynamic memory allocation
 			void Clear()
 			{
-				for (size_t i = 0; i <= currLevel; ++i)
-					for (auto& node : nodesMap.at(i))
-						node->Clear();
+
+
+				currLevel = 0;
+
+				for (auto& it : nodesMap)
+				{
+					for (size_t i = 0; i < it.second.size(); ++i)
+					{
+						Node* ptr = it.second[i];
+						if (!ptr->childMap.empty())
+							ptr->childMap.clear();
+
+						if (ptr != &rootNode && ptr != nullptr)
+							delete ptr;
+
+					}
+
+					//for (auto& it2 : it.second)
+					//{
+					//	if (!it2->childMap.empty())
+					//		it2->childMap.clear();
+
+					//	/*if (it2 != nullptr)
+					//		delete it2;*/
+					//}
+						
+				}
+
 				nodesMap.clear();
 				colorLevelMap.clear();
 
-				currLevel = 0;
+
 			}
 
 
@@ -227,7 +259,7 @@ namespace Assignment
 				auto getSign = [&](glm::vec3 axisCheck) {
 					return glm::dot(centerToA, axisCheck) >= 0.0f ? 1.0f : -1.0f;
 				};
-				return glm::vec3(getSign(worldRight), getSign(worldUp), -getSign(worldForward));
+				return glm::vec3(getSign(worldRight), getSign(worldUp), getSign(worldForward));
 			}
 		};
 	}

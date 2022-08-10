@@ -115,6 +115,7 @@ namespace Assignment
 
 	constexpr bool runDebugTests = true;
 
+	int objectsCellMax = 3;
 
 }
 
@@ -790,7 +791,7 @@ namespace Assignment
 		glm::mat4 mvpMat = glm::mat4(1.0f);
 		mvpMat = perspectiveMat * viewMat * modelMat;
 
-		unsigned int programID = assignmentShaders.getShaderID(colorShader.shaderName);
+		unsigned int programID = assignmentShaders.getShaderID(defaultShader.shaderName);
 		glUseProgram(programID);
 
 		MeshBuffers const& currMesh = soup.meshBuffers;
@@ -2035,13 +2036,15 @@ namespace Assignment
 
 			int showLevel = 0;
 			bool showAllLevels = false;
-
-			int objectsCellMax = 3;
+			
 
 
 
 		public:
 			void Init() override {
+
+
+
 				initCamera();
 
 				tree.maxObjectCell = objectsCellMax;
@@ -2065,7 +2068,6 @@ namespace Assignment
 				triVector.clear();
 				auto addTri = [&](glm::vec3 ptA, glm::vec3 ptB, glm::vec3 ptC)
 				{
-
 					triVector.emplace_back();
 					triVector.back().color = coolPurpleColor;
 					triVector.back().ptA = ptA;
@@ -2081,8 +2083,10 @@ namespace Assignment
 				addTri(triOneA, triOneB, triOneC);
 				addTriRelative(glm::vec3(-10.0f, -10.0f, 0.0f));
 				addTriRelative(glm::vec3(0.0f, -10.0f, 0.0f));
-				addTriRelative(glm::vec3(-10.0f, 10.0f, 0.0f));
-
+				addTriRelative(glm::vec3(-10.0f, 6.0f, 0.0f));
+				addTriRelative(glm::vec3(-10.0f, 7.0f, 0.0f));
+				addTriRelative(glm::vec3(-10.0f, 8.0f, 1.0f));
+				addTriRelative(glm::vec3(-10.0f, 9.0f, 2.0f));
 
 				for (auto& tri : triVector)
 				{
@@ -2111,16 +2115,15 @@ namespace Assignment
 			{
 				ImGui::Begin("Octree Settings");
 
-				if (ImGui::Button("Reset Tree"))
-				{
-					ResetTree();
-					ImGui::End();
-					return;
-				}
 
 				ImGui::Checkbox("Show All Levels", &showAllLevels);
-				ImGui::DragInt("Octreee Level", &showLevel, 1.0f, 0, tree.currLevel);
-				ImGui::DragInt("Octreee Max Object (Require Reset)", &objectsCellMax, 1.0f, 1, 30);
+				if (tree.currLevel != 0)
+					ImGui::DragInt("Octreee Level", &showLevel, 0.1f, 0, tree.currLevel);
+				else
+					ImGui::Text("Octreee Level only has root");
+
+
+				ImGui::DragInt("Octreee Max Object (Require Reset)", &objectsCellMax, 0.1f, 2, 30);
 
 				ImGui::End();
 			}
@@ -2139,6 +2142,9 @@ namespace Assignment
 
 			void RenderTree(OctTree::Tree const& tree, size_t currLevel = 0)
 			{
+				if (currLevel > tree.currLevel)
+					return;
+
 				for (auto const& node : tree.nodesMap.at(currLevel))
 					SubmitDraw(node->transform, MeshNames::cubeWire, colorShader.shaderName);
 				
@@ -2146,7 +2152,7 @@ namespace Assignment
 
 			void RenderTreeAll(OctTree::Tree const& tree)
 			{
-				for (size_t i = 0; i <= tree.currLevel; ++i)
+				for (size_t i = 0; i < tree.currLevel; ++i)
 					RenderTree(tree, i);
 			}
 
@@ -2167,6 +2173,9 @@ namespace Assignment
 			void Clear() override
 			{
 
+				triSoup.ClearBuffers();
+				triVector.clear();
+				tree.Clear();
 			}
 		};
 	}
