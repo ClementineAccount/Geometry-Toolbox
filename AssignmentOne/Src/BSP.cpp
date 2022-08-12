@@ -58,9 +58,27 @@ namespace Assignment
 
 			//BFS-like insertion
 			std::queue<TriangleA3*> triAddQueue;
+			std::queue<splitPlane> splitPaneQueue;
 
 			for (TriangleA3* tri : triAdd)
+			{
 				triAddQueue.push(tri);
+				splitPlane currPlane;
+
+				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+				currPlane.pt = triAddQueue.front()->ptA;
+				splitPaneQueue.push(currPlane);
+
+				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
+				currPlane.pt = triAddQueue.front()->ptB;
+				splitPaneQueue.push(currPlane);
+
+				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
+				currPlane.pt = triAddQueue.front()->ptC;
+				splitPaneQueue.push(currPlane);
+
+			}
+				
 
 
 			std::vector<TriangleA3*> insideList; //Left
@@ -73,13 +91,13 @@ namespace Assignment
 			planeQueue.push(rootNode);
 
 
-			//std::queue<splitPlane> planeQueue;
 
 
+			//To Do: Allow herustics
 
+			//Auto partition
 			size_t numAttempts = 10;
-
-			while (!planeQueue.empty() && numAttempts > 0)
+			while (!planeQueue.empty() && numAttempts > 0 && !splitPaneQueue.empty())
 			{
 				--numAttempts;
 
@@ -88,17 +106,13 @@ namespace Assignment
 
 				currPlaneNode = planeQueue.front();
 				planeQueue.pop();
-
-				glm::vec3 halfPlaneNormal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
-				glm::vec3 planePt = triAddQueue.front()->ptA;
-
+				
 				while (!triAddQueue.empty())
 				{
-
 					currTri = triAddQueue.front();
 					triAddQueue.pop();
 
-					if (isInsidePlane(*currTri, halfPlaneNormal, planePt))
+					if (isInsidePlane(*currTri, splitPaneQueue.front().normal, splitPaneQueue.front().pt))
 						insideList.push_back(currTri);
 					else
 						outsideList.push_back(currTri);
@@ -139,6 +153,9 @@ namespace Assignment
 					for (TriangleA3* tri : outsideList)
 						static_cast<LeafNode*> (rootNode->rightOutsideNode)->triVector.push_back(tri);
 				}
+
+				splitPaneQueue.pop();
+
 			}
 		}
 

@@ -256,7 +256,9 @@ namespace Assignment
 
 
 			BSP::Tree tree;
+			tree.triangleMaxLeaf = 3;
 			tree.Init(triVector);
+		
 
 			auto checkLeafInside = [&](TriangleA3 tri, BSP::PlaneNode* parentNode)
 			{
@@ -271,8 +273,6 @@ namespace Assignment
 			assert(checkLeafInside(triangleOne, tree.rootNode));
 			assert(checkLeafOutside(triangleTwo, tree.rootNode));
 		}
-
-
 		void TestBSP_TestTwo()
 		{
 			//Test with three triangles
