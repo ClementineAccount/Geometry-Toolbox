@@ -10,7 +10,7 @@ namespace Assignment
 {
 	namespace BSP
 	{
-		enum nodeType
+		enum class nodeType
 		{
 			Leaf,
 			Plane
@@ -18,12 +18,18 @@ namespace Assignment
 
 		class Node
 		{
+		public:
 			nodeType type;
 		};
 
 		class LeafNode : public Node
 		{
 			public:
+
+				LeafNode() {
+					type = nodeType::Leaf;
+				}
+
 				std::vector<TriangleA3*> triVector; //Triangles in this node
 		};
 
@@ -31,18 +37,33 @@ namespace Assignment
 		class PlaneNode : public Node
 		{
 			public:
-				Node* leftNode;
-				Node* rightNode;
+				PlaneNode() {
+					type = nodeType::Plane;
+					leftInsideNode = nullptr;
+					rightOutsideNode = nullptr;
+				}
+
+				Node* leftInsideNode;
+				Node* rightOutsideNode;
 		};
 
 		class Tree
 		{
 		public:
 
-			Node* rootNode;
-			void Init(std::vector<TriangleA3*> triAdd);
+			std::vector<Node*> nodeVector; //For easy deletion 
 
+			~Tree();
+
+			PlaneNode* rootNode;
+			void Init(std::vector<TriangleA3*> triAdd);
+			void Clear();
+
+
+			static bool isInsidePlane(TriangleA3 const& tri, glm::vec3 normal, glm::vec3 ptOnPlane);
 			static glm::vec3 GetSplitPlaneNormal(glm::vec3 pt0, glm::vec3 pt1, glm::vec3 pt2);
+
+			static bool leafContains(TriangleA3* tri, LeafNode* nodePtr);
 		};
 	}
 

@@ -19,6 +19,9 @@ namespace Assignment
 		//for rendering in triangle soup
 		glm::vec3 color; 
 
+
+
+
 		//void Init(glm::vec3 const& ptA, glm::vec3 const& ptB, glm::vec3 const& ptC);
 	};
 

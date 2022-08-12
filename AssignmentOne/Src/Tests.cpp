@@ -235,11 +235,41 @@ namespace Assignment
 		}
 
 
-		void TestBSP()
+		void TestBSP_TestOne()
 		{
+			//Simple 2D Test first
+
+			TriangleA3 triangleOne;
+
+			triangleOne.ptA = glm::vec3(1.0f, 1.0f, 0.0f);
+			triangleOne.ptB = glm::vec3(3.0f, -1.0f, 0.0f);
+			triangleOne.ptC = glm::vec3(2.0f, 2.0f, 0.0f);
+
+			TriangleA3 triangleTwo;
+			triangleTwo.ptA = glm::vec3(2.0f, -2.0f, 0.0f);
+			triangleTwo.ptB = glm::vec3(3.0f, -1.0f, 0.0f);
+			triangleTwo.ptC = glm::vec3(1.0f, 1.0f, 0.0f);
+
+			std::vector<TriangleA3*> triVector;
+			triVector.push_back(&triangleOne);
+			triVector.push_back(&triangleTwo);
 
 
+			BSP::Tree tree;
+			tree.Init(triVector);
 
+			auto checkLeafInside = [&](TriangleA3 tri, BSP::PlaneNode* parentNode)
+			{
+				return BSP::Tree::leafContains(&tri, static_cast<BSP::LeafNode*>(parentNode->leftInsideNode));
+			};
+
+			auto checkLeafOutside = [&](TriangleA3 tri, BSP::PlaneNode* parentNode)
+			{
+				return BSP::Tree::leafContains(&tri, static_cast<BSP::LeafNode*>(parentNode->rightOutsideNode));
+			};
+
+			assert(checkLeafInside(triangleOne, tree.rootNode));
+			assert(checkLeafOutside(triangleTwo, tree.rootNode));
 		}
 
 
@@ -257,6 +287,7 @@ namespace Assignment
 			TestRitters();
 
 			TestSplitPlane();
+			TestBSP_TestOne();
 
 			TestA3();
 		}
