@@ -2,6 +2,9 @@
 #include <glm/glm.hpp>
 #include <vector> 
 #include <memory>
+
+#include <iostream>
+
 #include "Transform.h"
 #include "mesh.h"
 #include "TriangleSoup.h"
@@ -161,7 +164,12 @@ namespace Assignment
 
 			void Insert(TriangleA3* tri)
 			{
+
+
 				Node* currNode = &rootNode;
+				tri->SetColor(colorLevelMap[currNode->level]);
+
+
 				while (!currNode->childMap.empty())
 				{
 					glm::vec3 offsetDir = whichOct(currNode->centerPos, tri->ptA);
@@ -170,8 +178,6 @@ namespace Assignment
 
 				if (currNode->childMap.empty())
 				{
-					tri->color = colorLevelMap[currNode->level];
-
 					//Perform split once we reach max objects here (count from 0)
 					if (currNode->triangleVector.size() + 1 > maxObjectCell)
 					{
@@ -185,6 +191,8 @@ namespace Assignment
 					}
 					else
 					{
+						std::cout << "(BSP) Added triangle at level: " << currNode->level << std::endl;
+						tri->SetColor(colorLevelMap[currNode->level]);
 						currNode->triangleVector.push_back(tri);
 					}
 				}
@@ -194,10 +202,7 @@ namespace Assignment
 			//For resetting the tree. No dynamic memory allocation
 			void Clear()
 			{
-
-
 				currLevel = 0;
-
 				for (auto& it : nodesMap)
 				{
 					for (size_t i = 0; i < it.second.size(); ++i)
@@ -210,17 +215,8 @@ namespace Assignment
 							delete ptr;
 
 					}
-
-					//for (auto& it2 : it.second)
-					//{
-					//	if (!it2->childMap.empty())
-					//		it2->childMap.clear();
-
-					//	/*if (it2 != nullptr)
-					//		delete it2;*/
-					//}
-						
 				}
+
 
 				nodesMap.clear();
 				colorLevelMap.clear();

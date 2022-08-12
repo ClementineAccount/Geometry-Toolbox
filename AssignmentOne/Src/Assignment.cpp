@@ -2044,7 +2044,7 @@ namespace Assignment
 			void Init() override {
 
 
-
+				triSoup.triangleList.clear();
 				initCamera();
 
 				tree.maxObjectCell = objectsCellMax;
@@ -2069,7 +2069,7 @@ namespace Assignment
 				auto addTri = [&](glm::vec3 ptA, glm::vec3 ptB, glm::vec3 ptC)
 				{
 					triVector.emplace_back();
-					triVector.back().color = coolPurpleColor;
+					triVector.back().color = coolOrange;
 					triVector.back().ptA = ptA;
 					triVector.back().ptB = ptB;
 					triVector.back().ptC = ptC;
@@ -2090,10 +2090,12 @@ namespace Assignment
 
 				for (auto& tri : triVector)
 				{
-					triSoup.triangleList.push_back(tri);
 					tree.Insert(&tri);
-				}
+					triSoup.triangleList.push_back(tri);
 
+				}
+				std::cout << "--\n";
+			
 				triSoup.UpdateBuffers();
 				
 			}
@@ -2128,17 +2130,6 @@ namespace Assignment
 				ImGui::End();
 			}
 
-			void ResetTree()
-			{
-				tree.Clear();
-				tree.maxObjectCell = objectsCellMax;
-				tree.Init(worldOrigin, 15.0f, objectsCellMax);
-
-				for (auto& tri : triSoup.triangleList)
-				{
-					tree.Insert(&tri);
-				}
-			}
 
 			void RenderTree(OctTree::Tree const& tree, size_t currLevel = 0)
 			{
@@ -2172,6 +2163,7 @@ namespace Assignment
 
 			void Clear() override
 			{
+
 
 				triSoup.ClearBuffers();
 				triVector.clear();

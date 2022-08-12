@@ -13,7 +13,15 @@ namespace Assignment
 		glDeleteVertexArrays(1, &meshBuffers.VAO);
 		glDeleteBuffers(1, &meshBuffers.VBO);
 		glDeleteBuffers(1, &meshBuffers.EBO);
+
+		vertices.colors.clear();
+		vertices.positions.clear();
+		vertices.normals.clear();
+
+		indices.indexVector.clear();
 	}
+
+
 
 	void TriangleSoup::UpdateBuffers()
 	{
