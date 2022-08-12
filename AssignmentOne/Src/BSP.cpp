@@ -27,8 +27,15 @@ namespace Assignment
 			if (glm::dot(checkVector, normal) < 0.0f)
 				return false;
 
-			if (glm::dot(ptOnPlane - tri.ptB, normal) < 0.0f)
+			checkVector = tri.ptB - ptOnPlane;
+
+			if (glm::dot(checkVector, normal) < 0.0f)
 				return false;
+
+			//checkVector = tri.ptC - ptOnPlane;
+
+			//if (glm::dot(checkVector, normal) < 0.0f)
+			//	return false;
 
 			return true;
 		}
@@ -58,11 +65,34 @@ namespace Assignment
 
 			//BFS-like insertion
 			std::queue<TriangleA3*> triAddQueue;
-			std::vector<splitPlane> splitVector;
+			std::list<splitPlane> splitVector;
+
+			auto addEdge = [&](splitPlane plane)
+			{
+				for (auto const& p : splitVector)
+				{
+					if (p.normal == plane.normal && p.pt == plane.pt)
+						return;
+				}
+
+				splitVector.push_back(plane);
+			};
 
 			for (TriangleA3* tri : triAdd)
 			{
 				triAddQueue.push(tri);
+				splitPlane currPlane;
+				currPlane.normal = GetSplitPlaneNormal(tri->ptA, tri->ptB, tri->ptC);
+				currPlane.pt = triAddQueue.front()->ptA;
+				addEdge(currPlane);
+
+				currPlane.normal = GetSplitPlaneNormal(tri->ptB, tri->ptC, tri->ptA);
+				currPlane.pt = tri->ptB;
+				addEdge(currPlane);
+
+				currPlane.normal = GetSplitPlaneNormal(tri->ptC, tri->ptA, tri->ptB);
+				currPlane.pt = tri->ptC;
+				addEdge(currPlane);
 
 			}
 
@@ -107,32 +137,37 @@ namespace Assignment
 					else
 						outsideList.push_back(currTri);
 				}
+
+				splitPlane currPlane = splitVector.front();
+				splitVector.pop_front();
+
+
 				
 				if (insideList.size() > triangleMaxLeaf)
 				{
 					currPlaneNode->leftInsideNode = new PlaneNode();
-					nodeVector.push_back(rootNode->leftInsideNode);
+					nodeVector.push_back(currPlaneNode->leftInsideNode);
 					planeQueue.push(static_cast<PlaneNode*>(currPlaneNode->leftInsideNode));
 
 					for (TriangleA3* tri : insideList)
 					{
 						triAddQueue.push(tri);
-						splitPlane currPlane;
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
-						currPlane.pt = triAddQueue.front()->ptA;
-						splitVector.push_back(currPlane);
+						//splitPlane currPlane;
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+						//currPlane.pt = triAddQueue.front()->ptA;
+						//addEdge(currPlane);
 
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
-						currPlane.pt = triAddQueue.front()->ptB;
-						splitVector.push_back(currPlane);
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
+						//currPlane.pt = triAddQueue.front()->ptB;
+						//addEdge(currPlane);
 
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
-						currPlane.pt = triAddQueue.front()->ptC;
-						splitVector.push_back(currPlane);
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
+						//currPlane.pt = triAddQueue.front()->ptC;
+						//addEdge(currPlane);
 					}
 				
 				}
-				else
+				else if (!insideList.empty())
 				{
 					currPlaneNode->leftInsideNode = new LeafNode();
 					nodeVector.push_back(currPlaneNode->leftInsideNode);
@@ -151,22 +186,22 @@ namespace Assignment
 					{
 						triAddQueue.push(tri);
 
-						splitPlane currPlane;
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
-						currPlane.pt = triAddQueue.front()->ptA;
-						splitVector.push_back(currPlane);
+						//splitPlane currPlane;
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+						//currPlane.pt = triAddQueue.front()->ptA;
+						//addEdge(currPlane);
 
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
-						currPlane.pt = triAddQueue.front()->ptB;
-						splitVector.push_back(currPlane);
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
+						//currPlane.pt = triAddQueue.front()->ptB;
+						//addEdge(currPlane);
 
-						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
-						currPlane.pt = triAddQueue.front()->ptC;
-						splitVector.push_back(currPlane);
+						//currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
+						//currPlane.pt = triAddQueue.front()->ptC;
+						//addEdge(currPlane);
 					}
 
 				}
-				else
+				else if (!outsideList.empty())
 				{
 					currPlaneNode->rightOutsideNode = new LeafNode();
 					nodeVector.push_back(currPlaneNode->rightOutsideNode);
@@ -176,15 +211,14 @@ namespace Assignment
 				}
 
 
-				splitPlane currPlane = splitVector.back();
-				splitVector.pop_back();
+
 
 				//We tried everything and we can't enforce the max we want. Bruteforce and just add all the remainding triangles to one leaf
 				if (splitVector.empty() && !triAddQueue.empty())
 				{
 					triangleMaxLeaf = SIZE_MAX;
 					planeQueue.push(currPlaneNode);
-					splitVector.push_back(currPlane);
+					addEdge(currPlane);
 				}
 
 			}
