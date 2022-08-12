@@ -58,26 +58,18 @@ namespace Assignment
 
 			//BFS-like insertion
 			std::queue<TriangleA3*> triAddQueue;
-			std::queue<splitPlane> splitPaneQueue;
+			std::vector<splitPlane> splitVector;
 
 			for (TriangleA3* tri : triAdd)
 			{
 				triAddQueue.push(tri);
-				splitPlane currPlane;
-
-				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
-				currPlane.pt = triAddQueue.front()->ptA;
-				splitPaneQueue.push(currPlane);
-
-				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
-				currPlane.pt = triAddQueue.front()->ptB;
-				splitPaneQueue.push(currPlane);
-
-				currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
-				currPlane.pt = triAddQueue.front()->ptC;
-				splitPaneQueue.push(currPlane);
 
 			}
+
+			splitPlane currPlane;
+			currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+			currPlane.pt = triAddQueue.front()->ptA;
+			splitVector.push_back(currPlane);
 				
 
 
@@ -91,15 +83,13 @@ namespace Assignment
 			planeQueue.push(rootNode);
 
 
-
-
-			//To Do: Allow herustics
+			//To Do: Allow herustics to sort by best possible outcome
 
 			//Auto partition
-			size_t numAttempts = 10;
-			while (!planeQueue.empty() && numAttempts > 0 && !splitPaneQueue.empty())
+			//size_t numAttempts = 10;
+			while (!planeQueue.empty() && !splitVector.empty())
 			{
-				--numAttempts;
+				//--numAttempts;
 
 				insideList.clear();
 				outsideList.clear();
@@ -112,7 +102,7 @@ namespace Assignment
 					currTri = triAddQueue.front();
 					triAddQueue.pop();
 
-					if (isInsidePlane(*currTri, splitPaneQueue.front().normal, splitPaneQueue.front().pt))
+					if (isInsidePlane(*currTri, splitVector.front().normal, splitVector.front().pt))
 						insideList.push_back(currTri);
 					else
 						outsideList.push_back(currTri);
@@ -125,36 +115,77 @@ namespace Assignment
 					planeQueue.push(static_cast<PlaneNode*>(currPlaneNode->leftInsideNode));
 
 					for (TriangleA3* tri : insideList)
+					{
 						triAddQueue.push(tri);
+						splitPlane currPlane;
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+						currPlane.pt = triAddQueue.front()->ptA;
+						splitVector.push_back(currPlane);
+
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
+						currPlane.pt = triAddQueue.front()->ptB;
+						splitVector.push_back(currPlane);
+
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
+						currPlane.pt = triAddQueue.front()->ptC;
+						splitVector.push_back(currPlane);
+					}
+				
 				}
 				else
 				{
 					currPlaneNode->leftInsideNode = new LeafNode();
-					nodeVector.push_back(rootNode->leftInsideNode);
+					nodeVector.push_back(currPlaneNode->leftInsideNode);
 
 					for (TriangleA3* tri : insideList)
-						static_cast<LeafNode*> (rootNode->leftInsideNode)->triVector.push_back(tri);
+						static_cast<LeafNode*> (currPlaneNode->leftInsideNode)->triVector.push_back(tri);
 				}
 
 				if (outsideList.size() > triangleMaxLeaf)
 				{
 					currPlaneNode->rightOutsideNode = new PlaneNode();
-					nodeVector.push_back(rootNode->rightOutsideNode);
+					nodeVector.push_back(currPlaneNode->rightOutsideNode);
 					planeQueue.push(static_cast<PlaneNode*>(currPlaneNode->rightOutsideNode));
 
 					for (TriangleA3* tri : outsideList)
+					{
 						triAddQueue.push(tri);
+
+						splitPlane currPlane;
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+						currPlane.pt = triAddQueue.front()->ptA;
+						splitVector.push_back(currPlane);
+
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptB, triAddQueue.front()->ptC, triAddQueue.front()->ptA);
+						currPlane.pt = triAddQueue.front()->ptB;
+						splitVector.push_back(currPlane);
+
+						currPlane.normal = GetSplitPlaneNormal(triAddQueue.front()->ptC, triAddQueue.front()->ptA, triAddQueue.front()->ptB);
+						currPlane.pt = triAddQueue.front()->ptC;
+						splitVector.push_back(currPlane);
+					}
+
 				}
 				else
 				{
 					currPlaneNode->rightOutsideNode = new LeafNode();
-					nodeVector.push_back(rootNode->rightOutsideNode);
+					nodeVector.push_back(currPlaneNode->rightOutsideNode);
 
 					for (TriangleA3* tri : outsideList)
-						static_cast<LeafNode*> (rootNode->rightOutsideNode)->triVector.push_back(tri);
+						static_cast<LeafNode*> (currPlaneNode->rightOutsideNode)->triVector.push_back(tri);
 				}
 
-				splitPaneQueue.pop();
+
+				splitPlane currPlane = splitVector.back();
+				splitVector.pop_back();
+
+				//We tried everything and we can't enforce the max we want. Bruteforce and just add all the remainding triangles to one leaf
+				if (splitVector.empty() && !triAddQueue.empty())
+				{
+					triangleMaxLeaf = SIZE_MAX;
+					planeQueue.push(currPlaneNode);
+					splitVector.push_back(currPlane);
+				}
 
 			}
 		}
