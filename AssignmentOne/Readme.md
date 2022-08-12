@@ -1,9 +1,16 @@
-# CSD 3150 Assignment 2 - Bounding Volumes Representation
-
+# CSD 3150 Assignment 3 
 # Build Instructions
 
 ## From Visual Studio
 Open the solution file using Visual Studio and set `AssignmentTwo` to [`"Set as Startup Project"`](https://docs.microsoft.com/en-us/visualstudio/ide/how-to-set-multiple-startup-projects?view=vs-2022) then Build Solution.
+
+The project is mislabelled as Assignment2 but it should show OctTree scene
+
+# Screenshots
+
+![Scene Image](.\ReadmeImages\a3-1.png)
+![Scene Image](.\ReadmeImages\a3-2.png)
+![Scene Image](.\ReadmeImages\a3-3.png)
 
 
 # Controls
@@ -19,20 +26,16 @@ Right mouse button | Look Around (Adjust Pitch/Yaw)
 V Key | Look Around (Adjust Pitch/Yaw)
 
 
-Dear Imgui panels should look like this that will allow more settings
-
-![Scene Image](.\ReadmeImages\Controls1.png)
-![Scene Image2](.\ReadmeImages\Controls2.png)
-
-
-
 <br/>
 
 # Brief
-This assignment	 focuses on building Bounding Volume Hierarchies. 
+Spatial	 Partitioning  using	 Adaptive	 Octrees and	BSP	Trees
 <br/>
 
-See Chapter 6 of [Real-Time Collision Detection (Christer Ericson)](https://learning.oreilly.com/library/view/real-time-collision-detection/9781558607323/)
+Wasn't able to finish on time. Started too late in the week and underestimated the workload.
+Created octree partially and triangle soup concept.
+
+The scenes were hence tested mostly in 2D with triangles.
 
 <br/>
 
@@ -42,39 +45,16 @@ See Chapter 6 of [Real-Time Collision Detection (Christer Ericson)](https://lear
 
 | Grading Sheet  |  Progress
 |--|--|
-|Objects loaded correctly from the files and displayed  | Completed (Serializable from Scenes folder)
-|Correct Rendering using diffuse color model | Completed
-|Bounding Volume - AABB | Completed 
-|Bounding Sphere - Ritter Method | Completed 
-|Bounding Sphere - Modified Larsson Method | Not Done
-|Bounding Sphere - PCA Method | Not Done
-|Top-Down Construction - AABB | Completed
-|Top-Down Construction - Bounding Spheres | Completed
-|Bottom-Up Construction - AABB | Not Done
-|Bottom-Up Construction - Bounding Spheres | Not Done
-|Toggle/Change Bounding Volumes | Completed
-|Display Bounding Volumes in Wireframe | Completed
-|Camera Implementation | Completed
+| Scene created using specified objects | Not Completed
+| Top down creation of the Octree | Completed 
+| Creation of Adaptive Octtree* | Completed
+| Top down creation of the BSP tree | Not Completed
+| Polygons intersecting the plane are split correctly | Not Completed
+| Choosing appropriate split planes  | Not Completed
+| BSP Tree serialized and loaded on demand | Not Completed
+| Toggle Octree display | Completed
+| Show all levels of the octree in different colors | Completed
+| Toggle BSP tree display | Not Completed
+| Show all nodes of the BSP tree in a different color | Not Completed
 
-Estimated Total: 65 to 70% Completed (Accounting for no Misc Issues)
-
-
-## Top-Down Construction Details
-
-<br/>
-Split Point Choice: 
-<br/>
-Mean of BV Centers
-
-<br/>
-Split Plane Choice: <br/>Local x, y, and z
-coordinate axes
-<br/>
-Partitioning plane orthogonal
-to axis of largest spread to get “fat”
-boxes
-<br/>
-<br/>
-Termination Criteria:
-<br/>
-Maximum Height = 7
+*Not tested with tri = 30

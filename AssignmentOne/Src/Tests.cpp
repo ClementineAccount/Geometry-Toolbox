@@ -2,6 +2,8 @@
 #include "BoundingVolume.h"
 #include "OctTree.hpp"
 #include "TriangleSoup.h"
+#include "BSP.h"
+
 
 #include <limits>
 
@@ -35,7 +37,7 @@ namespace Assignment
 			pos.push_back(glm::vec3(10.0f, 100.0f, 10.0f));
 			pos.push_back(glm::vec3(1.0f, 1000.0f, 10.0f));
 			pos.push_back(glm::vec3(2.0f, 100.0f, 10.0f));
-			
+
 			expected = worldUp;
 			glm::vec3 result = BV::axisOffsets::axisToDirection(BV::largestSpreadAxis(pos));
 			assert(expected == result);
@@ -187,7 +189,7 @@ namespace Assignment
 
 
 			TriangleA3 G;
-			G.ptA = glm::vec3(33.0f, -50.0f, 0.0f); 
+			G.ptA = glm::vec3(33.0f, -50.0f, 0.0f);
 
 			tree.Insert(&G);
 			assert(tree.currLevel == 2);
@@ -206,6 +208,41 @@ namespace Assignment
 		}
 
 
+		void TestSplitPlane()
+		{
+
+			glm::vec3 pt0 = glm::vec3(1.0f, 1.0f, 0.0f);
+			glm::vec3 pt1 = glm::vec3(2.0f, 1.0f, 0.0f);
+			glm::vec3 pt2 = glm::vec3(2.0f, 2.0f, 0.0f);
+			glm::vec3 pt3 = glm::vec3(2.0f, -2.0f, 0.0f);
+
+			glm::vec3 planeNormal = BSP::Tree::GetSplitPlaneNormal(pt0, pt1, pt2);
+			assert(planeNormal == glm::vec3(0.0f, 1.0f, 0.0f));
+
+			//Expected that pt2 is 'above' the split plane
+			assert(glm::dot(pt2, planeNormal) > 0.0f);
+
+			//Expected that pt1 and pt0 are 'on' the plane itself and hence close to perpendicular (or is)
+			assert(glm::dot(pt1, planeNormal) >= 0.0f && glm::dot(pt0, planeNormal) >= 0.0f);
+
+			//Expected that pt3 is 'below' the half plane on the outside.
+			assert(glm::dot(pt3, planeNormal) < 0.0f);
+
+			//Check that pt3 is still below even if the z-axis is different
+			pt3.z = 100.0f;
+			assert(glm::dot(pt3, planeNormal) < 0.0f);
+
+		}
+
+
+		void TestBSP()
+		{
+
+
+
+		}
+
+
 		void TestA3()
 		{
 			//TestOctTree2D();
@@ -218,6 +255,8 @@ namespace Assignment
 			TestPosMean();
 			TestLargestSpread();
 			TestRitters();
+
+			TestSplitPlane();
 
 			TestA3();
 		}

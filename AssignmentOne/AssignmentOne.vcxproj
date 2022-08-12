@@ -166,6 +166,7 @@
     <ClInclude Include="Src\Assignment.h" />
     <ClInclude Include="Src\BoundingVolume.h" />
     <ClInclude Include="Src\BoundingVolumeTree.hpp" />
+    <ClInclude Include="Src\BSP.h" />
     <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\CollisionHelper.h" />
     <ClInclude Include="Src\GLApplication.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Src\Assignment.cpp" />
     <ClCompile Include="Src\AssignmentOneSettings.h" />
     <ClCompile Include="Src\BoundingVolume.cpp" />
+    <ClCompile Include="Src\BSP.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\CollisionHelper.cpp" />
     <ClCompile Include="Src\GLApplication.cpp" />
