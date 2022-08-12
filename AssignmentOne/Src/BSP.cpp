@@ -53,37 +53,93 @@ namespace Assignment
 			//To Do: Make this a stack/recursion 
 
 			//Create the initial root plane from the first edge of the first triangle
-			glm::vec3 halfPlaneNormal = GetSplitPlaneNormal(triAdd[0]->ptA, triAdd[0]->ptB, triAdd[0]->ptC);
-			
-			glm::vec3 planePt = triAdd[0]->ptA;
-
 			rootNode = new PlaneNode();
 			nodeVector.push_back(rootNode);
 
-			//Sort the two halves
+			//BFS-like insertion
+			std::queue<TriangleA3*> triAddQueue;
+
+			for (TriangleA3* tri : triAdd)
+				triAddQueue.push(tri);
+
+
 			std::vector<TriangleA3*> insideList; //Left
 			std::vector<TriangleA3*> outsideList; //Right
 
-			//To Do: Refactor?
-			for (auto const& tri : triAdd)
+			PlaneNode* currPlaneNode = nullptr;
+			TriangleA3* currTri = nullptr;
+
+			std::queue<PlaneNode*> planeQueue;
+			planeQueue.push(rootNode);
+
+
+			//std::queue<splitPlane> planeQueue;
+
+
+
+			size_t numAttempts = 10;
+
+			while (!planeQueue.empty() && numAttempts > 0)
 			{
-				if (isInsidePlane(*tri, halfPlaneNormal, planePt))
-					insideList.push_back(tri);
+				--numAttempts;
+
+				insideList.clear();
+				outsideList.clear();
+
+				currPlaneNode = planeQueue.front();
+				planeQueue.pop();
+
+				glm::vec3 halfPlaneNormal = GetSplitPlaneNormal(triAddQueue.front()->ptA, triAddQueue.front()->ptB, triAddQueue.front()->ptC);
+				glm::vec3 planePt = triAddQueue.front()->ptA;
+
+				while (!triAddQueue.empty())
+				{
+
+					currTri = triAddQueue.front();
+					triAddQueue.pop();
+
+					if (isInsidePlane(*currTri, halfPlaneNormal, planePt))
+						insideList.push_back(currTri);
+					else
+						outsideList.push_back(currTri);
+				}
+				
+				if (insideList.size() > triangleMaxLeaf)
+				{
+					currPlaneNode->leftInsideNode = new PlaneNode();
+					nodeVector.push_back(rootNode->leftInsideNode);
+					planeQueue.push(static_cast<PlaneNode*>(currPlaneNode->leftInsideNode));
+
+					for (TriangleA3* tri : insideList)
+						triAddQueue.push(tri);
+				}
 				else
-					outsideList.push_back(tri);
+				{
+					currPlaneNode->leftInsideNode = new LeafNode();
+					nodeVector.push_back(rootNode->leftInsideNode);
+
+					for (TriangleA3* tri : insideList)
+						static_cast<LeafNode*> (rootNode->leftInsideNode)->triVector.push_back(tri);
+				}
+
+				if (outsideList.size() > triangleMaxLeaf)
+				{
+					currPlaneNode->rightOutsideNode = new PlaneNode();
+					nodeVector.push_back(rootNode->rightOutsideNode);
+					planeQueue.push(static_cast<PlaneNode*>(currPlaneNode->rightOutsideNode));
+
+					for (TriangleA3* tri : outsideList)
+						triAddQueue.push(tri);
+				}
+				else
+				{
+					currPlaneNode->rightOutsideNode = new LeafNode();
+					nodeVector.push_back(rootNode->rightOutsideNode);
+
+					for (TriangleA3* tri : outsideList)
+						static_cast<LeafNode*> (rootNode->rightOutsideNode)->triVector.push_back(tri);
+				}
 			}
-
-			//To Do: The herustic check for left/right leaf node
-			rootNode->leftInsideNode = new LeafNode();
-			rootNode->rightOutsideNode = new LeafNode();
-
-			nodeVector.push_back(rootNode->leftInsideNode);
-			nodeVector.push_back(rootNode->rightOutsideNode);
-
-			for (auto const& tri : insideList)
-				static_cast<LeafNode*> (rootNode->leftInsideNode)->triVector.push_back(tri);
-			for (auto const& tri : outsideList)
-				static_cast<LeafNode*> (rootNode->rightOutsideNode)->triVector.push_back(tri);
 		}
 
 		bool Tree::leafContains(TriangleA3* tri, LeafNode* nodePtr)

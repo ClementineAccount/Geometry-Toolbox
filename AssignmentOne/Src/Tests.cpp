@@ -273,6 +273,50 @@ namespace Assignment
 		}
 
 
+		void TestBSP_TestTwo()
+		{
+			//Test with three triangles
+
+			TriangleA3 triangleOne;
+
+			triangleOne.ptA = glm::vec3(1.0f, 1.0f, 0.0f);
+			triangleOne.ptB = glm::vec3(3.0f, 1.0f, 0.0f);
+			triangleOne.ptC = glm::vec3(2.0f, 2.0f, 0.0f);
+
+			TriangleA3 triangleTwo;
+			triangleTwo.ptA = glm::vec3(2.0f, -2.0f, 0.0f);
+			triangleTwo.ptB = glm::vec3(3.0f, 1.0f, 0.0f);
+			triangleTwo.ptC = glm::vec3(1.0f, 1.0f, 0.0f);
+
+			TriangleA3 triangleThree;
+			triangleThree.ptA = glm::vec3(-1.0f, -3.0f, 0.0f);
+			triangleThree.ptB = glm::vec3(2.0f, -2.0f, 0.0f);
+			triangleThree.ptC = glm::vec3(1.0f, 1.0f, 0.0f);
+
+
+			std::vector<TriangleA3*> triVector;
+			triVector.push_back(&triangleOne);
+			triVector.push_back(&triangleTwo);
+			triVector.push_back(&triangleThree);
+
+			BSP::Tree tree;
+			tree.Init(triVector);
+
+			auto checkLeafInside = [&](TriangleA3 tri, BSP::PlaneNode* parentNode)
+			{
+				return BSP::Tree::leafContains(&tri, static_cast<BSP::LeafNode*>(parentNode->leftInsideNode));
+			};
+
+			auto checkLeafOutside = [&](TriangleA3 tri, BSP::PlaneNode* parentNode)
+			{
+				return BSP::Tree::leafContains(&tri, static_cast<BSP::LeafNode*>(parentNode->rightOutsideNode));
+			};
+
+			assert(checkLeafInside(triangleOne, tree.rootNode));
+			assert(checkLeafOutside(triangleTwo, tree.rootNode));
+			assert(checkLeafOutside(triangleThree, tree.rootNode));
+		}
+
 		void TestA3()
 		{
 			//TestOctTree2D();
@@ -288,6 +332,9 @@ namespace Assignment
 
 			TestSplitPlane();
 			TestBSP_TestOne();
+			TestBSP_TestTwo();
+
+
 
 			TestA3();
 		}

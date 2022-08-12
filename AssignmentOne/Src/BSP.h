@@ -34,6 +34,14 @@ namespace Assignment
 		};
 
 
+		struct splitPlane
+		{
+			glm::vec3 normal;
+			glm::vec3 pt;
+
+		};
+
+
 		class PlaneNode : public Node
 		{
 			public:
@@ -52,6 +60,9 @@ namespace Assignment
 		public:
 
 			std::vector<Node*> nodeVector; //For easy deletion 
+
+			//Maximum number of triangles per leaf
+			size_t triangleMaxLeaf = 2;
 
 			~Tree();
 
